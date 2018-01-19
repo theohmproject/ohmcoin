@@ -36,7 +36,7 @@ More information at [ohmc.io](http://www.ohmc.io)
 ### Staking Methods
 <table>
 <tr><td>Karmanodes</td><td>Yes - 3000 OHMC Required</td></tr>
-<tr><td>Wallet Staking</td><td>Yes - 1 to infinite OHMC</td></tr>
+<tr><td>Wallet Staking</td><td>Yes - 1 to 100 Million OHMC</td></tr>
 </table>
 
 ### Staking Reward Details
