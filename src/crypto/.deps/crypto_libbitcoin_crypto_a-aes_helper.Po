@@ -1,0 +1,34 @@
+crypto/crypto_libbitcoin_crypto_a-aes_helper.o: crypto/aes_helper.c \
+ crypto/sph_types.h \
+ /usr/lib/gcc/i686-w64-mingw32/4.8/include-fixed/limits.h \
+ /usr/lib/gcc/i686-w64-mingw32/4.8/include-fixed/syslimits.h \
+ /usr/share/mingw-w64/include/limits.h \
+ /usr/share/mingw-w64/include/crtdefs.h \
+ /usr/share/mingw-w64/include/_mingw.h \
+ /usr/share/mingw-w64/include/_mingw_mac.h \
+ /usr/share/mingw-w64/include/_mingw_secapi.h \
+ /usr/share/mingw-w64/include/vadefs.h \
+ /usr/share/mingw-w64/include/sdks/_mingw_directx.h \
+ /usr/share/mingw-w64/include/sdks/_mingw_ddk.h
+
+crypto/sph_types.h:
+
+/usr/lib/gcc/i686-w64-mingw32/4.8/include-fixed/limits.h:
+
+/usr/lib/gcc/i686-w64-mingw32/4.8/include-fixed/syslimits.h:
+
+/usr/share/mingw-w64/include/limits.h:
+
+/usr/share/mingw-w64/include/crtdefs.h:
+
+/usr/share/mingw-w64/include/_mingw.h:
+
+/usr/share/mingw-w64/include/_mingw_mac.h:
+
+/usr/share/mingw-w64/include/_mingw_secapi.h:
+
+/usr/share/mingw-w64/include/vadefs.h:
+
+/usr/share/mingw-w64/include/sdks/_mingw_directx.h:
+
+/usr/share/mingw-w64/include/sdks/_mingw_ddk.h:
