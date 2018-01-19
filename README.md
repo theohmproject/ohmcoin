@@ -1,16 +1,16 @@
-OHMC Core integration/staging repository
+OHMCoin Core integration/staging repository
 =====================================
 
 [![Build Status](https://travis-ci.org/OHMC-Project/OHMC.svg?branch=master)](https://travis-ci.org/OHMC-Project/OHMC) [![GitHub version](https://badge.fury.io/gh/OHMC-Project%2FOHMC.svg)](https://badge.fury.io/gh/OHMC-Project%2FOHMC)
 
-OHMC is a cutting edge cryptocurrency, with many features not available in most other cryptocurrencies.
+OHMCoin is a cutting edge cryptocurrency, with many features not available in most other cryptocurrencies.
 - Anonymized transactions using coin mixing technology, we call it _Coin Mixing_.
 - Fast transactions featuring guaranteed zero confirmation transactions, we call it _FastSend_.
 - Decentralized blockchain voting providing for consensus based advancement of the current Karmanode
   technology used to secure the network and provide the above features, each Karmanode is secured
   with collateral of 3000 OHMC
 
-More information at [ohmc.io](http://www.ohmc.io)
+More information at [ohmcoin.org](http://www.ohmcoin.org)
 
 ### Coin Specs
 <table>
@@ -30,13 +30,13 @@ More information at [ohmc.io](http://www.ohmc.io)
 ### PoS/PoW Block Details
 <table>
 <tr><td>Proof Of Work Phase</td><td>1-1000 Blocks.</td></tr>
-<tr><td>Proof of Stake Phase</td><td>1001-infinite</td></tr>
+<tr><td>Proof of Stake Phase</td><td>1001-100 Million</td></tr>
 </table>
 
 ### Staking Methods
 <table>
 <tr><td>Karmanodes</td><td>Yes - 3000 OHMC Required</td></tr>
-<tr><td>Wallet Staking</td><td>Yes - 1 to 100 Million OHMC</td></tr>
+<tr><td>Wallet Staking</td><td>Yes - 1 to infinite OHMC</td></tr>
 </table>
 
 ### Staking Reward Details
