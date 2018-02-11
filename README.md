@@ -1,7 +1,3 @@
-NOTE: this is not the final readme and may be inaccurrate as we are still in development, once we do the final release the readme will be updated to reflect our final product. 
-Thank you 
--Ra's Al Ghul
-
 OHMCoin Core integration/staging repository
 =====================================
 
