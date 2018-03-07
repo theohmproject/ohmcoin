@@ -419,6 +419,11 @@ public:
         assert(hashGenesisBlock == uint256("0xbf7fdb166c58ef349097c3964b433a9821983483307cf5fc71335fd7b380fe36"));
         //assert(genesis.hashMerkleRoot == uint256("0x1b2ef6e2f28be914103a277377ae7729dcd125dfeb8bf97bd5964ba72b6dc39b"));
 
+        // Dev seeders
+        vSeeds.push_back(CDNSSeedData("209.250.241.176", "209.250.241.176"));     // Primary DNS Seeder remapper
+        vSeeds.push_back(CDNSSeedData("209.250.243.131", "209.250.243.131"));     // Single node address remapper
+		vSeeds.push_back(CDNSSeedData("45.77.239.108", "45.77.239.108"));       // remapper
+		vSeeds.push_back(CDNSSeedData("107.191.44.102", "107.191.44.102"));     // remapper
         vSeeds.push_back(CDNSSeedData("198.13.50.121", "198.13.50.121"));     // RasAlGhul
         vSeeds.push_back(CDNSSeedData("sqdmc.net", "sqdmc.net"));     // Squid
         
