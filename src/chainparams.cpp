@@ -421,7 +421,12 @@ public:
 
         vSeeds.push_back(CDNSSeedData("198.13.50.121", "198.13.50.121"));     // RasAlGhul
         vSeeds.push_back(CDNSSeedData("sqdmc.net", "sqdmc.net"));     // Squid
+        
+        // The following seeders are sponsered by some of our awesome discord community members THANKYOU!!! https://discord.gg/5yUZbHp
         vSeeds.push_back(CDNSSeedData("5.9.71.139", "5.9.71.139"));     // Shoutout to onionring9
+        vSeeds.push_back(CDNSSeedData("207.148.30.228", "207.148.30.228"));     // Shout-out to cryptoshorty
+        vSeeds.push_back(CDNSSeedData("165.169.80.122", "165.169.80.122"));     // Shout-out to Rud
+        vSeeds.push_back(CDNSSeedData("45.77.108.9", "45.77.108.9"));   // Shout-out to Kultus
         
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 80);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
