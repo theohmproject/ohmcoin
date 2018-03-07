@@ -419,10 +419,8 @@ public:
         assert(hashGenesisBlock == uint256("0xbf7fdb166c58ef349097c3964b433a9821983483307cf5fc71335fd7b380fe36"));
         //assert(genesis.hashMerkleRoot == uint256("0x1b2ef6e2f28be914103a277377ae7729dcd125dfeb8bf97bd5964ba72b6dc39b"));
 
-        vSeeds.push_back(CDNSSeedData("209.250.241.176", "209.250.241.176"));     // Primary DNS Seeder
-        vSeeds.push_back(CDNSSeedData("209.250.243.131", "209.250.243.131"));     // Single node address
-		vSeeds.push_back(CDNSSeedData("45.77.239.108", "45.77.239.108"));
-		vSeeds.push_back(CDNSSeedData("107.191.44.102", "107.191.44.102"));
+        vSeeds.push_back(CDNSSeedData("198.13.50.121", "198.13.50.121"));     // Primary DNS Seeder
+        vSeeds.push_back(CDNSSeedData("sqdmc.net", "sqdmc.net"));     // Single node address
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 80);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
@@ -496,10 +494,10 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "ohmc-testnet.seed.fuzzbawls.pw"));
-        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "ohmc-testnet.seed2.fuzzbawls.pw"));
-        vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
-        vSeeds.push_back(CDNSSeedData("88.198.192.110", "88.198.192.110"));
+        vSeeds.push_back(CDNSSeedData("sqdmc.net", "sqdmc.net"));
+        //vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "ohmc-testnet.seed2.fuzzbawls.pw"));
+        //vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
+        //vSeeds.push_back(CDNSSeedData("88.198.192.110", "88.198.192.110"));
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 139); // Testnet ohmc addresses start with 'x' or 'y'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 19);  // Testnet ohmc script addresses start with '8' or '9'
