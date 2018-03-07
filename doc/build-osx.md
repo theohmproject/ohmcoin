@@ -100,7 +100,7 @@ Notes
 * Tested on Mac OS X 10.11 through macOS 10.13 on 64-bit Intel processors only.
     - Although, it is possiable to build on older versions of  64-bit only "Mac OS X", brew does not work "easily" or at all with these
     olders versions and using MacPorts has simular issues. Instructions for building on older versions are depreciated and thus are
-    unsupported. If one were to explore this issue, boost-1.57 headers must be patched, Berkeley-DB-4.8 must be patched as well and good
-    luck with qt-5 that is just a mess.
+    unsupported. If one were to explore this issue, boost-1.57 headers must be patched, Berkeley-DB-4.8 must be patched as well and qt-5
+    that is just a mess.
 
 * Building with downloaded Qt binaries is not officially supported.
