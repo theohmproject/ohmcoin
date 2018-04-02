@@ -505,7 +505,7 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("sqdmc.net", "sqdmc.net"));
+        vSeeds.push_back(CDNSSeedData("140.82.18.27", "140.82.18.27"));
         //vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "ohmc-testnet.seed2.fuzzbawls.pw"));
         //vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
         //vSeeds.push_back(CDNSSeedData("88.198.192.110", "88.198.192.110"));
