@@ -6,8 +6,8 @@ SetCompressor /SOLID lzma
 # General Symbol Definitions
 !define REGKEY "SOFTWARE\$(^Name)"
 !define VERSION 2.3.0
-!define COMPANY "The Ohm Project"
-!define URL https://www.ohmcoin.org
+!define COMPANY "Ohm Core project"
+!define URL https://www.ohmc.org
 
 # MUI Symbol Definitions
 !define MUI_ICON "/root/ohmc-last/share/pixmaps/bitcoin.ico"
@@ -79,8 +79,8 @@ Section -Main SEC0000
     SetOutPath $INSTDIR\daemon
     File /root/ohmc-last/release/ohmcd.exe
     File /root/ohmc-last/release/ohmc-cli.exe
-    #SetOutPath $INSTDIR\doc
-    #File /r /root/ohmc-last/doc\*.*
+    SetOutPath $INSTDIR\doc
+    File /r /root/ohmc-last/doc\*.*
     SetOutPath $INSTDIR
     WriteRegStr HKCU "${REGKEY}\Components" Main 1
 
