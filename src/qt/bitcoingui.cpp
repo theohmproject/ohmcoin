@@ -279,7 +279,14 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 {
     QActionGroup* tabGroup = new QActionGroup(this);
 
-    overviewAction = new QAction(QIcon(":/icons/overview"), tr("&Overview"), this);
+    QPixmap overviewIconInactive(":/icons/overview");
+    QPixmap overviewIconActive(":/icons/overview_active");
+    QIcon overviewIcon;
+
+    overviewIcon.addPixmap(overviewIconActive,QIcon::Selected,QIcon::On);
+    overviewIcon.addPixmap(overviewIconInactive,QIcon::Selected,QIcon::Off);
+
+    overviewAction = new QAction(overviewIcon, tr("&Overview"), this);
     overviewAction->setStatusTip(tr("Show general overview of wallet"));
     overviewAction->setToolTip(overviewAction->statusTip());
     overviewAction->setCheckable(true);
@@ -290,7 +297,14 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(overviewAction);
 
-    sendCoinsAction = new QAction(QIcon(":/icons/send"), tr("&Send"), this);
+    QPixmap sendIconInactive(":/icons/send");
+    QPixmap sendIconActive(":/icons/send_active");
+    QIcon sendIcon;
+
+    sendIcon.addPixmap(sendIconActive,QIcon::Selected,QIcon::On);
+    sendIcon.addPixmap(sendIconInactive,QIcon::Selected,QIcon::Off);
+
+    sendCoinsAction = new QAction(sendIcon, tr("&Send"), this);
     sendCoinsAction->setStatusTip(tr("Send coins to a OHMC address"));
     sendCoinsAction->setToolTip(sendCoinsAction->statusTip());
     sendCoinsAction->setCheckable(true);
@@ -301,7 +315,14 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(sendCoinsAction);
 
-    receiveCoinsAction = new QAction(QIcon(":/icons/receiving_addresses"), tr("&Receive"), this);
+    QPixmap receiveIconInactive(":/icons/receiving_addresses");
+    QPixmap receiveIconActive(":/icons/receiving_addresses_active");
+    QIcon receiveIcon;
+
+    receiveIcon.addPixmap(receiveIconActive,QIcon::Selected,QIcon::On);
+    receiveIcon.addPixmap(receiveIconInactive,QIcon::Selected,QIcon::Off);
+
+    receiveCoinsAction = new QAction(receiveIcon, tr("&Receive"), this);
     receiveCoinsAction->setStatusTip(tr("Request payments (generates QR codes and ohmc: URIs)"));
     receiveCoinsAction->setToolTip(receiveCoinsAction->statusTip());
     receiveCoinsAction->setCheckable(true);
@@ -312,7 +333,14 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 #endif
     tabGroup->addAction(receiveCoinsAction);
 
-    historyAction = new QAction(QIcon(":/icons/history"), tr("&Transactions"), this);
+    QPixmap historyIconInactive(":/icons/history");
+    QPixmap historyIconActive(":/icons/history_active");
+    QIcon historyIcon;
+
+    historyIcon.addPixmap(historyIconActive,QIcon::Selected,QIcon::On);
+    historyIcon.addPixmap(historyIconInactive,QIcon::Selected,QIcon::Off);
+
+    historyAction = new QAction(historyIcon, tr("&Transactions"), this);
     historyAction->setStatusTip(tr("Browse transaction history"));
     historyAction->setToolTip(historyAction->statusTip());
     historyAction->setCheckable(true);
@@ -327,7 +355,15 @@ void BitcoinGUI::createActions(const NetworkStyle* networkStyle)
 
     QSettings settings;
     if (settings.value("fShowKarmanodesTab").toBool()) {
-        karmanodeAction = new QAction(QIcon(":/icons/karmanodes"), tr("&Karmanodes"), this);
+
+        QPixmap karmanodesIconInactive(":/icons/karmanodes");
+        QPixmap karmanodesIconActive(":/icons/karmanodes_active");
+        QIcon karmanodesIcon;
+
+        karmanodesIcon.addPixmap(karmanodesIconActive,QIcon::Selected,QIcon::On);
+        karmanodesIcon.addPixmap(karmanodesIconInactive,QIcon::Selected,QIcon::Off);
+
+        karmanodeAction = new QAction(karmanodesIcon, tr("&Karmanodes"), this);
         karmanodeAction->setStatusTip(tr("Browse karmanodes"));
         karmanodeAction->setToolTip(karmanodeAction->statusTip());
         karmanodeAction->setCheckable(true);
