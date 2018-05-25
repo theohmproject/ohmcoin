@@ -6,7 +6,7 @@ addons:
   hostname: ohmcoin-tester
 
 os: linux
-language: generic
+language: c
 cache:
   directories:
   - depends/built
