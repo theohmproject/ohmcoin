@@ -20,7 +20,6 @@
 
 
 #include "crypto/scrypt.h"
-//#include "util.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -331,7 +330,9 @@ static void convertSeed6(std::vector<CAddress>& vSeedsOut, const SeedSpec6* data
 //    timestamp before)
 // + Contains no strange transactions
 static Checkpoints::MapCheckpoints mapCheckpoints =
-    boost::assign::map_list_of(0, uint256("0xbf7fdb166c58ef349097c3964b433a9821983483307cf5fc71335fd7b380fe36"));
+    boost::assign::map_list_of
+    (0, uint256("0xc9a7ae625d9b837fb7594241d0e6d800ff3e42b44f1ea8d08b2c3fdcfdcd8023"))
+    (242000, uint256("0x1d70cd07d9448d22eb19721db12e7a56f7de680d35511c892e688699139d84df"));
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
     1513867516, // * UNIX timestamp of last checkpoint block
@@ -419,20 +420,11 @@ public:
         assert(hashGenesisBlock == uint256("0xbf7fdb166c58ef349097c3964b433a9821983483307cf5fc71335fd7b380fe36"));
         //assert(genesis.hashMerkleRoot == uint256("0x1b2ef6e2f28be914103a277377ae7729dcd125dfeb8bf97bd5964ba72b6dc39b"));
 
-        // Dev seeders
-        vSeeds.push_back(CDNSSeedData("209.250.241.176", "209.250.241.176"));     // Primary DNS Seeder remapper
-        vSeeds.push_back(CDNSSeedData("209.250.243.131", "209.250.243.131"));     // Single node address remapper
-		vSeeds.push_back(CDNSSeedData("45.77.239.108", "45.77.239.108"));       // remapper
-		vSeeds.push_back(CDNSSeedData("107.191.44.102", "107.191.44.102"));     // remapper
-        vSeeds.push_back(CDNSSeedData("198.13.50.121", "198.13.50.121"));     // RasAlGhul
-        vSeeds.push_back(CDNSSeedData("sqdmc.net", "sqdmc.net"));     // Squid
-        
-        // The following seeders are sponsered by some of our awesome discord community members THANKYOU!!! https://discord.gg/5yUZbHp
-        vSeeds.push_back(CDNSSeedData("5.9.71.139", "5.9.71.139"));     // Shoutout to onionring9
-        vSeeds.push_back(CDNSSeedData("207.148.30.228", "207.148.30.228"));     // Shout-out to cryptoshorty
-        vSeeds.push_back(CDNSSeedData("165.169.80.122", "165.169.80.122"));     // Shout-out to Rud
-        vSeeds.push_back(CDNSSeedData("45.77.108.9", "45.77.108.9"));   // Shout-out to Kultus
-        
+        vSeeds.push_back(CDNSSeedData("209.250.241.176", "209.250.241.176"));     // Primary DNS Seeder
+        vSeeds.push_back(CDNSSeedData("209.250.243.131", "209.250.243.131"));     // Single node address
+		vSeeds.push_back(CDNSSeedData("45.77.239.108", "45.77.239.108"));
+		vSeeds.push_back(CDNSSeedData("107.191.44.102", "107.191.44.102"));
+
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 80);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
         base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 212);
@@ -454,8 +446,7 @@ public:
         fHeadersFirstSyncingActive = false;
 
         nPoolMaxTransactions = 3;
-        strSporkKey = "0484698d3ba6ba6e7423fa5cbd6a89e0a9a5348f88d332b44a5cb1a8b7ed2c1eaa335fc8dc4f012cb8241cc0bdafd6ca70c5f5448916e4e6f511bcd746ed57dc50";
-        //strSporkKey = "04B433E6598390C992F4F022F20D3B4CBBE691652EE7C48243B81701CBDB7CC7D7BF0EE09E154E6FCBF2043D65AF4E9E97B89B5DBAF830D83B9B7F469A6C45A717";
+        strSporkKey = "041746bf0187de85a77f25515906f71697326f780bf5490194596106456d3e1653bac25a4d97de5baa3b3cddbc73af523af868eb8e63119701fae2bfb676108a06";
         strPrivateSendPoolDummyAddress = "D87q2gC9j6nNrnzCsg4aY6bHMLsT9nUhEw";
         nStartKarmanodePayments = 1403728576; //Wed, 25 Jun 2014 20:36:16 GMT
         nBudget_Fee_Confirmations = 3; // Number of confirmations for the finalization fee
@@ -469,7 +460,7 @@ public:
 static CMainParams mainParams;
 
 /**
- * Testnet (v3)
+ * Testnet (v4)
  */
 class CTestNetParams : public CMainParams
 {
@@ -505,10 +496,10 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("140.82.18.27", "140.82.18.27"));
-        //vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "ohmc-testnet.seed2.fuzzbawls.pw"));
-        //vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
-        //vSeeds.push_back(CDNSSeedData("88.198.192.110", "88.198.192.110"));
+        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "ohmc-testnet.seed.fuzzbawls.pw"));
+        vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "ohmc-testnet.seed2.fuzzbawls.pw"));
+        vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
+        vSeeds.push_back(CDNSSeedData("88.198.192.110", "88.198.192.110"));
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 139); // Testnet ohmc addresses start with 'x' or 'y'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 19);  // Testnet ohmc script addresses start with '8' or '9'
@@ -531,7 +522,7 @@ public:
         fTestnetToBeDeprecatedFieldRPC = true;
 
         nPoolMaxTransactions = 2;
-        strSporkKey = "04348C2F50F90267E64FACC65BFDC9D0EB147D090872FB97ABAE92E9A36E6CA60983E28E741F8E7277B11A7479B626AC115BA31463AC48178A5075C5A9319D4A38";
+        strSporkKey = "0486f0f8ca3947b856a8668cc982c0b45fd28a2f172eca729232ceeffa0b69b0ee71fcd3fef81f3b71198518a9b2c643b4b8186e9163f4ea1ff0da14fce5ba09f4";
         strPrivateSendPoolDummyAddress = "y57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
         nStartKarmanodePayments = 1420837558; //Fri, 09 Jan 2015 21:05:58 GMT
     }
