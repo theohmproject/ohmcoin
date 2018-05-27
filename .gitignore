@@ -29,3 +29,16 @@ Temporary Items
 .idea/
 depends/
 CMakeLists.txt
+build-aux/*
+share/qt/*
+*.o
+*.0
+*.1
+*.lo
+ohmc-cli
+ohmc-tx
+ohmcd
+*.la
+.libs/
+*.mk
+*.a

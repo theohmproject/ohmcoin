@@ -70,7 +70,7 @@ public:
 
     /* Setting nSequence to this value for every input in a transaction
      * disables nLockTime. */
-    static const uint32_t SEQUENCE_FINAL = std::numeric_limits<unsigned int>::max();
+    static const uint32_t SEQUENCE_FINAL = 0xffffffff;
 
     /* Below flags apply in the context of BIP 68*/
     /* If this flag set, CTxIn::nSequence is NOT interpreted as a
