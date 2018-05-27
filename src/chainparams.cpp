@@ -20,7 +20,6 @@
 
 
 #include "crypto/scrypt.h"
-//#include "util.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -331,7 +330,9 @@ static void convertSeed6(std::vector<CAddress>& vSeedsOut, const SeedSpec6* data
 //    timestamp before)
 // + Contains no strange transactions
 static Checkpoints::MapCheckpoints mapCheckpoints =
-    boost::assign::map_list_of(0, uint256("0xbf7fdb166c58ef349097c3964b433a9821983483307cf5fc71335fd7b380fe36"));
+    boost::assign::map_list_of
+    (0, uint256("0xc9a7ae625d9b837fb7594241d0e6d800ff3e42b44f1ea8d08b2c3fdcfdcd8023"))
+    (242000, uint256("0x1d70cd07d9448d22eb19721db12e7a56f7de680d35511c892e688699139d84df"));
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
     1513867516, // * UNIX timestamp of last checkpoint block
@@ -445,8 +446,7 @@ public:
         fHeadersFirstSyncingActive = false;
 
         nPoolMaxTransactions = 3;
-        strSporkKey = "0484698d3ba6ba6e7423fa5cbd6a89e0a9a5348f88d332b44a5cb1a8b7ed2c1eaa335fc8dc4f012cb8241cc0bdafd6ca70c5f5448916e4e6f511bcd746ed57dc50";
-        //strSporkKey = "04B433E6598390C992F4F022F20D3B4CBBE691652EE7C48243B81701CBDB7CC7D7BF0EE09E154E6FCBF2043D65AF4E9E97B89B5DBAF830D83B9B7F469A6C45A717";
+        strSporkKey = "041746bf0187de85a77f25515906f71697326f780bf5490194596106456d3e1653bac25a4d97de5baa3b3cddbc73af523af868eb8e63119701fae2bfb676108a06";
         strPrivateSendPoolDummyAddress = "D87q2gC9j6nNrnzCsg4aY6bHMLsT9nUhEw";
         nStartKarmanodePayments = 1403728576; //Wed, 25 Jun 2014 20:36:16 GMT
         nBudget_Fee_Confirmations = 3; // Number of confirmations for the finalization fee
@@ -460,7 +460,7 @@ public:
 static CMainParams mainParams;
 
 /**
- * Testnet (v3)
+ * Testnet (v4)
  */
 class CTestNetParams : public CMainParams
 {
@@ -522,7 +522,7 @@ public:
         fTestnetToBeDeprecatedFieldRPC = true;
 
         nPoolMaxTransactions = 2;
-        strSporkKey = "04348C2F50F90267E64FACC65BFDC9D0EB147D090872FB97ABAE92E9A36E6CA60983E28E741F8E7277B11A7479B626AC115BA31463AC48178A5075C5A9319D4A38";
+        strSporkKey = "0486f0f8ca3947b856a8668cc982c0b45fd28a2f172eca729232ceeffa0b69b0ee71fcd3fef81f3b71198518a9b2c643b4b8186e9163f4ea1ff0da14fce5ba09f4";
         strPrivateSendPoolDummyAddress = "y57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
         nStartKarmanodePayments = 1420837558; //Fri, 09 Jan 2015 21:05:58 GMT
     }

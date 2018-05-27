@@ -1,11 +1,5 @@
-NOTE: this is not the final readme and may be inaccurrate as we are still in development, once we do the final release the readme will be updated to reflect our final product. 
-Thank you 
--Ra's Al Ghul
-
 OHMCoin Core integration/staging repository
 =====================================
-
-[![Build Status](https://travis-ci.org/OHMC-Project/OHMC.svg?branch=master)](https://travis-ci.org/OHMC-Project/OHMC) [![GitHub version](https://badge.fury.io/gh/OHMC-Project%2FOHMC.svg)](https://badge.fury.io/gh/OHMC-Project%2FOHMC)
 
 OHMCoin is a cutting edge cryptocurrency, with many features not available in most other cryptocurrencies.
 - Anonymized transactions using coin mixing technology, we call it _Coin Mixing_.
