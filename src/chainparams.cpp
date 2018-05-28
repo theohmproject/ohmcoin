@@ -331,10 +331,7 @@ static void convertSeed6(std::vector<CAddress>& vSeedsOut, const SeedSpec6* data
 //    timestamp before)
 // + Contains no strange transactions
 static Checkpoints::MapCheckpoints mapCheckpoints =
-    boost::assign::map_list_of
-		(0, uint256("bf7fdb166c58ef349097c3964b433a9821983483307cf5fc71335fd7b380fe36"))
-		(462146, uint256("0xb0ffff92a2933dd8bafba722d7c6ea6413840a863ba0ef22794561e4f944ff6f"));
-
+    boost::assign::map_list_of(0, uint256("0xbf7fdb166c58ef349097c3964b433a9821983483307cf5fc71335fd7b380fe36"));
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
     1513867516, // * UNIX timestamp of last checkpoint block
@@ -508,9 +505,7 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-		vSeeds.push_back(CDNSSeedData("sqdmc.net", "sqdmc.net"));     // Squid
-
-        //vSeeds.push_back(CDNSSeedData("140.82.18.27", "140.82.18.27"));
+        vSeeds.push_back(CDNSSeedData("140.82.18.27", "140.82.18.27"));
         //vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "ohmc-testnet.seed2.fuzzbawls.pw"));
         //vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
         //vSeeds.push_back(CDNSSeedData("88.198.192.110", "88.198.192.110"));
