@@ -10,6 +10,7 @@
 #include "rpcserver.h"
 #include "sync.h"
 #include "util.h"
+#include "kernel.h"
 
 #include <stdint.h>
 
@@ -84,6 +85,10 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
     CBlockIndex* pnext = chainActive.Next(blockindex);
     if (pnext)
         result.push_back(Pair("nextblockhash", pnext->GetBlockHash().GetHex()));
+
+    result.push_back(Pair("modifier", strprintf("%16x", blockindex->nStakeModifier)));
+    result.push_back(Pair("modifierchecksum", strprintf("%08x", GetStakeModifierChecksum(blockindex))));
+
     return result;
 }
 
