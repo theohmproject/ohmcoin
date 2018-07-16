@@ -350,7 +350,7 @@ int CKarmanodeMan::stable_size ()
 {
     int nStable_size = 0;
     int nMinProtocol = ActiveProtocol();
-    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_16_MN_WINNER_MINIMUM_AGE);
+    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_17_MN_WINNER_MINIMUM_AGE);
     int64_t nKarmanode_Age = 0;
 
     BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
@@ -567,7 +567,7 @@ CKarmanode* CKarmanodeMan::GetCurrentMasterNode(int mod, int64_t nBlockHeight, i
 int CKarmanodeMan::GetKarmanodeRank(const CTxIn& vin, int64_t nBlockHeight, int minProtocol, bool fOnlyActive)
 {
     std::vector<pair<int64_t, CTxIn> > vecKarmanodeScores;
-    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_16_MN_WINNER_MINIMUM_AGE);
+    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_17_MN_WINNER_MINIMUM_AGE);
     int64_t nKarmanode_Age = 0;
 
     //make sure we know about this block
