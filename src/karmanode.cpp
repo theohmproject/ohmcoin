@@ -450,12 +450,12 @@ bool CKarmanodeBroadcast::Create(CTxIn txin, CService service, CKey keyCollatera
 
     mnbRet = CKarmanodeBroadcast(service, txin, pubKeyCollateralAddressNew, pubKeyKarmanodeNew, PROTOCOL_VERSION);
 
-    if (!mnbRet.IsValidNetAddr()) {
-        strErrorRet = strprintf("Invalid IP address, karmanode=%s", txin.prevout.hash.ToString());
-        LogPrintf("CKarmanodeBroadcast::Create -- %s\n", strErrorRet);
-        mnbRet = CKarmanodeBroadcast();
-        return false;
-    }
+    ////////if (!mnbRet.IsValidNetAddr()) {
+      //  strErrorRet = strprintf("Invalid IP address, karmanode=%s", txin.prevout.hash.ToString());
+     //   LogPrintf("CKarmanodeBroadcast::Create -- %s\n", strErrorRet);
+     //   mnbRet = CKarmanodeBroadcast();
+     //   return false;
+  ///  }
 
     mnbRet.lastPing = mnp;
     if (!mnbRet.Sign(keyCollateralAddressNew)) {
