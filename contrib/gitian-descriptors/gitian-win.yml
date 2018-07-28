@@ -1,5 +1,5 @@
 ---
-name: "ohmc-win-2.3"
+name: "ohmc-win-2.3.1"
 enable_cache: true
 suites:
 - "trusty"
@@ -22,7 +22,7 @@ packages:
 - "ca-certificates"
 - "python"
 remotes:
-- "url": "https://github.com/ohmc-project/ohmc.git"
+- "url": "https://github.com/theohmcproject/ohmcoin.git"
   "dir": "ohmc"
 files: []
 script: |
