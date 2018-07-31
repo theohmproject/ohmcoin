@@ -1,7 +1,8 @@
 // Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The OHMC developers
+// Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2017-2018 The OHMC 
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -10,10 +11,13 @@
 #include "rpcserver.h"
 #include "sync.h"
 #include "util.h"
+#include "kernel.h"
 
 #include <stdint.h>
 
 #include "json/json_spirit_value.h"
+
+#include "karmanodeman.h"
 
 using namespace json_spirit;
 using namespace std;
@@ -49,10 +53,14 @@ double GetDifficulty(const CBlockIndex* blockindex)
     return dDiff;
 }
 
-
 Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false)
 {
     Object result;
+
+    int64_t MNPayment = GetKarmanodePayment(blockindex->nHeight, GetBlockValue(blockindex->nHeight));
+    int64_t StakerPayment = blockindex->nMint - MNPayment;
+    double MNRewardPercent = floor(((double)MNPayment / (double)blockindex->nMint) * 100);
+
     result.push_back(Pair("hash", block.GetHash().GetHex()));
     int confirmations = -1;
     // Only report confirmations if the block is on the main chain
@@ -84,6 +92,15 @@ Object blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDe
     CBlockIndex* pnext = chainActive.Next(blockindex);
     if (pnext)
         result.push_back(Pair("nextblockhash", pnext->GetBlockHash().GetHex()));
+
+    result.push_back(Pair("mint", ValueFromAmount(GetBlockValue(blockindex->nHeight))));
+    result.push_back(Pair("knReward", ValueFromAmount(MNPayment)));
+    result.push_back(Pair("knRewardPercent", MNRewardPercent));
+    result.push_back(Pair("stakerPayment", ValueFromAmount(StakerPayment)));
+
+    result.push_back(Pair("modifier", strprintf("%16x", blockindex->nStakeModifier)));
+    result.push_back(Pair("modifierchecksum", strprintf("%08x", GetStakeModifierChecksum(blockindex))));
+
     return result;
 }
 

@@ -1,1 +1,0 @@
-qt/qt_libbitcoinqt_a-qrc_ohmc.o: qt/qrc_ohmc.cpp
