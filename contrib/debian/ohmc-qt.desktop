@@ -1,9 +1,9 @@
 [Desktop Entry]
 Encoding=UTF-8
-Name=Ohm
-Comment=Ohm P2P Cryptocurrency
-Comment[fr]=Ohm, monnaie virtuelle cryptographique pair à pair
-Comment[tr]=Ohm, eşten eşe kriptografik sanal para birimi
+Name=Ohmcoin
+Comment=Ohmcoin P2P Cryptocurrency
+Comment[fr]=Ohmcoin, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Ohmcoin, eşten eşe kriptografik sanal para birimi
 Exec=ohmc-qt %u
 Terminal=false
 Type=Application

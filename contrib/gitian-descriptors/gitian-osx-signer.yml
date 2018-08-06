@@ -7,7 +7,7 @@ architectures:
 packages:
 - "faketime"
 remotes:
-- "url": "https://github.com/ohmc-project/ohmc-detached-sigs.git"
+- "url": "https://github.com/theohmproject/ohmc-detached-sigs.git"
   "dir": "signature"
 files:
 - "ohmc-osx-unsigned.tar.gz"

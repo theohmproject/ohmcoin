@@ -337,7 +337,7 @@ static Checkpoints::MapCheckpoints mapCheckpoints =
     (618641, uint256("0x247f41f60b4fd8de2727d6745c544f6b399d6712c1cdc7f00a8a909b830bf015"));
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
-    1513867516, // * UNIX timestamp of last checkpoint block
+    1513867516, // * UNIX timestamp of last checkpoint block	    1531692959,  // * UNIX timestamp of last checkpoint block
     1249436,   // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the SetBestChain debug.log lines)
     2        // * estimated number of transactions per day after checkpoint
@@ -420,7 +420,7 @@ public:
         hashGenesisBlock = genesis.GetHash();
 
         assert(hashGenesisBlock == uint256("0xbf7fdb166c58ef349097c3964b433a9821983483307cf5fc71335fd7b380fe36"));
-        //assert(genesis.hashMerkleRoot == uint256("0x1b2ef6e2f28be914103a277377ae7729dcd125dfeb8bf97bd5964ba72b6dc39b"));
+        assert(genesis.hashMerkleRoot == uint256("0x48f5858d0f091dec3f5278144cdcca7c8926b091d5af5ea711539f29f1acaf8c"));
 
         // Dev seeders
         vSeeds.push_back(CDNSSeedData("209.250.241.176", "209.250.241.176"));     // Primary DNS Seeder remapper
@@ -456,8 +456,7 @@ public:
         fTestnetToBeDeprecatedFieldRPC = false;
         fHeadersFirstSyncingActive = false;
 
-        nPoolMaxTransactions = 3;
-        //strSporkKey = "0484698d3ba6ba6e7423fa5cbd6a89e0a9a5348f88d332b44a5cb1a8b7ed2c1eaa335fc8dc4f012cb8241cc0bdafd6ca70c5f5448916e4e6f511bcd746ed57dc50";
+        nPoolMaxTransactions = 3
         //mainnet
 	strSporkKey = "04dcb6cbd18fdecce2aac1f795aa650a25749fb58eb5afc796655cce5c728a2eb38ec0ce85d67555ddde6530cd04e6fd1f7c5f818ba483ad6f098e402803225074";
         strPrivateSendPoolDummyAddress = "D87q2gC9j6nNrnzCsg4aY6bHMLsT9nUhEw";
