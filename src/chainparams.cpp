@@ -456,7 +456,7 @@ public:
         fTestnetToBeDeprecatedFieldRPC = false;
         fHeadersFirstSyncingActive = false;
 
-        nPoolMaxTransactions = 3
+        nPoolMaxTransactions = 3;
         //mainnet
 	strSporkKey = "04dcb6cbd18fdecce2aac1f795aa650a25749fb58eb5afc796655cce5c728a2eb38ec0ce85d67555ddde6530cd04e6fd1f7c5f818ba483ad6f098e402803225074";
         strPrivateSendPoolDummyAddress = "D87q2gC9j6nNrnzCsg4aY6bHMLsT9nUhEw";
