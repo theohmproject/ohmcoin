@@ -43,7 +43,6 @@ src/ohmc-cli
 src/ohmc-tx
 src/test/test_ohmc
 src/qt/test/test_ohmc-qt
-src/bench/bench_ohmc
 
 # autoreconf
 Makefile.in
@@ -65,12 +64,16 @@ build-aux/test-driver
 config.log
 config.status
 configure
+confdefs.h
+conftest.cpp
+conftest.err
 libtool
 src/config/ohmc-config.h
 src/config/ohmc-config.h.in
 src/config/stamp-h1
 share/setup.nsi
 share/qt/Info.plist
+contrib/devtools/split-debug.sh
 
 src/univalue/gen
 
@@ -79,7 +82,6 @@ src/qt/moc_*.cpp
 src/qt/forms/ui_*.h
 
 src/qt/test/moc*.cpp
-libconftest.dylib*
 
 .deps
 .dirstamp
@@ -93,7 +95,7 @@ libconftest.dylib*
 *.o
 *.o-*
 *.patch
-.dash
+.ohmc
 *.a
 *.pb.cc
 *.pb.h
@@ -117,17 +119,23 @@ OHMC-Qt.app
 
 # Unit-tests
 Makefile.test
-dash-qt_test
+ohmc-qt_test
 src/test/buildenv.py
 
 # Resources cpp
 qrc_*.cpp
 
+# Qt creator
+*.pro.user
+
+# Mac specific
+.DS_Store
+build
+
 #lcov
 *.gcno
-*.gcda
 /*.info
-test_ohmc.coverage/
+test_pivx.coverage/
 total.coverage/
 coverage_percent.txt
 
@@ -136,29 +144,17 @@ linux-coverage-build
 linux-build
 win32-build
 qa/pull-tester/run-bitcoind-for-test.sh
-qa/pull-tester/tests_config.py
+qa/pull-tester/tests-config.sh
 qa/pull-tester/cache/*
 qa/pull-tester/test.*/*
-qa/tmp
-cache/
-share/BitcoindComparisonTool.jar
 
 !src/leveldb*/Makefile
 
 .cproject
 .project
-.autotools
 /doc/doxygen/
+/nbproject/
 
-libdashconsensus.pc
-src/qt/dash-qt.bash
-qa/pull-tester/tests-config.sh
-
-#development symlinks
-ohmc-cli
-ohmcd
-ohmc-qt
-make
-
-.idea/
+.idea
 CMakeLists.txt
+cmake-build-debug

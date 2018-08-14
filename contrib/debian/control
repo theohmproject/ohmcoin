@@ -1,4 +1,4 @@
-Source: pivx
+Source: ohmcoin
 Section: utils
 Priority: optional
 Maintainer: Jonas Smedegaard <dr@jones.dk> ***TODO***
@@ -17,16 +17,16 @@ Build-Depends: debhelper,
  libboost-program-options-dev (>> 1.35) | libboost-program-options1.35-dev,
  libboost-thread-dev (>> 1.35) | libboost-thread1.35-dev,
  libboost-test-dev (>> 1.35) | libboost-test1.35-dev,
- qt4-qmake,
- libqt4-dev,
+ qt5-qmake,
+ libqt5-dev,
  libqrencode-dev,
  libprotobuf-dev, protobuf-compiler
 Standards-Version: 3.9.2
-Homepage: http://www.pivx.org
-Vcs-Git: git://github.com/PIVX-Project/PIVX.git
-Vcs-Browser: http://github.com/PIVX-Project/PIVX
+Homepage: http://www.ohmcoin.org
+Vcs-Git: git://github.com/theohmproject/ohmcoin.git
+Vcs-Browser: http://github.com/theohmproject/ohmcoin
 
-Package: pivxd
+Package: ohmcd
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - daemon
@@ -42,7 +42,7 @@ Description: peer-to-peer network based digital currency - daemon
  This package provides the daemon, pivxd, and the CLI tool
  pivx-cli to interact with the daemon.
 
-Package: pivx-qt
+Package: OHMC-Qt
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - Qt GUI
@@ -55,4 +55,4 @@ Description: peer-to-peer network based digital currency - Qt GUI
  Full transaction history is stored locally at each client.  This
  requires 1+ GB of space, slowly growing.
  .
- This package provides Pivx-Qt, a GUI for Pivx based on Qt.
+ This package provides OHMC-Qt, a GUI for Pivx based on Qt.
