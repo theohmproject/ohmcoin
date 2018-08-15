@@ -60,7 +60,7 @@ More information at [ohmcoin.org](http://www.ohmcoin.org)
 <tr><td>Phase 7</td><td>4029125-561599</td><td>0.015625 OHMC</td><td>45 OHMC</td></tr>
 <tr><td>Phase 8</td><td>6131525-8233926</td><td>0.0078125 OHMC</td><td>22.5 OHMC</td></tr>
 <tr><td>Phase 9</td><td>8233927-10336327</td><td>0.00390625 OHMC</td><td>11.25 OHMC</td></tr>
-<tr><td>Phase X</td><td>10336328-Infinite</td>td>0.001953125 OHMC</td><td>5.625 OHMC</td></tr>
+<tr><td>Phase X</td><td>10336328-Infinite</td><td>0.001953125 OHMC</td><td>5.625 OHMC</td></tr>
 </table>
 
 
