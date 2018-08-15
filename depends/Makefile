@@ -135,8 +135,11 @@ $(host_prefix)/share/config.site : config.site.in $(host_prefix)/.stamp_$(final_
             -e 's|@CPPFLAGS@|$(strip $(host_CPPFLAGS) $(host_$(release_type)_CPPFLAGS))|' \
             -e 's|@LDFLAGS@|$(strip $(host_LDFLAGS) $(host_$(release_type)_LDFLAGS))|' \
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
             -e 's|@allow_host_packages@|$(ALLOW_HOST_PACKAGES)|' \
+>>>>>>> buddilla-patch-1
+=======
 >>>>>>> buddilla-patch-1
             -e 's|@no_qt@|$(NO_QT)|' \
             -e 's|@no_wallet@|$(NO_WALLET)|' \

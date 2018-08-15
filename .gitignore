@@ -44,6 +44,13 @@ src/ohmc-tx
 src/test/test_ohmc
 src/qt/test/test_ohmc-qt
 
+cmake-build-debug
+contrib/devtools/split-debug.sh
+background.tiff
+background.tiff.png
+background.tiff@2x.png
+src/leveldb/build_config.mk
+
 # autoreconf
 Makefile.in
 aclocal.m4
