@@ -46,6 +46,7 @@ More information at [ohmcoin.org](http://www.ohmcoin.org)
 <tr><td>Rewards Algorithm</td><td>SeeSaw Based Targeting System</td></tr>
 <tr><td>Amount of Rewards Per Block</td><td>2 Rewards, 1 for Karmanodes, 1 for Wallet Staking</td></tr>
 <tr><td>Coin Maturity to Stake</td><td>150 Blocks</td></tr>
+</table>
 
 ### Rewards Breakdown
 
