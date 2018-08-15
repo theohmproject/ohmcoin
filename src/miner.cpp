@@ -1,7 +1,8 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The OHMC developers
+// Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2017-2018 The OHMC 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -367,10 +368,10 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
         pblocktemplate->vTxSigOps[0] = GetLegacySigOpCount(pblock->vtx[0]);
 
         CValidationState state;
-        ///////if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)) {
-            //////LogPrintf("CreateNewBlock() : TestBlockValidity failed\n");
-            //////return NULL;
-        ////////}
+        if (!TestBlockValidity(state, *pblock, pindexPrev, false, false)) {
+            LogPrintf("CreateNewBlock() : TestBlockValidity failed\n");
+            return NULL;
+        }
     }
 
     return pblocktemplate.release();
@@ -472,11 +473,7 @@ void BitcoinMiner(CWallet* pwallet, bool fProofOfStake)
                 continue;
             }
 
-            while (chainActive.Tip()->nTime < 1471482000 || vNodes.empty() || pwallet->IsLocked() || !fMintableCoins || nReserveBalance >= pwallet->GetBalance() 
-
-///////|| !karmanodeSync.IsSynced()
-
-) {
+            while (chainActive.Tip()->nTime < 1471482000 || vNodes.empty() || pwallet->IsLocked() || !fMintableCoins || nReserveBalance >= pwallet->GetBalance() || !karmanodeSync.IsSynced()) {
                 nLastCoinStakeSearchInterval = 0;
                 MilliSleep(5000);
                 if (!fGenerateBitcoins && !fProofOfStake)

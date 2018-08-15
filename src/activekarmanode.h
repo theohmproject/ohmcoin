@@ -33,7 +33,7 @@ private:
     /// Register any Karmanode
     bool Register(CTxIn vin, CService service, CKey key, CPubKey pubKey, CKey keyKarmanode, CPubKey pubKeyKarmanode, std::string& errorMessage);
 
-    /// Get 10000 OHMC input that can be used for the Karmanode
+    /// Get 3000 OHMC input that can be used for the Karmanode
     bool GetMasterNodeVin(CTxIn& vin, CPubKey& pubkey, CKey& secretKey, std::string strTxHash, std::string strOutputIndex);
     bool GetVinFromOutput(COutput out, CTxIn& vin, CPubKey& pubkey, CKey& secretKey);
 
@@ -61,7 +61,7 @@ public:
     /// Register remote Karmanode
     bool Register(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage);
 
-    /// Get 10000 OHMC input that can be used for the Karmanode
+    /// Get 3000 OHMC input that can be used for the Karmanode
     bool GetMasterNodeVin(CTxIn& vin, CPubKey& pubkey, CKey& secretKey);
     vector<COutput> SelectCoinsKarmanode();
 

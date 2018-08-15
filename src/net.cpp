@@ -1,7 +1,8 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The OHMC developers
+// Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2017-2018 The OHMC 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -872,8 +873,8 @@ void ThreadSocketHandler()
                     LogPrint("net", "connection from %s dropped (full)\n", addr.ToString());
                     CloseSocket(hSocket);
                 } else if (CNode::IsBanned(addr) && !whitelisted) {
-                    ///////////LogPrintf("connection from %s dropped (banned)\n", addr.ToString());
-                    ///////////CloseSocket(hSocket);
+                    LogPrintf("connection from %s dropped (banned)\n", addr.ToString());
+                    CloseSocket(hSocket);
                 } else {
                     CNode* pnode = new CNode(hSocket, addr, "", true);
                     pnode->AddRef();
@@ -1611,7 +1612,7 @@ void StartNode(boost::thread_group& threadGroup)
     threadGroup.create_thread(boost::bind(&LoopForever<void (*)()>, "dumpaddr", &DumpAddresses, DUMP_ADDRESSES_INTERVAL * 1000));
 
     // ppcoin:mint proof-of-stake blocks in the background
-    /////if (GetBoolArg("-staking", true))
+    if (GetBoolArg("-staking", true))
         threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
 }
 

@@ -1,7 +1,8 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The OHMC developers
+// Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2017-2018 The OHMC 
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -12,6 +13,7 @@
 #include "chainparams.h"
 #include "checkpoints.h"
 #include "checkqueue.h"
+#include "consensus/params.h"
 #include "init.h"
 #include "kernel.h"
 #include "karmanode-budget.h"
@@ -28,6 +30,7 @@
 #include "ui_interface.h"
 #include "util.h"
 #include "utilmoneystr.h"
+#include "versionbits.h"
 
 #include <sstream>
 
@@ -1175,6 +1178,13 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState& state, const CTransa
 
             // we have all inputs cached now, so switch back to dummy, so we don't need to keep lock on mempool
             view.SetBackend(dummy);
+            // Only accept BIP68 sequence locked transactions that can be mined in the next
+            // block; we don't want our mempool filled up with transactions that can't
+            // be mined yet.
+            // Must keep pool.cs for this unless we change CheckSequenceLocks to take a
+            // CoinsViewCache instead of create its own
+//            if (!CheckSequenceLocks(tx, STANDARD_LOCKTIME_VERIFY_FLAGS, &lp))
+//                return state.DoS(0, false, REJECT_NONSTANDARD, "non-BIP68-final");
         }
 
         // Check for non-standard pay-to-script-hash in inputs
@@ -1623,9 +1633,7 @@ int64_t GetBlockValue(int nHeight)
 
         nSubsidy = 1 * COIN;
 
-
-
-	} else if (nHeight <= 11520 && nHeight >= 1000) {
+	    } else if (nHeight <= 11520 && nHeight >= 1000) {
 
 	        nSubsidy = 1 * COIN;
 
@@ -1664,42 +1672,58 @@ int64_t GetBlockValue(int nHeight)
 	    } else if (nHeight <= 518400 && nHeight >= 247681) {
 
 	        nSubsidy = 1 * COIN;
-
-	    } else if (nHeight <= 691200 && nHeight >= 518401) {
+	    
+	     } else if (nHeight <= 691200 && nHeight >= 518401) {
 
 	        nSubsidy = 1 * COIN;
 
 	    } else if (nHeight <= 777600 && nHeight >= 691201) {
 
 	        nSubsidy = 1 * COIN;
-
+	        
 	    } else if (nHeight <= 864000 && nHeight >= 777601) {
 
-	        nSubsidy = 1 * COIN;	
-
-	    } else if (nHeight <= 950400 && nHeight >= 864001) {
-
-	        nSubsidy = 1 * COIN;
-
-	    } else if (nHeight <= 986800 && nHeight >= 950401) {
+	        nSubsidy = 1 * COIN;	    
+	    
+	    } else if (nHeight <= 904320 && nHeight >= 864001) {
 
 	        nSubsidy = 1 * COIN;
 
-	    } else if (nHeight <= 1246000 && nHeight >= 986801) {
+	    } else if (nHeight <= 1336320 && nHeight >= 904321) {
 
-	        nSubsidy = 1 * COIN;	
+	        nSubsidy = .5 * COIN;
 
-	    } else if (nHeight <= 1505200 && nHeight >= 1246001) {
+	    } else if (nHeight <= 1941121 && nHeight >= 1336321) {
 
-	        nSubsidy = 1 * COIN;	
+	        nSubsidy = 0.25 * COIN;
 
-	    } else if (nHeight <= 1764400 && nHeight >= 1505201) {
+	    } else if (nHeight <= 2373122 && nHeight >= 1941122) {
 
-	        nSubsidy = 1 * COIN;	
+	        nSubsidy = 0.125 * COIN;
 
-	    } else if (nHeight >= 1764401) {
+	    } else if (nHeight <= 2977923 && nHeight >= 2373123) {
 
-	        nSubsidy = 1 * COIN;
+	        nSubsidy = 0.0625 * COIN;	
+
+	    } else if (nHeight <= 4029124 && nHeight >= 2977924) {
+
+	        nSubsidy = 0.03125 * COIN;	
+
+	    } else if (nHeight <= 6131525 && nHeight >= 4029125) {
+
+	        nSubsidy = 0.015625 * COIN;
+	        
+	    } else if (nHeight <= 8233926 && nHeight >= 6131526) {
+
+	        nSubsidy = 0.0078125 * COIN;
+	         
+	    } else if (nHeight <= 10336327 && nHeight >= 8233927) {
+
+	        nSubsidy = 0.00390625 * COIN;        	
+
+	    } else if (nHeight >= 10336328) {
+
+	        nSubsidy = 0.001953125 * COIN;
 
 	    } else {
 
@@ -2072,8 +2096,8 @@ void Misbehaving(NodeId pnode, int howmuch)
     state->nMisbehavior += howmuch;
     int banscore = GetArg("-banscore", 100);
     if (state->nMisbehavior >= banscore && state->nMisbehavior - howmuch < banscore) {
-        /////////LogPrintf("Misbehaving: %s (%d -> %d) BAN THRESHOLD EXCEEDED\n", state->name, state->nMisbehavior - howmuch, state->nMisbehavior);
-        ////////state->fShouldBan = true;
+        LogPrintf("Misbehaving: %s (%d -> %d) BAN THRESHOLD EXCEEDED\n", state->name, state->nMisbehavior - howmuch, state->nMisbehavior);
+        state->fShouldBan = true;
     } else
         LogPrintf("Misbehaving: %s (%d -> %d)\n", state->name, state->nMisbehavior - howmuch, state->nMisbehavior);
 }
@@ -2176,20 +2200,20 @@ bool CheckInputs(const CTransaction& tx, CValidationState& state, const CCoinsVi
         }
 
         if (!tx.IsCoinStake()) {
-            /////////////if (nValueIn < tx.GetValueOut())
-                ///////////return state.DoS(100, error("CheckInputs() : %s value in (%s) < value out (%s)",
-                           //////////               tx.GetHash().ToString(), FormatMoney(nValueIn), FormatMoney(tx.GetValueOut())),
-                 ///////   REJECT_INVALID, "bad-txns-in-belowout");
+           /// if (nValueIn < tx.GetValueOut())
+           ///     return state.DoS(100, error("CheckInputs() : %s value in (%s) < value out (%s)",
+           ///                               tx.GetHash().ToString(), FormatMoney(nValueIn), FormatMoney(tx.GetValueOut())),
+           ///         REJECT_INVALID, "bad-txns-in-belowout");
 
             // Tally transaction fees
             CAmount nTxFee = nValueIn - tx.GetValueOut();
-           ///// if (nTxFee < 0)
-                /////return state.DoS(100, error("CheckInputs() : %s nTxFee < 0", tx.GetHash().ToString()),
-                    /////REJECT_INVALID, "bad-txns-fee-negative");
+           /// if (nTxFee < 0)
+           ///     return state.DoS(100, error("CheckInputs() : %s nTxFee < 0", tx.GetHash().ToString()),
+           ///         REJECT_INVALID, "bad-txns-fee-negative");
             nFees += nTxFee;
-            ////if (!MoneyRange(nFees))
-               //// return state.DoS(100, error("CheckInputs() : nFees out of range"),
-                   //// REJECT_INVALID, "bad-txns-fee-outofrange");
+           /// if (!MoneyRange(nFees))
+           ///     return state.DoS(100, error("CheckInputs() : nFees out of range"),
+           ///         REJECT_INVALID, "bad-txns-fee-outofrange");
         }
         // The first loop above does all the inexpensive checks.
         // Only if ALL inputs pass do we perform expensive ECDSA signature checks.
@@ -2358,6 +2382,39 @@ void ThreadScriptCheck()
     scriptcheckqueue.Thread();
 }
 
+//static unsigned int GetBlockScriptFlags(const CBlockIndex* pindex, const Consensus::Params& consensusparams) {
+//    AssertLockHeld(cs_main);
+//
+//    // BIP16 didn't become active until Apr 1 2012
+//    int64_t nBIP16SwitchTime = 1333238400;
+//    bool fStrictPayToScriptHash = (pindex->GetBlockTime() >= nBIP16SwitchTime);
+//
+//    unsigned int flags = fStrictPayToScriptHash ? SCRIPT_VERIFY_P2SH : SCRIPT_VERIFY_NONE;
+//
+//    // Start enforcing the DERSIG (BIP66) rule
+//    if (pindex->nHeight >= consensusparams.BIP66Height) {
+//        flags |= SCRIPT_VERIFY_DERSIG;
+//    }
+//
+//    // Start enforcing CHECKLOCKTIMEVERIFY (BIP65) rule
+//    if (pindex->nHeight >= consensusparams.BIP65Height) {
+//        flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
+//    }
+//
+//    // Start enforcing BIP68 (sequence locks) and BIP112 (CHECKSEQUENCEVERIFY) using versionbits logic.
+//    if (VersionBitsState(pindex->pprev, consensusparams, Consensus::DEPLOYMENT_CSV, versionbitscache) == THRESHOLD_ACTIVE) {
+//        flags |= SCRIPT_VERIFY_CHECKSEQUENCEVERIFY;
+//    }
+//
+//    // Start enforcing WITNESS rules using versionbits logic.
+////    if (IsWitnessEnabled(pindex->pprev, consensusparams)) {
+////        flags |= SCRIPT_VERIFY_WITNESS;
+////        flags |= SCRIPT_VERIFY_NULLDUMMY;
+////    }
+//
+//    return flags;
+//}
+
 static int64_t nTimeVerify = 0;
 static int64_t nTimeConnect = 0;
 static int64_t nTimeIndex = 0;
@@ -2422,11 +2479,19 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     int64_t nBIP16SwitchTime = 1333238400;
     bool fStrictPayToScriptHash = (pindex->GetBlockTime() >= nBIP16SwitchTime);
 
+    // unsigned int flags = fStrictPayToScriptHash ? SCRIPT_VERIFY_P2SH : SCRIPT_VERIFY_NONE;
+    // Get the script flags for this block
     unsigned int flags = fStrictPayToScriptHash ? SCRIPT_VERIFY_P2SH : SCRIPT_VERIFY_NONE;
 
     // Start enforcing the DERSIG (BIP66) rules, for block.nVersion=3 blocks, when 75% of the network has upgraded:
     if (block.nVersion >= 3 && CBlockIndex::IsSuperMajority(3, pindex->pprev, Params().EnforceBlockUpgradeMajority())) {
         flags |= SCRIPT_VERIFY_DERSIG;
+    }
+
+    // Start enforcing CHECKLOCKTIMEVERIFY, (BIP65) for block.nVersion=4
+    // blocks, when 75% of the network has upgraded:
+    if (block.nVersion >= 4 && CBlockIndex::IsSuperMajority(4, pindex->pprev, Params().EnforceBlockUpgradeMajority())) {
+        flags |= SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY;
     }
 
     CBlockUndo blockundo;
@@ -3565,6 +3630,12 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
             REJECT_OBSOLETE, "bad-version");
     }
 
+    // Reject block.nVersion=3 blocks when 95% (75% on testnet) of the network has upgraded:
+    if (block.nVersion < 4 && CBlockIndex::IsSuperMajority(4, pindexPrev, Params().RejectBlockOutdatedMajority())) {
+        return state.Invalid(error("%s : rejected nVersion=3 block", __func__),
+                             REJECT_OBSOLETE, "bad-version");
+    }
+
     return true;
 }
 
@@ -4528,8 +4599,8 @@ string GetWarnings(string strFor)
     string strRPC;
 
 
-    /////if (!CLIENT_VERSION_IS_RELEASE)
-        ///////strStatusBar = _("This is a pre-release test build - use at your own risk - do not use for staking or merchant applications!");
+    if (!CLIENT_VERSION_IS_RELEASE)
+        strStatusBar = _("This is a pre-release test build - use at your own risk - do not use for staking or merchant applications!");
 
     if (GetBoolArg("-testsafemode", false))
         strStatusBar = strRPC = "testsafemode enabled";
@@ -5683,10 +5754,10 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 int ActiveProtocol()
 {
 
-    // SPORK_14 was used for 70710. Leave it 'ON' so they don't see < 70710 nodes. They won't react to SPORK_15
+    // SPORK_15 was used for 70810. Leave it 'ON' so they don't see < 70710 nodes. They won't react to SPORK_15
     // messages because it's not in their code
 /*
-    if (IsSporkActive(SPORK_14_NEW_PROTOCOL_ENFORCEMENT)) {
+    if (IsSporkActive(SPORK_15_NEW_PROTOCOL_ENFORCEMENT_2)) {
         if (chainActive.Tip()->nHeight >= Params().ModifierUpgradeBlock())
             return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
     }
@@ -5695,10 +5766,10 @@ int ActiveProtocol()
 */
 
 
-    // SPORK_15 is used for 70910. Nodes < 70910 don't see it and still get their protocol version via SPORK_14 and their 
+    // SPORK_16 is used for 70910. Nodes < 70810 won't see it and still get their protocol version via SPORK_15 and their 
     // own ModifierUpgradeBlock()
  
-    if (IsSporkActive(SPORK_15_NEW_PROTOCOL_ENFORCEMENT_2))
+    if (IsSporkActive(SPORK_16_NEW_PROTOCOL_ENFORCEMENT_3))
             return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
 
     return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT;
