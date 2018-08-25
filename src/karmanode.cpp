@@ -1,5 +1,6 @@
 // Copyright (c) 2014-2015 The Dash developers
-// Copyright (c) 2015-2017 The OHMC developers
+// Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2017-2018 The OHMC 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -449,12 +450,12 @@ bool CKarmanodeBroadcast::Create(CTxIn txin, CService service, CKey keyCollatera
 
     mnbRet = CKarmanodeBroadcast(service, txin, pubKeyCollateralAddressNew, pubKeyKarmanodeNew, PROTOCOL_VERSION);
 
-    ////////if (!mnbRet.IsValidNetAddr()) {
-      //  strErrorRet = strprintf("Invalid IP address, karmanode=%s", txin.prevout.hash.ToString());
-     //   LogPrintf("CKarmanodeBroadcast::Create -- %s\n", strErrorRet);
-     //   mnbRet = CKarmanodeBroadcast();
-     //   return false;
-  ///  }
+   /// if (!mnbRet.IsValidNetAddr()) {
+   ///     strErrorRet = strprintf("Invalid IP address, karmanode=%s", txin.prevout.hash.ToString());
+   ///     LogPrintf("CKarmanodeBroadcast::Create -- %s\n", strErrorRet);
+   ///     mnbRet = CKarmanodeBroadcast();
+   ///     return false;
+   /// }
 
     mnbRet.lastPing = mnp;
     if (!mnbRet.Sign(keyCollateralAddressNew)) {
