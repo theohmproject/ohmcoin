@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2018 The OHMC 
+// Copyright (c) 2017-2018 The OHMC
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1613,8 +1613,15 @@ void StartNode(boost::thread_group& threadGroup)
 
     // ppcoin:mint proof-of-stake blocks in the background
     if (GetBoolArg("-staking", true))
-        threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
-}
+    {
+    	LogPrintf("Creating staking thread\n");
+    	threadGroup.create_thread(boost::bind(&TraceThread<void (*)()>, "stakemint", &ThreadStakeMinter));
+    }
+    else
+    {
+    	LogPrintf("Not creating staking thread\n");
+    }
+
 
 bool StopNode()
 {
