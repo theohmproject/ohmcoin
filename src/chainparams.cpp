@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2018 The OHMC 
+// Copyright (c) 2017-2018 The OHMC
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -334,11 +334,12 @@ static void convertSeed6(std::vector<CAddress>& vSeedsOut, const SeedSpec6* data
 static Checkpoints::MapCheckpoints mapCheckpoints =
     boost::assign::map_list_of(0, uint256("0xbf7fdb166c58ef349097c3964b433a9821983483307cf5fc71335fd7b380fe36"))
     (462146, uint256("0xb0ffff92a2933dd8bafba722d7c6ea6413840a863ba0ef22794561e4f944ff6f"))
-    (618641, uint256("0x247f41f60b4fd8de2727d6745c544f6b399d6712c1cdc7f00a8a909b830bf015"));
+    (618641, uint256("0x247f41f60b4fd8de2727d6745c544f6b399d6712c1cdc7f00a8a909b830bf015"))
+    (831256, uint256("0x3913ccd8359e7d7f81df2fc2b5f68848b6aa3663f84c87899691eb0e43454eec"));
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
-    1513867516, // * UNIX timestamp of last checkpoint block	    1531692959,  // * UNIX timestamp of last checkpoint block
-    1249436,   // * total number of transactions between genesis and last checkpoint
+    1537913134, // * UNIX timestamp of last checkpoint block	    1531692959,  // * UNIX timestamp of last checkpoint block
+    1687938,   // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the SetBestChain debug.log lines)
     2        // * estimated number of transactions per day after checkpoint
 };
@@ -429,13 +430,13 @@ public:
 		vSeeds.push_back(CDNSSeedData("107.191.44.102", "107.191.44.102"));     // remapper
         vSeeds.push_back(CDNSSeedData("198.13.50.121", "198.13.50.121"));     // RasAlGhul
         vSeeds.push_back(CDNSSeedData("sqdmc.net", "sqdmc.net"));     // Squid
-        
+
         // The following seeders are sponsered by some of our awesome discord community members THANKYOU!!! https://discord.gg/5yUZbHp
         vSeeds.push_back(CDNSSeedData("5.9.71.139", "5.9.71.139"));     // Shoutout to onionring9
         vSeeds.push_back(CDNSSeedData("207.148.30.228", "207.148.30.228"));     // Shout-out to cryptoshorty
         vSeeds.push_back(CDNSSeedData("165.169.80.122", "165.169.80.122"));     // Shout-out to Rud
         vSeeds.push_back(CDNSSeedData("45.77.108.9", "45.77.108.9"));   // Shout-out to Kultus
-        
+
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 80);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
         base58Prefixes[SECRET_KEY] = std::vector<unsigned char>(1, 212);

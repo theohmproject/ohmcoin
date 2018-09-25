@@ -2,7 +2,7 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2018 The OHMC 
+// Copyright (c) 2017-2018 The OHMC
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -1651,7 +1651,7 @@ int64_t GetBlockValue(int nHeight)
 
 	    } else if (nHeight <= 40320 && nHeight >= 34560) {
 
-	        nSubsidy = 1 * COIN;			
+	        nSubsidy = 1 * COIN;
 
 	    } else if (nHeight <= 60480 && nHeight >= 40321) {
 
@@ -1672,7 +1672,7 @@ int64_t GetBlockValue(int nHeight)
 	    } else if (nHeight <= 518400 && nHeight >= 247681) {
 
 	        nSubsidy = 1 * COIN;
-	    
+
 	     } else if (nHeight <= 691200 && nHeight >= 518401) {
 
 	        nSubsidy = 1 * COIN;
@@ -1680,11 +1680,11 @@ int64_t GetBlockValue(int nHeight)
 	    } else if (nHeight <= 777600 && nHeight >= 691201) {
 
 	        nSubsidy = 1 * COIN;
-	        
+
 	    } else if (nHeight <= 864000 && nHeight >= 777601) {
 
-	        nSubsidy = 1 * COIN;	    
-	    
+	        nSubsidy = 1 * COIN;
+
 	    } else if (nHeight <= 904320 && nHeight >= 864001) {
 
 	        nSubsidy = 1 * COIN;
@@ -1703,23 +1703,23 @@ int64_t GetBlockValue(int nHeight)
 
 	    } else if (nHeight <= 2977923 && nHeight >= 2373123) {
 
-	        nSubsidy = 0.0625 * COIN;	
+	        nSubsidy = 0.0625 * COIN;
 
 	    } else if (nHeight <= 4029124 && nHeight >= 2977924) {
 
-	        nSubsidy = 0.03125 * COIN;	
+	        nSubsidy = 0.03125 * COIN;
 
 	    } else if (nHeight <= 6131525 && nHeight >= 4029125) {
 
 	        nSubsidy = 0.015625 * COIN;
-	        
+
 	    } else if (nHeight <= 8233926 && nHeight >= 6131526) {
 
 	        nSubsidy = 0.0078125 * COIN;
-	         
+
 	    } else if (nHeight <= 10336327 && nHeight >= 8233927) {
 
-	        nSubsidy = 0.00390625 * COIN;        	
+	        nSubsidy = 0.00390625 * COIN;
 
 	    } else if (nHeight >= 10336328) {
 
@@ -1774,7 +1774,7 @@ int64_t GetKarmanodePayment(int nHeight, int64_t blockValue, int nKarmanodeCount
 
         // Use this log to compare the karmanode count for different clients
         LogPrintf("Adjusting seesaw at height %d with %d karmanodes (without drift: %d) at %ld\n", nHeight, nKarmanodeCount, nKarmanodeCount - Params().KarmanodeCountDrift(), GetTime());
-        
+
         if (fDebug)
             LogPrintf("GetKarmanodePayment(): moneysupply=%s, nodecoins=%s \n", FormatMoney(nMoneySupply).c_str(),
                 FormatMoney(mNodeCoins).c_str());
@@ -5748,13 +5748,13 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 }
 
 // Note: whenever a protocol update is needed toggle between both implementations (comment out the formerly active one)
-//       so we can leave the existing clients untouched (old SPORK will stay on so they don't see even older clients). 
+//       so we can leave the existing clients untouched (old SPORK will stay on so they don't see even older clients).
 //       Those old clients won't react to the changes of the other (new) SPORK because at the time of their implementation
 //       it was the one which was commented out
 int ActiveProtocol()
 {
 
-    // SPORK_15 was used for 70810. Leave it 'ON' so they don't see < 70710 nodes. They won't react to SPORK_15
+    // SPORK_16 was used for 70910. Leave it 'ON' so they don't see < 70710 nodes. They won't react to SPORK_15
     // messages because it's not in their code
 /*
     if (IsSporkActive(SPORK_15_NEW_PROTOCOL_ENFORCEMENT_2)) {
@@ -5766,10 +5766,10 @@ int ActiveProtocol()
 */
 
 
-    // SPORK_16 is used for 70910. Nodes < 70810 won't see it and still get their protocol version via SPORK_15 and their 
+    // SPORK_17 is used for 71010. Nodes < 70910 won't see it and still get their protocol version via SPORK_17 and their
     // own ModifierUpgradeBlock()
- 
-    if (IsSporkActive(SPORK_16_NEW_PROTOCOL_ENFORCEMENT_3))
+
+    if (IsSporkActive(SPORK_17_NEW_PROTOCOL_ENFORCEMENT_14))
             return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
 
     return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT;
