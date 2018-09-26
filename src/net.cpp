@@ -1621,6 +1621,7 @@ void StartNode(boost::thread_group& threadGroup)
     {
     	LogPrintf("Not creating staking thread\n");
     }
+    }
 
 
 bool StopNode()

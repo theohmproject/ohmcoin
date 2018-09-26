@@ -5757,7 +5757,7 @@ int ActiveProtocol()
     // SPORK_16 was used for 70910. Leave it 'ON' so they don't see < 70710 nodes. They won't react to SPORK_15
     // messages because it's not in their code
 /*
-    if (IsSporkActive(SPORK_15_NEW_PROTOCOL_ENFORCEMENT_2)) {
+    if (IsSporkActive(SPORK_16_NEW_PROTOCOL_ENFORCEMENT_3)) {
         if (chainActive.Tip()->nHeight >= Params().ModifierUpgradeBlock())
             return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
     }
@@ -5769,7 +5769,7 @@ int ActiveProtocol()
     // SPORK_17 is used for 71010. Nodes < 70910 won't see it and still get their protocol version via SPORK_17 and their
     // own ModifierUpgradeBlock()
 
-    if (IsSporkActive(SPORK_17_NEW_PROTOCOL_ENFORCEMENT_14))
+    if (IsSporkActive(SPORK_17_NEW_PROTOCOL_ENFORCEMENT_4))
             return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
 
     return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT;
