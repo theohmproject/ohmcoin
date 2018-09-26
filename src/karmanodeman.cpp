@@ -1,6 +1,6 @@
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2018 The OHMC 
+// Copyright (c) 2017-2018 The OHMC
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -351,7 +351,7 @@ int CKarmanodeMan::stable_size ()
 {
     int nStable_size = 0;
     int nMinProtocol = ActiveProtocol();
-    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_17_MN_WINNER_MINIMUM_AGE);
+    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_18_MN_WINNER_MINIMUM_AGE);
     int64_t nKarmanode_Age = 0;
 
     BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
@@ -373,7 +373,7 @@ int CKarmanodeMan::stable_size ()
 
     return nStable_size;
 }
-    
+
 int CKarmanodeMan::CountEnabled(int protocolVersion)
 {
     int i = 0;
@@ -568,7 +568,7 @@ CKarmanode* CKarmanodeMan::GetCurrentMasterNode(int mod, int64_t nBlockHeight, i
 int CKarmanodeMan::GetKarmanodeRank(const CTxIn& vin, int64_t nBlockHeight, int minProtocol, bool fOnlyActive)
 {
     std::vector<pair<int64_t, CTxIn> > vecKarmanodeScores;
-    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_17_MN_WINNER_MINIMUM_AGE);
+    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_18_MN_WINNER_MINIMUM_AGE);
     int64_t nKarmanode_Age = 0;
 
     //make sure we know about this block
