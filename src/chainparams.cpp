@@ -435,7 +435,6 @@ public:
         vSeeds.push_back(CDNSSeedData("5.9.71.139", "5.9.71.139"));     // Shoutout to onionring9
         vSeeds.push_back(CDNSSeedData("207.148.30.228", "207.148.30.228"));     // Shout-out to cryptoshorty
         vSeeds.push_back(CDNSSeedData("165.169.80.122", "165.169.80.122"));     // Shout-out to Rud
-        vSeeds.push_back(CDNSSeedData("45.77.108.9", "45.77.108.9"));   // Shout-out to Kultus
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 80);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
@@ -473,7 +472,7 @@ public:
 static CMainParams mainParams;
 
 /**
- * Testnet (v3)
+ * Testnet (v5)
  */
 class CTestNetParams : public CMainParams
 {
@@ -509,10 +508,11 @@ public:
 
         vFixedSeeds.clear();
         vSeeds.clear();
-        vSeeds.push_back(CDNSSeedData("140.82.18.27", "140.82.18.27"));
-        //vSeeds.push_back(CDNSSeedData("fuzzbawls.pw", "ohmc-testnet.seed2.fuzzbawls.pw"));
-        //vSeeds.push_back(CDNSSeedData("s3v3nh4cks.ddns.net", "s3v3nh4cks.ddns.net"));
-        //vSeeds.push_back(CDNSSeedData("88.198.192.110", "88.198.192.110"));
+        vSeeds.push_back(CDNSSeedData("76.169.4.118", "76.169.4.118"));
+        vSeeds.push_back(CDNSSeedData("207.246.95.137", "207.246.95.137"));
+        vSeeds.push_back(CDNSSeedData("45.77.234.198", "45.77.234.198"));
+        vSeeds.push_back(CDNSSeedData("45.32.151.170", "45.32.151.170"));
+
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 139); // Testnet ohmc addresses start with 'x' or 'y'
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 19);  // Testnet ohmc script addresses start with '8' or '9'
@@ -537,7 +537,7 @@ public:
         nPoolMaxTransactions = 2;
         //testnet
         strSporkKey = "048bdcf0f793dc89bd424f2ed1c6f1d5d88b96686e5d26bf5a9ac362dcb4fdf3345bb9f90383a44d2a0222a6e6b8faa709ec149d907875ead9148212b8f915ce93";
-        strPrivateSendPoolDummyAddress = "y57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
+        strPrivateSendPoolDummyAddress = "T57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
         nStartKarmanodePayments = 1420837558; //Fri, 09 Jan 2015 21:05:58 GMT
     }
     const Checkpoints::CCheckpointData& Checkpoints() const
