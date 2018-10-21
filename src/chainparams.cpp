@@ -536,8 +536,8 @@ public:
 
         nPoolMaxTransactions = 2;
         //testnet
-        strSporkKey = "048bdcf0f793dc89bd424f2ed1c6f1d5d88b96686e5d26bf5a9ac362dcb4fdf3345bb9f90383a44d2a0222a6e6b8faa709ec149d907875ead9148212b8f915ce93";
-        strPrivateSendPoolDummyAddress = "T57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
+        strSporkKey = "0491826db990788ac61af9f74556c07bbf049b36a2b6942a6df11011643c4076f0cb05b360de70822728dfb929bd3467336366ba7351c5772c504641b8310e4a91";
+        strPrivateSendPoolDummyAddress = "y57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
         nStartKarmanodePayments = 1420837558; //Fri, 09 Jan 2015 21:05:58 GMT
     }
     const Checkpoints::CCheckpointData& Checkpoints() const
