@@ -1,7 +1,7 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2018 The OHMC Developers
+// Copyright (c) 2017-2019 The OHMC Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -26,7 +26,7 @@
 SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle* networkStyle) : QWidget(0, f), curAlignment(0)
 {
     // set reference point, paddings
-    int copyrightPaddingLeft = 300;
+    int copyrightPaddingLeft = 350;
 	int copyrightPaddingTop = 545;
     int titlePaddingLeft = 15;
     int titlePaddingTop = 550;
@@ -36,12 +36,12 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle* networkStyle) 
     float fontFactor = 1.0;
 
     // define text to place
-    QString titleText = tr("OHMCoin Core");
+    QString titleText = tr("Ohmcoin Core");
     QString versionText = QString(tr("Version %1")).arg(QString::fromStdString(FormatFullVersion()));
     QString copyrightTextBtc = QChar(0xA9) + QString(" 2009-2014 ") + QString(tr("The Bitcoin Core Developers"));
     QString copyrightTextDash = QChar(0xA9) + QString(" 2014-2015 ") + QString(tr("The Dash Core Developers"));
     QString copyrightTextPIVX = QChar(0xA9) + QString(" 2015-2017 ") + QString(tr("The PIVX Core Developers"));
-    QString copyrightTextOHMC = QChar(0xA9) + QString(" 2017-%1 ").arg(COPYRIGHT_YEAR) + QString(tr("The OHMCoin Core Developers"));
+    QString copyrightTextOHMC = QChar(0xA9) + QString(" 2017-%1 ").arg(COPYRIGHT_YEAR) + QString(tr("The Ohmcoin Core Developers"));
     QString titleAddText = networkStyle->getTitleAddText();
 
     QString font = QApplication::font().toString();
