@@ -2623,7 +2623,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
     }
 
 	//Record accumulator checksums
-    DatabaseChecksums(mapAccumulators);
+    //DatabaseChecksums(mapAccumulators);
 
     if (fTxIndex)
         if (!pblocktree->WriteTxIndex(vPos))
