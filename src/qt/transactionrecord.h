@@ -81,11 +81,16 @@ public:
         MNReward,
         RecvFromOther,
         SendToSelf,
-        RecvWithPrivateSend,
-        PrivateSendDenominate,
-        PrivateSendCollateralPayment,
-        PrivateSendMakeCollaterals,
-        PrivateSendCreateDenominations,
+        ZerocoinMint,
+        ZerocoinSpend,
+        RecvFromZerocoinSpend,
+        ZerocoinSpend_Change_zOhmc,
+        ZerocoinSpend_FromMe,
+        RecvWithObfuscation,
+        ObfuscationDenominate,
+        ObfuscationCollateralPayment,
+        ObfuscationMakeCollaterals,
+        ObfuscationCreateDenominations,
         Obfuscated
     };
 

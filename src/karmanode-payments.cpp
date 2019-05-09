@@ -1,6 +1,5 @@
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -9,13 +8,13 @@
 #include "karmanode-budget.h"
 #include "karmanode-sync.h"
 #include "karmanodeman.h"
-#include "privatesend.h"
+#include "obfuscation.h"
+#include "protocol.h"
 #include "spork.h"
 #include "sync.h"
 #include "util.h"
 #include "utilmoneystr.h"
 #include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
 
 /** Object for who's going to get paid on which blocks */
 CKarmanodePayments karmanodePayments;
@@ -60,7 +59,7 @@ bool CKarmanodePaymentDB::Write(const CKarmanodePayments& objToSave)
     }
     fileout.fclose();
 
-    LogPrintf("Written info to mnpayments.dat  %dms\n", GetTimeMillis() - nStart);
+    LogPrint("karmanode","Written info to mnpayments.dat  %dms\n", GetTimeMillis() - nStart);
 
     return true;
 }
@@ -135,13 +134,13 @@ CKarmanodePaymentDB::ReadResult CKarmanodePaymentDB::Read(CKarmanodePayments& ob
         return IncorrectFormat;
     }
 
-    LogPrintf("Loaded info from mnpayments.dat  %dms\n", GetTimeMillis() - nStart);
-    LogPrintf("  %s\n", objToLoad.ToString());
+    LogPrint("karmanode","Loaded info from mnpayments.dat  %dms\n", GetTimeMillis() - nStart);
+    LogPrint("karmanode","  %s\n", objToLoad.ToString());
     if (!fDryRun) {
-        LogPrintf("Karmanode payments manager - cleaning....\n");
+        LogPrint("karmanode","Karmanode payments manager - cleaning....\n");
         objToLoad.CleanPaymentList();
-        LogPrintf("Karmanode payments manager - result:\n");
-        LogPrintf("  %s\n", objToLoad.ToString());
+        LogPrint("karmanode","Karmanode payments manager - result:\n");
+        LogPrint("karmanode","  %s\n", objToLoad.ToString());
     }
 
     return Ok;
@@ -154,27 +153,27 @@ void DumpKarmanodePayments()
     CKarmanodePaymentDB paymentdb;
     CKarmanodePayments tempPayments;
 
-    LogPrintf("Verifying mnpayments.dat format...\n");
+    LogPrint("karmanode","Verifying mnpayments.dat format...\n");
     CKarmanodePaymentDB::ReadResult readResult = paymentdb.Read(tempPayments, true);
     // there was an error and it was not an error on file opening => do not proceed
     if (readResult == CKarmanodePaymentDB::FileError)
-        LogPrintf("Missing budgets file - mnpayments.dat, will try to recreate\n");
+        LogPrint("karmanode","Missing budgets file - mnpayments.dat, will try to recreate\n");
     else if (readResult != CKarmanodePaymentDB::Ok) {
-        LogPrintf("Error reading mnpayments.dat: ");
+        LogPrint("karmanode","Error reading mnpayments.dat: ");
         if (readResult == CKarmanodePaymentDB::IncorrectFormat)
-            LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
+            LogPrint("karmanode","magic is ok but data has invalid format, will try to recreate\n");
         else {
-            LogPrintf("file format is unknown or invalid, please fix it manually\n");
+            LogPrint("karmanode","file format is unknown or invalid, please fix it manually\n");
             return;
         }
     }
-    LogPrintf("Writting info to mnpayments.dat...\n");
+    LogPrint("karmanode","Writting info to mnpayments.dat...\n");
     paymentdb.Write(karmanodePayments);
 
-    LogPrintf("Budget dump finished  %dms\n", GetTimeMillis() - nStart);
+    LogPrint("karmanode","Budget dump finished  %dms\n", GetTimeMillis() - nStart);
 }
 
-bool IsBlockValueValid(const CBlock& block, int64_t nExpectedValue, CAmount nMinted)
+bool IsBlockValueValid(const CBlock& block, CAmount nExpectedValue, CAmount nMinted)
 {
     CBlockIndex* pindexPrev = chainActive.Tip();
     if (pindexPrev == NULL) return true;
@@ -189,8 +188,10 @@ bool IsBlockValueValid(const CBlock& block, int64_t nExpectedValue, CAmount nMin
     }
 
     if (nHeight == 0) {
-        LogPrintf("IsBlockValueValid() : WARNING: Couldn't find previous block\n");
+        LogPrint("karmanode","IsBlockValueValid() : WARNING: Couldn't find previous block\n");
     }
+
+    //LogPrintf("XX69----------> IsBlockValueValid(): nMinted: %d, nExpectedValue: %d\n", FormatMoney(nMinted), FormatMoney(nExpectedValue));
 
     if (!karmanodeSync.IsSynced()) { //there is no budget data to use to check anything
         //super blocks will always be on these blocks, max 100 per budgeting
@@ -223,6 +224,8 @@ bool IsBlockValueValid(const CBlock& block, int64_t nExpectedValue, CAmount nMin
 
 bool IsBlockPayeeValid(const CBlock& block, int nBlockHeight)
 {
+    TrxValidationStatus transactionStatus = TrxValidationStatus::Invalid;
+    
     if (!karmanodeSync.IsSynced()) { //there is no budget data to use to check anything -- find the longest chain
         LogPrint("mnpayments", "Client not synced, skipping block payee checks\n");
         return true;
@@ -233,32 +236,40 @@ bool IsBlockPayeeValid(const CBlock& block, int nBlockHeight)
     //check if it's a budget block
     if (IsSporkActive(SPORK_13_ENABLE_SUPERBLOCKS)) {
         if (budget.IsBudgetPaymentBlock(nBlockHeight)) {
-            if (budget.IsTransactionValid(txNew, nBlockHeight))
-                return true;
+            transactionStatus = budget.IsTransactionValid(txNew, nBlockHeight);
+            if (transactionStatus == TrxValidationStatus::Valid) {
+                 return true;
+            }
 
-            LogPrintf("Invalid budget payment detected %s\n", txNew.ToString().c_str());
-            if (IsSporkActive(SPORK_9_KARMANODE_BUDGET_ENFORCEMENT))
-                return false;
+            if (transactionStatus == TrxValidationStatus::Invalid) {
+                LogPrint("karmanode","Invalid budget payment detected %s\n", txNew.ToString().c_str());
+                if (IsSporkActive(SPORK_9_KARMANODE_BUDGET_ENFORCEMENT))
+                    return false;
 
-            LogPrintf("Budget enforcement is disabled, accepting block\n");
-            return true;
+                LogPrint("karmanode","Budget enforcement is disabled, accepting block\n");
+            }
         }
     }
+
+    // If we end here the transaction was either TrxValidationStatus::Invalid and Budget enforcement is disabled, or
+    // a double budget payment (status = TrxValidationStatus::DoublePayment) was detected, or no/not enough karmanode
+    // votes (status = TrxValidationStatus::VoteThreshold) for a finalized budget were found
+    // In all cases a karmanode will get the payment for this block
 
     //check for karmanode payee
     if (karmanodePayments.IsTransactionValid(txNew, nBlockHeight))
         return true;
-    LogPrintf("Invalid mn payment detected %s\n", txNew.ToString().c_str());
+    LogPrint("karmanode","Invalid mn payment detected %s\n", txNew.ToString().c_str());
 
     if (IsSporkActive(SPORK_8_KARMANODE_PAYMENT_ENFORCEMENT))
         return false;
-    LogPrintf("Karmanode payment enforcement is disabled, accepting block\n");
+    LogPrint("karmanode","Karmanode payment enforcement is disabled, accepting block\n");
 
     return true;
 }
 
 
-void FillBlockPayee(CMutableTransaction& txNew, int64_t nFees, bool fProofOfStake)
+void FillBlockPayee(CMutableTransaction& txNew, CAmount nFees, bool fProofOfStake)
 {
     CBlockIndex* pindexPrev = chainActive.Tip();
     if (!pindexPrev) return;
@@ -294,13 +305,17 @@ void CKarmanodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFee
         if (winningNode) {
             payee = GetScriptForDestination(winningNode->pubKeyCollateralAddress.GetID());
         } else {
-            LogPrintf("CreateNewBlock: Failed to detect karmanode to pay\n");
+            LogPrint("karmanode","CreateNewBlock: Failed to detect karmanode to pay\n");
             hasPayment = false;
         }
     }
 
     CAmount blockValue = GetBlockValue(pindexPrev->nHeight);
     CAmount karmanodePayment = GetKarmanodePayment(pindexPrev->nHeight, blockValue);
+
+    if (!fProofOfStake) {
+        txNew.vout[0].nValue = blockValue - (hasPayment ? karmanodePayment : 0);
+    }
 
     if (hasPayment) {
         if (fProofOfStake) {
@@ -320,50 +335,42 @@ void CKarmanodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFee
             txNew.vout.resize(2);
             txNew.vout[1].scriptPubKey = payee;
             txNew.vout[1].nValue = karmanodePayment;
-            txNew.vout[0].nValue = blockValue - karmanodePayment;
         }
 
         CTxDestination address1;
         ExtractDestination(payee, address1);
-        CBitcoinAddress address2(address1);
 
-        LogPrintf("Karmanode payment of %s to %s\n", FormatMoney(karmanodePayment).c_str(), address2.ToString().c_str());
+        LogPrint("karmanode","Karmanode payment of %s to %s\n", FormatMoney(karmanodePayment).c_str(), EncodeDestination(address1).c_str());
     }
 }
 
 int CKarmanodePayments::GetMinKarmanodePaymentsProto()
 {
-    if (IsSporkActive(SPORK_10_KARMANODE_PAY_UPDATED_NODES))
-        return ActiveProtocol();                          // Allow only updated peers
-    else
-        return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT; // Also allow old peers as long as they are allowed to run
+    return ActiveProtocol();
 }
 
 void CKarmanodePayments::ProcessMessageKarmanodePayments(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 {
     if (!karmanodeSync.IsBlockchainSynced()) return;
 
-    if (fLiteMode) return; //disable all PrivateSend/Karmanode related functionality
+    if (fLiteMode) return; //disable all Obfuscation/Karmanode related functionality
 
-
-    if (strCommand == "mnget") { //Karmanode Payments Request Sync
-        if (fLiteMode) return;   //disable all PrivateSend/Karmanode related functionality
-
+    if (strCommand == NetMsgType::MNGET) { //Karmanode Payments Request Sync
         int nCountNeeded;
         vRecv >> nCountNeeded;
 
         if (Params().NetworkID() == CBaseChainParams::MAIN) {
-            if (pfrom->HasFulfilledRequest("mnget")) {
-                LogPrintf("mnget - peer already asked me for the list\n");
+            if (pfrom->HasFulfilledRequest(NetMsgType::MNGET)) {
+                LogPrintf("CKarmanodePayments::ProcessMessageKarmanodePayments() : mnget - peer already asked me for the list\n");
                 Misbehaving(pfrom->GetId(), 20);
                 return;
             }
         }
 
-        pfrom->FulfilledRequest("mnget");
+        pfrom->FulfilledRequest(NetMsgType::MNGET);
         karmanodePayments.Sync(pfrom, nCountNeeded);
         LogPrint("mnpayments", "mnget - Sent Karmanode winners to peer %i\n", pfrom->GetId());
-    } else if (strCommand == "mnw") { //Karmanode Payments Declare Winner
+    } else if (strCommand == NetMsgType::MNW) { //Karmanode Payments Declare Winner
         //this is required in litemodef
         CKarmanodePaymentWinner winner;
         vRecv >> winner;
@@ -391,18 +398,20 @@ void CKarmanodePayments::ProcessMessageKarmanodePayments(CNode* pfrom, std::stri
 
         std::string strError = "";
         if (!winner.IsValid(pfrom, strError)) {
-            // if(strError != "") LogPrintf("mnw - invalid message - %s\n", strError);
+            LogPrint("karmanode","mnw - invalid message - %s\n", strError);
             return;
         }
 
         if (!karmanodePayments.CanVote(winner.vinKarmanode.prevout, winner.nBlockHeight)) {
-            //  LogPrintf("mnw - karmanode already voted - %s\n", winner.vinKarmanode.prevout.ToStringShort());
+            LogPrint("karmanode","mnw - karmanode already voted - %s\n", winner.vinKarmanode.prevout.ToStringShort());
             return;
         }
 
         if (!winner.SignatureValid()) {
-            // LogPrintf("mnw - invalid signature\n");
-            if (karmanodeSync.IsSynced()) Misbehaving(pfrom->GetId(), 20);
+            if (karmanodeSync.IsSynced()) {
+                LogPrintf("CKarmanodePayments::ProcessMessageKarmanodePayments() : mnw - invalid signature\n");
+                Misbehaving(pfrom->GetId(), 20);
+            }
             // it could just be a non-synced karmanode
             mnodeman.AskForMN(pfrom, winner.vinKarmanode);
             return;
@@ -410,9 +419,6 @@ void CKarmanodePayments::ProcessMessageKarmanodePayments(CNode* pfrom, std::stri
 
         CTxDestination address1;
         ExtractDestination(winner.payee, address1);
-        CBitcoinAddress address2(address1);
-
-        //   LogPrint("mnpayments", "mnw - winning vote - Addr %s Height %d bestHeight %d - %s\n", address2.ToString().c_str(), winner.nBlockHeight, nHeight, winner.vinKarmanode.prevout.ToStringShort());
 
         if (karmanodePayments.AddWinningKarmanode(winner)) {
             winner.Relay();
@@ -426,17 +432,15 @@ bool CKarmanodePaymentWinner::Sign(CKey& keyKarmanode, CPubKey& pubKeyKarmanode)
     std::string errorMessage;
     std::string strMasterNodeSignMessage;
 
-    std::string strMessage = vinKarmanode.prevout.ToStringShort() +
-                             boost::lexical_cast<std::string>(nBlockHeight) +
-                             payee.ToString();
+    std::string strMessage = vinKarmanode.prevout.ToStringShort() + std::to_string(nBlockHeight) + payee.ToString();
 
     if (!obfuScationSigner.SignMessage(strMessage, errorMessage, vchSig, keyKarmanode)) {
-        LogPrintf("CKarmanodePing::Sign() - Error: %s\n", errorMessage.c_str());
+        LogPrint("karmanode","CKarmanodePing::Sign() - Error: %s\n", errorMessage.c_str());
         return false;
     }
 
     if (!obfuScationSigner.VerifyMessage(pubKeyKarmanode, vchSig, strMessage, errorMessage)) {
-        LogPrintf("CKarmanodePing::Sign() - Error: %s\n", errorMessage.c_str());
+        LogPrint("karmanode","CKarmanodePing::Sign() - Error: %s\n", errorMessage.c_str());
         return false;
     }
 
@@ -516,7 +520,7 @@ bool CKarmanodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
 
     int nMaxSignatures = 0;
     int nKarmanode_Drift_Count = 0;
-    
+
     std::string strPayeesPossible = "";
 
     CAmount nReward = GetBlockValue(nBlockHeight);
@@ -549,7 +553,7 @@ bool CKarmanodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
                 if(out.nValue >= requiredKarmanodePayment)
                     found = true;
                 else
-                    LogPrintf("Karmanode payment is out of drift range. Paid=%s Min=%s\n", FormatMoney(out.nValue).c_str(), FormatMoney(requiredKarmanodePayment).c_str());
+                    LogPrint("karmanode","Karmanode payment is out of drift range. Paid=%s Min=%s\n", FormatMoney(out.nValue).c_str(), FormatMoney(requiredKarmanodePayment).c_str());
             }
         }
 
@@ -558,17 +562,16 @@ bool CKarmanodeBlockPayees::IsTransactionValid(const CTransaction& txNew)
 
             CTxDestination address1;
             ExtractDestination(payee.scriptPubKey, address1);
-            CBitcoinAddress address2(address1);
 
             if (strPayeesPossible == "") {
-                strPayeesPossible += address2.ToString();
+                strPayeesPossible += EncodeDestination(address1);
             } else {
-                strPayeesPossible += "," + address2.ToString();
+                strPayeesPossible += "," + EncodeDestination(address1);
             }
         }
     }
 
-    LogPrintf("CKarmanodePayments::IsTransactionValid - Missing required payment of %s to %s\n", FormatMoney(requiredKarmanodePayment).c_str(), strPayeesPossible.c_str());
+    LogPrint("karmanode","CKarmanodePayments::IsTransactionValid - Missing required payment of %s to %s\n", FormatMoney(requiredKarmanodePayment).c_str(), strPayeesPossible.c_str());
     return false;
 }
 
@@ -579,14 +582,13 @@ std::string CKarmanodeBlockPayees::GetRequiredPaymentsString()
     std::string ret = "Unknown";
 
     BOOST_FOREACH (CKarmanodePayee& payee, vecPayments) {
-        CTxDestination address1;
-        ExtractDestination(payee.scriptPubKey, address1);
-        CBitcoinAddress address2(address1);
+        CTxDestination address;
+        ExtractDestination(payee.scriptPubKey, address);
 
         if (ret != "Unknown") {
-            ret += ", " + address2.ToString() + ":" + boost::lexical_cast<std::string>(payee.nVotes);
+            ret += ", " + EncodeDestination(address) + ":" + std::to_string(payee.nVotes);
         } else {
-            ret = address2.ToString() + ":" + boost::lexical_cast<std::string>(payee.nVotes);
+            ret = EncodeDestination(address) + ":" + std::to_string(payee.nVotes);
         }
     }
 
@@ -650,14 +652,14 @@ bool CKarmanodePaymentWinner::IsValid(CNode* pnode, std::string& strError)
 
     if (!pmn) {
         strError = strprintf("Unknown Karmanode %s", vinKarmanode.prevout.hash.ToString());
-        LogPrintf("CKarmanodePaymentWinner::IsValid - %s\n", strError);
+        LogPrint("karmanode","CKarmanodePaymentWinner::IsValid - %s\n", strError);
         mnodeman.AskForMN(pnode, vinKarmanode);
         return false;
     }
 
     if (pmn->protocolVersion < ActiveProtocol()) {
         strError = strprintf("Karmanode protocol too old %d - req %d", pmn->protocolVersion, ActiveProtocol());
-        LogPrintf("CKarmanodePaymentWinner::IsValid - %s\n", strError);
+        LogPrint("karmanode","CKarmanodePaymentWinner::IsValid - %s\n", strError);
         return false;
     }
 
@@ -668,8 +670,8 @@ bool CKarmanodePaymentWinner::IsValid(CNode* pnode, std::string& strError)
         // We don't want to print all of these messages, or punish them unless they're way off
         if (n > MNPAYMENTS_SIGNATURES_TOTAL * 2) {
             strError = strprintf("Karmanode not in the top %d (%d)", MNPAYMENTS_SIGNATURES_TOTAL * 2, n);
-            LogPrintf("CKarmanodePaymentWinner::IsValid - %s\n", strError);
-            if (karmanodeSync.IsSynced()) Misbehaving(pnode->GetId(), 20);
+            LogPrint("karmanode","CKarmanodePaymentWinner::IsValid - %s\n", strError);
+            //if (karmanodeSync.IsSynced()) Misbehaving(pnode->GetId(), 20);
         }
         return false;
     }
@@ -702,27 +704,26 @@ bool CKarmanodePayments::ProcessBlock(int nBlockHeight)
     if (budget.IsBudgetPaymentBlock(nBlockHeight)) {
         //is budget payment block -- handled by the budgeting software
     } else {
-        LogPrintf("CKarmanodePayments::ProcessBlock() Start nHeight %d - vin %s. \n", nBlockHeight, activeKarmanode.vin.prevout.hash.ToString());
+        LogPrint("karmanode","CKarmanodePayments::ProcessBlock() Start nHeight %d - vin %s. \n", nBlockHeight, activeKarmanode.vin.prevout.hash.ToString());
 
         // pay to the oldest MN that still had no payment but its input is old enough and it was active long enough
         int nCount = 0;
         CKarmanode* pmn = mnodeman.GetNextKarmanodeInQueueForPayment(nBlockHeight, true, nCount);
 
         if (pmn != NULL) {
-            LogPrintf("CKarmanodePayments::ProcessBlock() Found by FindOldestNotInVec \n");
+            LogPrint("karmanode","CKarmanodePayments::ProcessBlock() Found by FindOldestNotInVec \n");
 
             newWinner.nBlockHeight = nBlockHeight;
 
             CScript payee = GetScriptForDestination(pmn->pubKeyCollateralAddress.GetID());
             newWinner.AddPayee(payee);
 
-            CTxDestination address1;
-            ExtractDestination(payee, address1);
-            CBitcoinAddress address2(address1);
+            CTxDestination address;
+            ExtractDestination(payee, address);
 
-            LogPrintf("CKarmanodePayments::ProcessBlock() Winner payee %s nHeight %d. \n", address2.ToString().c_str(), newWinner.nBlockHeight);
+            LogPrint("karmanode","CKarmanodePayments::ProcessBlock() Winner payee %s nHeight %d. \n", EncodeDestination(address).c_str(), newWinner.nBlockHeight);
         } else {
-            LogPrintf("CKarmanodePayments::ProcessBlock() Failed to find karmanode to pay\n");
+            LogPrint("karmanode","CKarmanodePayments::ProcessBlock() Failed to find karmanode to pay\n");
         }
     }
 
@@ -731,13 +732,13 @@ bool CKarmanodePayments::ProcessBlock(int nBlockHeight)
     CKey keyKarmanode;
 
     if (!obfuScationSigner.SetKey(strMasterNodePrivKey, errorMessage, keyKarmanode, pubKeyKarmanode)) {
-        LogPrintf("CKarmanodePayments::ProcessBlock() - Error upon calling SetKey: %s\n", errorMessage.c_str());
+        LogPrint("karmanode","CKarmanodePayments::ProcessBlock() - Error upon calling SetKey: %s\n", errorMessage.c_str());
         return false;
     }
 
-    LogPrintf("CKarmanodePayments::ProcessBlock() - Signing Winner\n");
+    LogPrint("karmanode","CKarmanodePayments::ProcessBlock() - Signing Winner\n");
     if (newWinner.Sign(keyKarmanode, pubKeyKarmanode)) {
-        LogPrintf("CKarmanodePayments::ProcessBlock() - AddWinningKarmanode\n");
+        LogPrint("karmanode","CKarmanodePayments::ProcessBlock() - AddWinningKarmanode\n");
 
         if (AddWinningKarmanode(newWinner)) {
             newWinner.Relay();
@@ -760,9 +761,7 @@ bool CKarmanodePaymentWinner::SignatureValid()
     CKarmanode* pmn = mnodeman.Find(vinKarmanode);
 
     if (pmn != NULL) {
-        std::string strMessage = vinKarmanode.prevout.ToStringShort() +
-                                 boost::lexical_cast<std::string>(nBlockHeight) +
-                                 payee.ToString();
+        std::string strMessage = vinKarmanode.prevout.ToStringShort() + std::to_string(nBlockHeight) + payee.ToString();
 
         std::string errorMessage = "";
         if (!obfuScationSigner.VerifyMessage(pmn->pubKeyKarmanode, vchSig, strMessage, errorMessage)) {
@@ -799,7 +798,7 @@ void CKarmanodePayments::Sync(CNode* node, int nCountNeeded)
         }
         ++it;
     }
-    node->PushMessage("ssc", KARMANODE_SYNC_MNW, nInvCount);
+    node->PushMessage(NetMsgType::SSC, KARMANODE_SYNC_MNW, nInvCount);
 }
 
 std::string CKarmanodePayments::ToString() const

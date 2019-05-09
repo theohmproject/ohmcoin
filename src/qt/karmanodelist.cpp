@@ -1,5 +1,12 @@
+// Copyright (c) 2017 The PIVX developers
+// Copyright (c) 2019 The Ohmcoin Developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #include "karmanodelist.h"
 #include "ui_karmanodelist.h"
+
+#include "configurekarmanodepage.h"
 
 #include "activekarmanode.h"
 #include "clientmodel.h"
@@ -11,9 +18,13 @@
 #include "sync.h"
 #include "wallet.h"
 #include "walletmodel.h"
+#include "util.h"
 
 #include <QMessageBox>
 #include <QTimer>
+#include <fstream>
+#include <iostream>
+#include <string>
 
 CCriticalSection cs_karmanodes;
 
@@ -33,6 +44,7 @@ KarmanodeList::KarmanodeList(QWidget* parent) : QWidget(parent),
     int columnActiveWidth = 130;
     int columnLastSeenWidth = 130;
 
+    ui->tableWidgetMyKarmanodes->setAlternatingRowColors(true);
     ui->tableWidgetMyKarmanodes->setColumnWidth(0, columnAliasWidth);
     ui->tableWidgetMyKarmanodes->setColumnWidth(1, columnAddressWidth);
     ui->tableWidgetMyKarmanodes->setColumnWidth(2, columnProtocolWidth);
@@ -42,12 +54,26 @@ KarmanodeList::KarmanodeList(QWidget* parent) : QWidget(parent),
 
     ui->tableWidgetMyKarmanodes->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    ui->tableWidgetMyKarmanodes->horizontalHeader()->setDefaultAlignment(Qt::AlignVCenter);
+
     QAction* startAliasAction = new QAction(tr("Start alias"), this);
+    QAction* copyAliasAction = new QAction(tr("Copy alias"), this);
+    QAction* editAliasAction = new QAction(tr("Edit alias"), this);
+    QAction* deleteAliasAction = new QAction(tr("Delete"), this);	
+
     contextMenu = new QMenu();
     contextMenu->addAction(startAliasAction);
+    contextMenu->addAction(copyAliasAction);
+    contextMenu->addAction(editAliasAction);
+    contextMenu->addAction(deleteAliasAction);	
+	
     connect(ui->tableWidgetMyKarmanodes, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
-    connect(startAliasAction, SIGNAL(triggered()), this, SLOT(on_startButton_clicked()));
-
+    connect(startAliasAction, SIGNAL(triggered()), this, SLOT(on_startButton_clicked()));	
+    connect(copyAliasAction, SIGNAL(triggered()), this, SLOT(copyAlias()));	
+    connect(editAliasAction, SIGNAL(triggered()), this, SLOT(on_editConfigureKarmanode_clicked()));
+    connect(deleteAliasAction, SIGNAL(triggered()), this, SLOT(deleteAlias()));	
+	
+	
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateMyNodeList()));
     timer->start(1000);
@@ -157,9 +183,10 @@ void KarmanodeList::StartAll(std::string strCommand)
 void KarmanodeList::updateMyKarmanodeInfo(QString strAlias, QString strAddr, CKarmanode* pmn)
 {
     LOCK(cs_mnlistupdate);
+
     bool fOldRowFound = false;
     int nNewRow = 0;
-
+	
     for (int i = 0; i < ui->tableWidgetMyKarmanodes->rowCount(); i++) {
         if (ui->tableWidgetMyKarmanodes->item(i, 0)->text() == strAlias) {
             fOldRowFound = true;
@@ -179,7 +206,7 @@ void KarmanodeList::updateMyKarmanodeInfo(QString strAlias, QString strAddr, CKa
     QTableWidgetItem* statusItem = new QTableWidgetItem(QString::fromStdString(pmn ? pmn->GetStatus() : "MISSING"));
     GUIUtil::DHMSTableWidgetItem* activeSecondsItem = new GUIUtil::DHMSTableWidgetItem(pmn ? (pmn->lastPing.sigTime - pmn->sigTime) : 0);
     QTableWidgetItem* lastSeenItem = new QTableWidgetItem(QString::fromStdString(DateTimeStrFormat("%Y-%m-%d %H:%M", pmn ? pmn->lastPing.sigTime : 0)));
-    QTableWidgetItem* pubkeyItem = new QTableWidgetItem(QString::fromStdString(pmn ? CBitcoinAddress(pmn->pubKeyCollateralAddress.GetID()).ToString() : ""));
+    QTableWidgetItem* pubkeyItem = new QTableWidgetItem(QString::fromStdString(pmn ? EncodeDestination(CTxDestination(pmn->pubKeyCollateralAddress.GetID())) : ""));
 
     ui->tableWidgetMyKarmanodes->setItem(nNewRow, 0, aliasItem);
     ui->tableWidgetMyKarmanodes->setItem(nNewRow, 1, addrItem);
@@ -210,7 +237,6 @@ void KarmanodeList::updateMyNodeList(bool fForce)
 
         CTxIn txin = CTxIn(uint256S(mne.getTxHash()), uint32_t(nIndex));
         CKarmanode* pmn = mnodeman.Find(txin);
-
         updateMyKarmanodeInfo(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), pmn);
     }
     ui->tableWidgetMyKarmanodes->setSortingEnabled(true);
@@ -251,6 +277,149 @@ void KarmanodeList::on_startButton_clicked()
     }
 
     StartAlias(strAlias);
+}
+
+void KarmanodeList::on_editConfigureKarmanode_clicked()
+{
+    // Find selected node alias
+    QItemSelectionModel* selectionModel = ui->tableWidgetMyKarmanodes->selectionModel();
+    QModelIndexList selected = selectionModel->selectedRows();
+
+    if (selected.count() == 0) return;
+
+    QModelIndex index = selected.at(0);
+    int nSelectedRow = index.row();
+    std::string strAlias = ui->tableWidgetMyKarmanodes->item(nSelectedRow, 0)->text().toStdString();
+
+	int count = 0;
+    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+		count = count + 1;
+		if(strAlias == mne.getAlias()) {
+			KarmanodeList::openEditConfigureKarmanodePage(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), QString::fromStdString(mne.getPrivKey()), QString::fromStdString(mne.getTxHash()), QString::fromStdString(mne.getOutputIndex()), count);
+			break;
+			
+		}
+    }
+}
+
+void KarmanodeList::on_configureKarmanodeButton_clicked()
+{
+	
+    ConfigureKarmanodePage dlg(ConfigureKarmanodePage::NewConfigureKarmanode, this);
+    if ( QDialog::Accepted == dlg.exec() )
+    {
+while (ui->tableWidgetMyKarmanodes->rowCount() > 0)
+	{
+		ui->tableWidgetMyKarmanodes->removeRow(0);
+	}		
+	
+	// clear cache
+	karmanodeConfig.clear();
+    // parse karmanode.conf
+    std::string strErr;
+    if (!karmanodeConfig.read(strErr)) {
+        LogPrintf("Error reading karmanode configuration file: \n");
+    }	
+      updateMyNodeList(true);
+    }
+}
+
+void KarmanodeList::openEditConfigureKarmanodePage(QString strAlias, QString strIP, QString strPrivKey, QString strTxHash, QString strOutputIndex, int count)
+{
+    ConfigureKarmanodePage dlg(ConfigureKarmanodePage::EditConfigureKarmanode, this);
+    dlg.loadAlias(strAlias);
+	dlg.loadIP(strIP);
+	dlg.loadPrivKey(strPrivKey);
+	dlg.loadTxHash(strTxHash);
+	dlg.loadOutputIndex(strOutputIndex);
+	dlg.counter(count);
+	dlg.MNAliasCache(strAlias);
+    if ( QDialog::Accepted == dlg.exec() )
+    {
+while (ui->tableWidgetMyKarmanodes->rowCount() > 0)
+	{
+		ui->tableWidgetMyKarmanodes->removeRow(0);
+	}		
+	
+	// clear cache
+	karmanodeConfig.clear();
+    // parse karmanode.conf
+    std::string strErr;
+    if (!karmanodeConfig.read(strErr)) {
+        LogPrintf("Error reading karmanode configuration file: \n");
+    }	
+      updateMyNodeList(true);
+    }
+}
+
+void KarmanodeList::deleteAlias()
+{
+    // Find selected node alias
+    QItemSelectionModel* selectionModel = ui->tableWidgetMyKarmanodes->selectionModel();
+    QModelIndexList selected = selectionModel->selectedRows();
+
+    if (selected.count() == 0) return;
+
+    QModelIndex index = selected.at(0);
+    int nSelectedRow = index.row();
+    std::string strAlias = ui->tableWidgetMyKarmanodes->item(nSelectedRow, 0)->text().toStdString();
+	int count = 0;
+    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+		count = count + 1;
+		if(strAlias == mne.getAlias()) {
+			vector<COutPoint> confLockedCoins;
+			uint256 mnTxHash;
+			mnTxHash.SetHex(mne.getTxHash());
+            int nIndex;
+            if(!mne.castOutputIndex(nIndex))
+                continue;
+			COutPoint outpoint = COutPoint(mnTxHash, nIndex);
+			confLockedCoins.push_back(outpoint);
+			pwalletMain->UnlockCoin(outpoint);
+			karmanodeConfig.deleteAlias(count);
+			// write to karmanode.conf
+			karmanodeConfig.writeToKarmanodeConf();
+while (ui->tableWidgetMyKarmanodes->rowCount() > 0)
+	{
+		ui->tableWidgetMyKarmanodes->removeRow(0);
+	}		
+	
+	// clear cache
+	karmanodeConfig.clear();
+    // parse karmanode.conf
+    std::string strErr;
+    if (!karmanodeConfig.read(strErr)) {
+        LogPrintf("Error reading karmanode configuration file: \n");
+    }			
+			updateMyNodeList(true);
+			break;
+			
+		}
+    }
+}
+
+void KarmanodeList::copyAlias()
+{
+    // Find selected node alias
+    QItemSelectionModel* selectionModel = ui->tableWidgetMyKarmanodes->selectionModel();
+    QModelIndexList selected = selectionModel->selectedRows();
+
+    if (selected.count() == 0) return;
+
+    QModelIndex index = selected.at(0);
+    int nSelectedRow = index.row();
+    std::string strAlias = ui->tableWidgetMyKarmanodes->item(nSelectedRow, 0)->text().toStdString();
+
+    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+		
+		if(strAlias == mne.getAlias()) {
+			
+			std::string fullAliasCopy = mne.getAlias() + " " + mne.getIp() + " " + mne.getPrivKey() + " " + mne.getTxHash() + " " + mne.getOutputIndex();
+			GUIUtil::setClipboard(QString::fromStdString(fullAliasCopy));
+			break;
+			
+		}
+    }
 }
 
 void KarmanodeList::on_startAllButton_clicked()

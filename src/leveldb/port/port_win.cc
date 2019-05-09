@@ -70,7 +70,7 @@ void Mutex::AssertHeld() {
 CondVar::CondVar(Mutex* mu) :
     waiting_(0), 
     mu_(mu), 
-    sem1_(::CreateSemaphore(NULL, 0, 10000, NULL)), 
+    sem1_(::CreateSemaphore(NULL, 0, 10000, NULL)),
     sem2_(::CreateSemaphore(NULL, 0, 10000, NULL)) {
   assert(mu_);
 }
