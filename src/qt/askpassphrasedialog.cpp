@@ -1,7 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -9,6 +8,7 @@
 #include "ui_askpassphrasedialog.h"
 
 #include "guiconstants.h"
+#include "guiutil.h"
 #include "walletmodel.h"
 
 #include "allocators.h"
@@ -24,6 +24,11 @@ AskPassphraseDialog::AskPassphraseDialog(Mode mode, QWidget* parent, WalletModel
                                                                                            fCapsLock(false)
 {
     ui->setupUi(this);
+    this->setStyleSheet(GUIUtil::loadStyleSheet());
+
+    ui->passEdit1->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->passEdit2->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->passEdit3->setAttribute(Qt::WA_MacShowFocusRect, 0);
 
     ui->passEdit1->setMinimumSize(ui->passEdit1->sizeHint());
     ui->passEdit2->setMinimumSize(ui->passEdit2->sizeHint());
@@ -118,7 +123,7 @@ void AskPassphraseDialog::accept()
                 if (model->setWalletEncrypted(true, newpass1)) {
                     QMessageBox::warning(this, tr("Wallet encrypted"),
                         "<qt>" +
-                            tr("OHMC will close now to finish the encryption process. "
+                            tr("Ohmcoin will close now to finish the encryption process. "
                                "Remember that encrypting your wallet cannot fully protect "
                                "your OHMCs from being stolen by malware infecting your computer.") +
                             "<br><br><b>" +

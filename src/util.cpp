@@ -2,12 +2,11 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #if defined(HAVE_CONFIG_H)
-#include "config/ohmc-config.h"
+#include "config/ohmcoin-config.h"
 #endif
 
 #include "util.h"
@@ -106,21 +105,27 @@ std::string to_internal(const std::string&);
 
 using namespace std;
 
-//OHMC only features
+// Ohmcoin only features
+// Karmanode
 bool fMasterNode = false;
 string strMasterNodePrivKey = "";
 string strMasterNodeAddr = "";
 bool fLiteMode = false;
+// SwiftX
 bool fEnableSwiftTX = true;
 int nSwiftTXDepth = 5;
-int nPrivateSendRounds = 2;
-int nAnonymizeOhmAmount = 1000;
+// Automatic Zerocoin minting
+bool fEnableZeromint = true;
+int nZeromintPercentage = 10;
+int nPreferredDenom = 0;
+const int64_t AUTOMINT_DELAY = (60 * 5); // Wait at least 5 minutes until Automint starts
+
+int nAnonymizeOhmcoinAmount = 1000;
 int nLiquidityProvider = 0;
 /** Spork enforcement enabled time */
 int64_t enforceKarmanodePaymentsTime = 4085657524;
 bool fSucessfullyLoaded = false;
-bool fEnablePrivateSend = false;
-/** All denominations used by privatesend */
+/** All denominations used by obfuscation */
 std::vector<int64_t> obfuScationDenominations;
 string strBudgetMode = "";
 
@@ -138,7 +143,7 @@ volatile bool fReopenDebugLog = false;
 
 /** Init OpenSSL library multithreading support */
 static CCriticalSection** ppmutexOpenSSL;
-void locking_callback(int mode, int i, const char* file, int line)
+void locking_callback(int mode, int i, const char* file, int line) NO_THREAD_SAFETY_ANALYSIS
 {
     if (mode & CRYPTO_LOCK) {
         ENTER_CRITICAL_SECTION(*ppmutexOpenSSL[i]);
@@ -232,12 +237,13 @@ bool LogAcceptCategory(const char* category)
             const vector<string>& categories = mapMultiArgs["-debug"];
             ptrCategory.reset(new set<string>(categories.begin(), categories.end()));
             // thread_specific_ptr automatically deletes the set when the thread ends.
-            // "ohmc" is a composite category enabling all OHMC-related debug output
-            if (ptrCategory->count(string("ohmc"))) {
-                ptrCategory->insert(string("privatesend"));
-                ptrCategory->insert(string("swifttx"));
+            // "ohmcoin" is a composite category enabling all Ohmcoin-related debug output
+            if (ptrCategory->count(string("ohmcoin"))) {
+                ptrCategory->insert(string("obfuscation"));
+                ptrCategory->insert(string("swiftx"));
                 ptrCategory->insert(string("karmanode"));
                 ptrCategory->insert(string("mnpayments"));
+                ptrCategory->insert(string("zero"));
                 ptrCategory->insert(string("mnbudget"));
             }
         }
@@ -339,6 +345,126 @@ void ParseParameters(int argc, const char* const argv[])
     }
 }
 
+/** Upper bound for mantissa.
+ * 10^18-1 is the largest arbitrary decimal that will fit in a signed 64-bit integer.
+ * Larger integers cannot consist of arbitrary combinations of 0-9:
+ *
+ *   999999999999999999  1^18-1
+ *  9223372036854775807  (1<<63)-1  (max int64_t)
+ *  9999999999999999999  1^19-1     (would overflow)
+ */
+static const int64_t UPPER_BOUND = 1000000000000000000LL - 1LL;
+
+/** Helper function for ParseFixedPoint */
+static inline bool ProcessMantissaDigit(char ch, int64_t &mantissa, int &mantissa_tzeros)
+{
+    if(ch == '0')
+        ++mantissa_tzeros;
+    else {
+        for (int i=0; i<=mantissa_tzeros; ++i) {
+            if (mantissa > (UPPER_BOUND / 10LL))
+                return false; /* overflow */
+            mantissa *= 10;
+        }
+        mantissa += ch - '0';
+        mantissa_tzeros = 0;
+    }
+    return true;
+}
+
+
+bool ParseFixedPoint(const std::string &val, int decimals, int64_t *amount_out)
+{
+    int64_t mantissa = 0;
+    int64_t exponent = 0;
+    int mantissa_tzeros = 0;
+    bool mantissa_sign = false;
+    bool exponent_sign = false;
+    int ptr = 0;
+    int end = val.size();
+    int point_ofs = 0;
+
+    if (ptr < end && val[ptr] == '-') {
+        mantissa_sign = true;
+        ++ptr;
+    }
+    if (ptr < end)
+    {
+        if (val[ptr] == '0') {
+            /* pass single 0 */
+            ++ptr;
+        } else if (val[ptr] >= '1' && val[ptr] <= '9') {
+            while (ptr < end && val[ptr] >= '0' && val[ptr] <= '9') {
+                if (!ProcessMantissaDigit(val[ptr], mantissa, mantissa_tzeros))
+                    return false; /* overflow */
+                ++ptr;
+            }
+        } else return false; /* missing expected digit */
+    } else return false; /* empty string or loose '-' */
+    if (ptr < end && val[ptr] == '.')
+    {
+        ++ptr;
+        if (ptr < end && val[ptr] >= '0' && val[ptr] <= '9')
+        {
+            while (ptr < end && val[ptr] >= '0' && val[ptr] <= '9') {
+                if (!ProcessMantissaDigit(val[ptr], mantissa, mantissa_tzeros))
+                    return false; /* overflow */
+                ++ptr;
+                ++point_ofs;
+            }
+        } else return false; /* missing expected digit */
+    }
+    if (ptr < end && (val[ptr] == 'e' || val[ptr] == 'E'))
+    {
+        ++ptr;
+        if (ptr < end && val[ptr] == '+')
+            ++ptr;
+        else if (ptr < end && val[ptr] == '-') {
+            exponent_sign = true;
+            ++ptr;
+        }
+        if (ptr < end && val[ptr] >= '0' && val[ptr] <= '9') {
+            while (ptr < end && val[ptr] >= '0' && val[ptr] <= '9') {
+                if (exponent > (UPPER_BOUND / 10LL))
+                    return false; /* overflow */
+                exponent = exponent * 10 + val[ptr] - '0';
+                ++ptr;
+            }
+        } else return false; /* missing expected digit */
+    }
+    if (ptr != end)
+        return false; /* trailing garbage */
+
+    /* finalize exponent */
+    if (exponent_sign)
+        exponent = -exponent;
+    exponent = exponent - point_ofs + mantissa_tzeros;
+
+    /* finalize mantissa */
+    if (mantissa_sign)
+        mantissa = -mantissa;
+
+    /* convert to one 64-bit fixed-point value */
+    exponent += decimals;
+    if (exponent < 0)
+        return false; /* cannot represent values smaller than 10^-decimals */
+    if (exponent >= 18)
+        return false; /* cannot represent values larger than or equal to 10^(18-decimals) */
+
+    for (int i=0; i < exponent; ++i) {
+        if (mantissa > (UPPER_BOUND / 10LL) || mantissa < -(UPPER_BOUND / 10LL))
+            return false; /* overflow */
+        mantissa *= 10;
+    }
+    if (mantissa > UPPER_BOUND || mantissa < -UPPER_BOUND)
+        return false; /* overflow */
+
+    if (amount_out)
+        *amount_out = mantissa;
+
+    return true;
+}
+
 std::string GetArg(const std::string& strArg, const std::string& strDefault)
 {
     if (mapArgs.count(strArg))
@@ -397,7 +523,7 @@ static std::string FormatException(std::exception* pex, const char* pszThread)
     char pszModule[MAX_PATH] = "";
     GetModuleFileNameA(NULL, pszModule, sizeof(pszModule));
 #else
-    const char* pszModule = "ohmc";
+    const char* pszModule = "ohmcoin";
 #endif
     if (pex)
         return strprintf(
@@ -412,19 +538,19 @@ void PrintExceptionContinue(std::exception* pex, const char* pszThread)
     std::string message = FormatException(pex, pszThread);
     LogPrintf("\n\n************************\n%s\n", message);
     fprintf(stderr, "\n\n************************\n%s\n", message.c_str());
-    /// strMiscWarning = message;
+    strMiscWarning = message;
 }
 
 boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
-// Windows < Vista: C:\Documents and Settings\Username\Application Data\OHMC
-// Windows >= Vista: C:\Users\Username\AppData\Roaming\OHMC
-// Mac: ~/Library/Application Support/OHMC
-// Unix: ~/.ohmc
+// Windows < Vista: C:\Documents and Settings\Username\Application Data\Ohmcoin
+// Windows >= Vista: C:\Users\Username\AppData\Roaming\Ohmcoin
+// Mac: ~/Library/Application Support/Ohmcoin
+// Unix: ~/.ohmcoin
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "OHMC";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "Ohmcoin";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -436,10 +562,10 @@ boost::filesystem::path GetDefaultDataDir()
     // Mac
     pathRet /= "Library/Application Support";
     TryCreateDirectory(pathRet);
-    return pathRet / "OHMC";
+    return pathRet / "Ohmcoin";
 #else
     // Unix
-    return pathRet / ".ohmc";
+    return pathRet / ".ohmcoin";
 #endif
 #endif
 }
@@ -486,7 +612,7 @@ void ClearDatadirCache()
 
 boost::filesystem::path GetConfigFile()
 {
-    boost::filesystem::path pathConfigFile(GetArg("-conf", "ohmc.conf"));
+    boost::filesystem::path pathConfigFile(GetArg("-conf", "ohmcoin.conf"));
     if (!pathConfigFile.is_complete())
         pathConfigFile = GetDataDir(false) / pathConfigFile;
 
@@ -505,7 +631,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 {
     boost::filesystem::ifstream streamConfig(GetConfigFile());
     if (!streamConfig.good()) {
-        // Create empty ohmc.conf if it does not exist
+        // Create empty ohmcoin.conf if it does not exist
         FILE* configFile = fopen(GetConfigFile().string().c_str(), "a");
         if (configFile != NULL)
             fclose(configFile);
@@ -516,7 +642,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
     setOptions.insert("*");
 
     for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it) {
-        // Don't overwrite existing settings so command line settings override ohmc.conf
+        // Don't overwrite existing settings so command line settings override ohmcoin.conf
         string strKey = string("-") + it->string_key;
         string strValue = it->value[0];
         InterpretNegativeSetting(strKey, strValue);
@@ -531,7 +657,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 #ifndef WIN32
 boost::filesystem::path GetPidFile()
 {
-    boost::filesystem::path pathPidFile(GetArg("-pid", "ohmcd.pid"));
+    boost::filesystem::path pathPidFile(GetArg("-pid", "ohmcoind.pid"));
     if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }
@@ -732,6 +858,26 @@ boost::filesystem::path GetTempPath()
 #endif
 }
 
+double double_safe_addition(double fValue, double fIncrement)
+{
+    double fLimit = std::numeric_limits<double>::max() - fValue;
+
+    if (fLimit > fIncrement)
+        return fValue + fIncrement;
+    else
+        return std::numeric_limits<double>::max();
+}
+
+double double_safe_multiplication(double fValue, double fmultiplicator)
+{
+    double fLimit = std::numeric_limits<double>::max() / fmultiplicator;
+
+    if (fLimit > fmultiplicator)
+        return fValue * fmultiplicator;
+    else
+        return std::numeric_limits<double>::max();
+}
+
 void runCommand(std::string strCommand)
 {
     int nErr = ::system(strCommand.c_str());
@@ -780,6 +926,18 @@ void SetupEnvironment()
     // boost::filesystem::path, which is then used to explicitly imbue the path.
     std::locale loc = boost::filesystem::path::imbue(std::locale::classic());
     boost::filesystem::path::imbue(loc);
+}
+
+bool SetupNetworking()
+{
+#ifdef WIN32
+    // Initialize Windows Sockets
+    WSADATA wsadata;
+    int ret = WSAStartup(MAKEWORD(2,2), &wsadata);
+    if (ret != NO_ERROR || LOBYTE(wsadata.wVersion ) != 2 || HIBYTE(wsadata.wVersion) != 2)
+        return false;
+#endif
+    return true;
 }
 
 void SetThreadPriority(int nPriority)

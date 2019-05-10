@@ -58,17 +58,26 @@ public slots:
     void gotoKarmanodePage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
+    /** Switch to privacy page */
+    void gotoPrivacyPage();
     /** Switch to send coins page */
     void gotoSendCoinsPage(QString addr = "");
+
     /** Switch to explorer page */
     void gotoBlockExplorerPage();
+
+    /** Switch to proposal page */
+    void gotoProposalPage();
+
+
     /** Show Sign/Verify Message dialog and switch to sign message tab */
     void gotoSignMessageTab(QString addr = "");
     /** Show Sign/Verify Message dialog and switch to verify message tab */
     void gotoVerifyMessageTab(QString addr = "");
     /** Show MultiSend Dialog **/
     void gotoMultiSendDialog();
-
+    /** show a multisig tab **/
+    void gotoMultisigDialog(int index);
     /** Show BIP 38 tool - default to Encryption tab */
     void gotoBip38Tool();
 
@@ -82,6 +91,8 @@ public slots:
     void unlockWallet();
     /** Lock wallet */
     void lockWallet();
+    /** Toggle Wallet Lock State */
+    void toggleLockWallet();
 
     /** Show used sending addresses */
     void usedSendingAddresses();

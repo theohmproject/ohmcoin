@@ -1,7 +1,7 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
+// Copyright (c) 2019 The Ohmcoin Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -13,6 +13,8 @@
 
 #include <QDataWidgetMapper>
 #include <QMessageBox>
+
+extern OutputType g_address_type;
 
 EditAddressDialog::EditAddressDialog(Mode mode, QWidget* parent) : QDialog(parent),
                                                                    ui(new Ui::EditAddressDialog),
@@ -77,7 +79,8 @@ bool EditAddressDialog::saveCurrentRow()
         address = model->addRow(
             mode == NewSendingAddress ? AddressTableModel::Send : AddressTableModel::Receive,
             ui->labelEdit->text(),
-            ui->addressEdit->text());
+            ui->addressEdit->text(),
+            g_address_type);
         break;
     case EditReceivingAddress:
     case EditSendingAddress:
@@ -104,7 +107,7 @@ void EditAddressDialog::accept()
             break;
         case AddressTableModel::INVALID_ADDRESS:
             QMessageBox::warning(this, windowTitle(),
-                tr("The entered address \"%1\" is not a valid OHMC address.").arg(ui->addressEdit->text()),
+                tr("The entered address \"%1\" is not a valid Ohmcoin address.").arg(ui->addressEdit->text()),
                 QMessageBox::Ok, QMessageBox::Ok);
             break;
         case AddressTableModel::DUPLICATE_ADDRESS:

@@ -1,3 +1,8 @@
+// Copyright (c) 2017 The PIVX developers
+// Copyright (c) 2019 The Ohmcoin Developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef KARMANODELIST_H
 #define KARMANODELIST_H
 
@@ -5,10 +10,16 @@
 #include "platformstyle.h"
 #include "sync.h"
 #include "util.h"
+#include "wallet.h"
 
 #include <QMenu>
 #include <QTimer>
 #include <QWidget>
+
+#include "walletmodel.h"
+
+#include <QDialog>
+#include <QString>
 
 #define MY_KARMANODELIST_UPDATE_SECONDS 60
 #define KARMANODELIST_UPDATE_SECONDS 15
@@ -39,6 +50,7 @@ public:
     void setWalletModel(WalletModel* walletModel);
     void StartAlias(std::string strAlias);
     void StartAll(std::string strCommand = "start-all");
+	void deleteAlias(std::string Alias);
 
 private:
     QMenu* contextMenu;
@@ -61,9 +73,14 @@ private:
 
 private Q_SLOTS:
     void showContextMenu(const QPoint&);
+	void deleteAlias();
+	void copyAlias();
     void on_startButton_clicked();
+    void on_editConfigureKarmanode_clicked();
     void on_startAllButton_clicked();
     void on_startMissingButton_clicked();
+	void on_configureKarmanodeButton_clicked();
+	void openEditConfigureKarmanodePage(QString strAlias, QString strIP, QString strPrivKey, QString strTxHash, QString strOutputIndex, int count);
     void on_tableWidgetMyKarmanodes_itemSelectionChanged();
     void on_UpdateButton_clicked();
 };

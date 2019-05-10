@@ -1,6 +1,5 @@
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -183,7 +182,7 @@ std::string CKarmanodeSync::GetSyncStatus()
 
 void CKarmanodeSync::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 {
-    if (strCommand == "ssc") { //Sync status count
+    if (strCommand == NetMsgType::SSC) { //Sync status count
         int nItemID;
         int nCount;
         vRecv >> nItemID >> nCount;
@@ -224,7 +223,7 @@ void CKarmanodeSync::ClearFulfilledRequest()
     if (!lockRecv) return;
 
     BOOST_FOREACH (CNode* pnode, vNodes) {
-        pnode->ClearFulfilledRequest("getspork");
+        pnode->ClearFulfilledRequest(NetMsgType::GETSPORK);
         pnode->ClearFulfilledRequest("mnsync");
         pnode->ClearFulfilledRequest("mnwsync");
         pnode->ClearFulfilledRequest("busync");
@@ -268,14 +267,14 @@ void CKarmanodeSync::Process()
     BOOST_FOREACH (CNode* pnode, vNodes) {
         if (Params().NetworkID() == CBaseChainParams::REGTEST) {
             if (RequestedKarmanodeAttempt <= 2) {
-                pnode->PushMessage("getsporks"); //get current network sporks
+                pnode->PushMessage(NetMsgType::GETSPORKS); //get current network sporks
             } else if (RequestedKarmanodeAttempt < 4) {
                 mnodeman.DsegUpdate(pnode);
             } else if (RequestedKarmanodeAttempt < 6) {
                 int nMnCount = mnodeman.CountEnabled();
-                pnode->PushMessage("mnget", nMnCount); //sync payees
+                pnode->PushMessage(NetMsgType::MNGET, nMnCount); //sync payees
                 uint256 n = 0;
-                pnode->PushMessage("mnvs", n); //sync karmanode votes
+                pnode->PushMessage(NetMsgType::MNVS, n); //sync karmanode votes
             } else {
                 RequestedKarmanodeAssets = KARMANODE_SYNC_FINISHED;
             }
@@ -283,7 +282,7 @@ void CKarmanodeSync::Process()
             return;
         }
 
-        //set to synced
+        // set to synced
         if (RequestedKarmanodeAssets == KARMANODE_SYNC_SPORKS) {
             if (pnode->HasFulfilledRequest("getspork")) continue;
             pnode->FulfilledRequest("getspork");
@@ -291,9 +290,10 @@ void CKarmanodeSync::Process()
             pnode->PushMessage("getsporks"); //get current network sporks
             if (RequestedKarmanodeAttempt >= 2) GetNextAsset();
             RequestedKarmanodeAttempt++;
-
+ 
             return;
-        }
+         }
+
 
         if (pnode->nVersion >= karmanodePayments.GetMinKarmanodePaymentsProto()) {
             if (RequestedKarmanodeAssets == KARMANODE_SYNC_LIST) {
@@ -358,7 +358,7 @@ void CKarmanodeSync::Process()
                 if (pindexPrev == NULL) return;
 
                 int nMnCount = mnodeman.CountEnabled();
-                pnode->PushMessage("mnget", nMnCount); //sync payees
+                pnode->PushMessage(NetMsgType::MNGET, nMnCount); //sync payees
                 RequestedKarmanodeAttempt++;
 
                 return;
@@ -367,21 +367,16 @@ void CKarmanodeSync::Process()
 
         if (pnode->nVersion >= ActiveProtocol()) {
             if (RequestedKarmanodeAssets == KARMANODE_SYNC_BUDGET) {
-                //we'll start rejecting votes if we accidentally get set as synced too soon
-                if (lastBudgetItem > 0 && lastBudgetItem < GetTime() - KARMANODE_SYNC_TIMEOUT * 2 && RequestedKarmanodeAttempt >= KARMANODE_SYNC_THRESHOLD) { //hasn't received a new item in the last five seconds, so we'll move to the
-                                                                                                                                                                 //LogPrintf("CKarmanodeSync::Process - HasNextFinalizedBudget %d nCountFailures %d IsBudgetPropEmpty %d\n", budget.HasNextFinalizedBudget(), nCountFailures, IsBudgetPropEmpty());
-                                                                                                                                                                 //if(budget.HasNextFinalizedBudget() || nCountFailures >= 2 || IsBudgetPropEmpty()) {
+                
+                // We'll start rejecting votes if we accidentally get set as synced too soon
+                if (lastBudgetItem > 0 && lastBudgetItem < GetTime() - KARMANODE_SYNC_TIMEOUT * 2 && RequestedKarmanodeAttempt >= KARMANODE_SYNC_THRESHOLD) {
+                    
+                    // Hasn't received a new item in the last five seconds, so we'll move to the
                     GetNextAsset();
 
-                    //try to activate our karmanode if possible
+                    // Try to activate our karmanode if possible
                     activeKarmanode.ManageStatus();
-                    // } else { //we've failed to sync, this state will reject the next budget block
-                    //     LogPrintf("CKarmanodeSync::Process - ERROR - Sync has failed, will retry later\n");
-                    //     RequestedKarmanodeAssets = KARMANODE_SYNC_FAILED;
-                    //     RequestedKarmanodeAttempt = 0;
-                    //     lastFailure = GetTime();
-                    //     nCountFailures++;
-                    // }
+
                     return;
                 }
 
@@ -400,7 +395,7 @@ void CKarmanodeSync::Process()
                 if (RequestedKarmanodeAttempt >= KARMANODE_SYNC_THRESHOLD * 3) return;
 
                 uint256 n = 0;
-                pnode->PushMessage("mnvs", n); //sync karmanode votes
+                pnode->PushMessage(NetMsgType::MNVS, n); //sync karmanode votes
                 RequestedKarmanodeAttempt++;
 
                 return;

@@ -1,15 +1,14 @@
-
-
 // Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2017 The PIVX developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef KARMANODE_PAYMENTS_H
 #define KARMANODE_PAYMENTS_H
 
 #include "key.h"
 #include "main.h"
 #include "karmanode.h"
-#include <boost/lexical_cast.hpp>
 
 using namespace std;
 
@@ -29,8 +28,8 @@ extern CKarmanodePayments karmanodePayments;
 void ProcessMessageKarmanodePayments(CNode* pfrom, std::string& strCommand, CDataStream& vRecv);
 bool IsBlockPayeeValid(const CBlock& block, int nBlockHeight);
 std::string GetRequiredPaymentsString(int nBlockHeight);
-bool IsBlockValueValid(const CBlock& block, int64_t nExpectedValue, CAmount nMinted);
-void FillBlockPayee(CMutableTransaction& txNew, int64_t nFees, bool fProofOfStake);
+bool IsBlockValueValid(const CBlock& block, CAmount nExpectedValue, CAmount nMinted);
+void FillBlockPayee(CMutableTransaction& txNew, CAmount nFees, bool fProofOfStake);
 
 void DumpKarmanodePayments();
 
@@ -218,9 +217,9 @@ public:
     {
         std::string ret = "";
         ret += vinKarmanode.ToString();
-        ret += ", " + boost::lexical_cast<std::string>(nBlockHeight);
+        ret += ", " + std::to_string(nBlockHeight);
         ret += ", " + payee.ToString();
-        ret += ", " + boost::lexical_cast<std::string>((int)vchSig.size());
+        ret += ", " + std::to_string((int)vchSig.size());
         return ret;
     }
 };

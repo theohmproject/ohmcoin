@@ -445,7 +445,7 @@
       <string>Buy OHMC</string>
      </property>
      <property name="icon">
-      <iconset resource="../ohmc.qrc">
+      <iconset resource="../ohmcoin.qrc">
        <normaloff>:/icons/bitcoin</normaloff>:/icons/bitcoin</iconset>
      </property>
     </widget>
@@ -1754,7 +1754,7 @@
       <string>Sell OHMC</string>
      </property>
      <property name="icon">
-      <iconset resource="../ohmc">
+      <iconset resource="../ohmcoin">
        <normaloff>:/icons/bitcoin</normaloff>:/icons/bitcoin</iconset>
      </property>
     </widget>
@@ -2941,10 +2941,10 @@
       </rect>
      </property>
      <property name="text">
-      <string>Generate Ohm Deposit Address</string>
+      <string>Generate Ohmcoin Deposit Address</string>
      </property>
      <property name="icon">
-      <iconset resource="../ohmc.qrc">
+      <iconset resource="../ohmcoin.qrc">
        <normaloff>:/icons/bitcoin</normaloff>:/icons/bitcoin</iconset>
      </property>
     </widget>
@@ -3155,7 +3155,7 @@
        <string notr="true">border: 1px solid #61696c;margin-left:4px;</string>
       </property>
      </widget>
-     <widget class="QPushButton" name="btnConvertOhm">
+     <widget class="QPushButton" name="btnConvertOhmcoin">
       <property name="geometry">
        <rect>
         <x>260</x>
@@ -3206,7 +3206,7 @@
        <string/>
       </property>
       <property name="pixmap">
-       <pixmap resource="../ohmc.qrc">:/icons/transaction_1</pixmap>
+       <pixmap resource="../ohmcoin.qrc">:/icons/transaction_1</pixmap>
       </property>
       <property name="scaledContents">
        <bool>true</bool>
@@ -3253,7 +3253,7 @@
       <string>Update API Keys</string>
      </property>
      <property name="icon">
-      <iconset resource="../ohmc.qrc">
+      <iconset resource="../ohmcoin.qrc">
        <normaloff>:/icons/bitcoin</normaloff>:/icons/bitcoin</iconset>
      </property>
     </widget>
@@ -3408,7 +3408,7 @@
   </widget>
  </widget>
  <resources>
-  <include location="../ohmc.qrc"/>
+  <include location="../ohmcoin.qrc"/>
  </resources>
  <connections/>
 </ui>
