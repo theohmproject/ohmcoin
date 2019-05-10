@@ -1,7 +1,7 @@
 Ohmcoin Core integration/staging repository
 =====================================
 
-[![Build Status](https://travis-ci.org/ohmcoinproject/Ohmcoin.svg?branch=master)](https://travis-ci.org/ohmcoinproject/Ohmcoin)
+[![Build Status](https://travis-ci.org/theohmproject/Ohmcoin.svg?branch=master)](https://travis-ci.org/theohmproject/Ohmcoin)
 
 Ohmcoin is a cutting edge cryptocurrency, with many features not available in most other cryptocurrencies.
 - Anonymized transactions using zerocoin technology

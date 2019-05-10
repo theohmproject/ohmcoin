@@ -23,8 +23,8 @@ Build-Depends: debhelper,
  libprotobuf-dev, protobuf-compiler
 Standards-Version: 3.9.2
 Homepage: http://www.ohmcoin.org
-Vcs-Git: git://github.com/ohmcoinproject/Ohmcoin.git
-Vcs-Browser: http://github.com/ohmcoinproject/Ohmcoin
+Vcs-Git: git://github.com/theohmproject/Ohmcoin.git
+Vcs-Browser: http://github.com/theohmproject/Ohmcoin
 
 Package: ohmcoind
 Architecture: any

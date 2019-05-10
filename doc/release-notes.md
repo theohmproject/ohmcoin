@@ -1,13 +1,13 @@
 Ohmcoin Core version 3.0.4 is now available from:
 
-  <https://github.com/ohmcoinproject/ohmcoin/releases>
+  <https://github.com/theohmproject/ohmcoin/releases>
 
 This is a new minor-revision version release, including various bug fixes and
 performance improvements, as well as updated translations.
 
 Please report bugs using the issue tracker at github:
 
-  <https://github.com/ohmcoinproject/ohmcoin/issues>
+  <https://github.com/theohmproject/ohmcoin/issues>
 
 
 Mandatory Update
