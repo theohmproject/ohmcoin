@@ -8,7 +8,7 @@ Ohmcoin Core version 1.2.1 is now available from:
 
 Please report bugs using the issue tracker at github:
 
-  https://github.com/ohmcoinproject/ohmcoin/issues
+  https://github.com/theohmproject/ohmcoin/issues
 
 
 How to Upgrade

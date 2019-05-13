@@ -80,8 +80,8 @@ Clone the git repositories for ohmcoin and Gitian.
 ```bash
 git clone https://github.com/devrandom/gitian-builder.git
 git clone https://github.com/ohmcoin/ohmcoin
-git clone https://github.com/ohmcoinproject/gitian.sigs.git
-git clone https://github.com/ohmcoinproject/ohmcoin-detached-sigs.git
+git clone https://github.com/theohmproject/gitian.sigs.git
+git clone https://github.com/theohmproject/ohmcoin-detached-sigs.git
 ```
 
 Setting up the Gitian image
