@@ -523,7 +523,7 @@ static std::string FormatException(std::exception* pex, const char* pszThread)
     char pszModule[MAX_PATH] = "";
     GetModuleFileNameA(NULL, pszModule, sizeof(pszModule));
 #else
-    const char* pszModule = "ohmcoin";
+    const char* pszModule = "ohmc";
 #endif
     if (pex)
         return strprintf(
@@ -544,13 +544,13 @@ void PrintExceptionContinue(std::exception* pex, const char* pszThread)
 boost::filesystem::path GetDefaultDataDir()
 {
     namespace fs = boost::filesystem;
-// Windows < Vista: C:\Documents and Settings\Username\Application Data\Ohmcoin
-// Windows >= Vista: C:\Users\Username\AppData\Roaming\Ohmcoin
-// Mac: ~/Library/Application Support/Ohmcoin
-// Unix: ~/.ohmcoin
+// Windows < Vista: C:\Documents and Settings\Username\Application Data\OHMC
+// Windows >= Vista: C:\Users\Username\AppData\Roaming\OHMC
+// Mac: ~/Library/Application Support/OHMC
+// Unix: ~/.ohmc
 #ifdef WIN32
     // Windows
-    return GetSpecialFolderPath(CSIDL_APPDATA) / "Ohmcoin";
+    return GetSpecialFolderPath(CSIDL_APPDATA) / "OHMC";
 #else
     fs::path pathRet;
     char* pszHome = getenv("HOME");
@@ -562,10 +562,10 @@ boost::filesystem::path GetDefaultDataDir()
     // Mac
     pathRet /= "Library/Application Support";
     TryCreateDirectory(pathRet);
-    return pathRet / "Ohmcoin";
+    return pathRet / "OHMC";
 #else
     // Unix
-    return pathRet / ".ohmcoin";
+    return pathRet / ".ohmc";
 #endif
 #endif
 }
@@ -612,7 +612,7 @@ void ClearDatadirCache()
 
 boost::filesystem::path GetConfigFile()
 {
-    boost::filesystem::path pathConfigFile(GetArg("-conf", "ohmcoin.conf"));
+    boost::filesystem::path pathConfigFile(GetArg("-conf", "ohmc.conf"));
     if (!pathConfigFile.is_complete())
         pathConfigFile = GetDataDir(false) / pathConfigFile;
 
@@ -631,7 +631,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 {
     boost::filesystem::ifstream streamConfig(GetConfigFile());
     if (!streamConfig.good()) {
-        // Create empty ohmcoin.conf if it does not exist
+        // Create empty ohmc.conf if it does not exist
         FILE* configFile = fopen(GetConfigFile().string().c_str(), "a");
         if (configFile != NULL)
             fclose(configFile);
@@ -642,7 +642,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
     setOptions.insert("*");
 
     for (boost::program_options::detail::config_file_iterator it(streamConfig, setOptions), end; it != end; ++it) {
-        // Don't overwrite existing settings so command line settings override ohmcoin.conf
+        // Don't overwrite existing settings so command line settings override ohmc.conf
         string strKey = string("-") + it->string_key;
         string strValue = it->value[0];
         InterpretNegativeSetting(strKey, strValue);
@@ -657,7 +657,7 @@ void ReadConfigFile(map<string, string>& mapSettingsRet,
 #ifndef WIN32
 boost::filesystem::path GetPidFile()
 {
-    boost::filesystem::path pathPidFile(GetArg("-pid", "ohmcoind.pid"));
+    boost::filesystem::path pathPidFile(GetArg("-pid", "ohmcd.pid"));
     if (!pathPidFile.is_complete()) pathPidFile = GetDataDir() / pathPidFile;
     return pathPidFile;
 }
