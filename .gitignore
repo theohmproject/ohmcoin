@@ -169,3 +169,6 @@ src/config/ohmcoin-config.h
 src/config/ohmcoin-config.h.in
 *.tmp
 doc/Doxyfile
+src/ohmcoin-cli
+src/ohmcoin-tx
+src/ohmcoind
