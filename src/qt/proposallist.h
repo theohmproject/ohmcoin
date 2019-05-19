@@ -16,6 +16,7 @@
 #include <QWidget>
 
 class ProposalFilterProxy;
+class Ckarmanode;
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
