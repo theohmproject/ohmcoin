@@ -492,7 +492,7 @@ void ProposalList::vote_click_handler(const std::string voteString)
             continue;
         }
 
-        Ckarmanode* pmn = mnodeman.Find(pubKeykarmanode);
+        CKarmanode* pmn = mnodeman.Find(pubKeykarmanode);
         if (pmn == NULL) {
             failed++;
             continue;
