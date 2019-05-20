@@ -83,7 +83,7 @@ public slots:
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
     /** Switch to masternode page */
-    void gotoMasternodePage();
+    void gotoKarmanodePage();
     /** Switch to explorer page */
     void gotoBlockExplorerPage();
     /** Switch to privacy page */

@@ -16,8 +16,8 @@
 #include <boost/tokenizer.hpp>
 #include <guiutil.h>
 #include <main.h>
-#include <masternode-budget.h>
-#include <masternode-sync.h>
+#include <karmanode-budget.h>
+#include <karmanode-sync.h>
 #include "proposaldialog.h"
 #include <ui_proposaldialog.h>
 #include <univalue.h>
@@ -204,7 +204,7 @@ void ProposalDialog::submitProposal()
         return;
     }
 
-    budget.mapSeenMasternodeBudgetProposals.insert(make_pair(budgetProposalBroadcast.GetHash(), budgetProposalBroadcast));
+    budget.mapSeenKarmanodeBudgetProposals.insert(make_pair(budgetProposalBroadcast.GetHash(), budgetProposalBroadcast));
     budgetProposalBroadcast.Relay();
     
     this->accept();
@@ -214,7 +214,7 @@ bool ProposalDialog::validateProposal()
 {
     std::string strError = "";
 
-    if (!masternodeSync.IsBlockchainSynced()) strError = "Must wait for client to sync with masternode network. Try again in a minute or so.";
+    if (!karmanodeSync.IsBlockchainSynced()) strError = "Must wait for client to sync with masternode network. Try again in a minute or so.";
     
     std::string strProposalName = SanitizeString(ui->nameEdit->text().toStdString());
     if (strProposalName.size() > 20) strError = "Invalid proposal name, limit of 20 characters.";
