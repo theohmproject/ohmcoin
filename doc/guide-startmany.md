@@ -47,7 +47,7 @@ The wallet will re-scan and you will see your available balance increase by the 
 1. Open the QT Wallet.
 2. Click the Receive tab.
 3. Fill in the form to request a payment.
-    * Label: mn01
+    * Label: kn01
     * Amount: 1000 (optional)
     * Click *Request payment*
 5. Click the *Copy Address* button
@@ -108,8 +108,8 @@ alias ipaddress:port karmanode_private_key collateral_output collateral_output_i
 Example:
 
 ```
-mn01 127.0.0.1:52020 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0
-mn02 127.0.0.2:52020 93WaAb3htPJEV8E9aQcN23Jt97bPex7YvWfgMDTUdWJvzmrMqey aa9f1034d973377a5e733272c3d0eced1de22555ad45d6b24abadff8087948d4 0 7gnwGHt17heGpG9Crfeh4KGpYNFugPhJdh:25
+kn01 127.0.0.1:52020 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0
+kn02 127.0.0.2:52020 93WaAb3htPJEV8E9aQcN23Jt97bPex7YvWfgMDTUdWJvzmrMqey aa9f1034d973377a5e733272c3d0eced1de22555ad45d6b24abadff8087948d4 0 7gnwGHt17heGpG9Crfeh4KGpYNFugPhJdh:25
 ```
 
 ## What about the ohmcoin.conf file?
@@ -153,5 +153,5 @@ If you want to review your karmanode.conf setting before starting the MasterNode
 
 Give it the eye-ball test. If satisfied, you can start your nodes one of two ways.
 
-1. karmanode start-alias [alias_from_karmanode.conf]. Example ```karmanode start-alias mn01```
+1. karmanode start-alias [alias_from_karmanode.conf]. Example ```karmanode start-alias kn01```
 2. karmanode start-many
