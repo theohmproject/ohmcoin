@@ -12,7 +12,7 @@
 #include "spork.h"
 
 //
-// Bootup the Karmanode, look for a 10000 OHMC input and register on the network
+// Bootup the Karmanode, look for a 3000 OHMC input and register on the network
 //
 void CActiveKarmanode::ManageStatus()
 {

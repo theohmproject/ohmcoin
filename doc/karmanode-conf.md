@@ -1,10 +1,10 @@
 Multi karmanode config
 =======================
 
-The multi karmanode config allows you to control multiple karmanodes from a single wallet. The wallet needs to have a valid collateral output of 10000 coins for each karmanode. To use this, place a file named karmanode.conf in the data directory of your install:
- * Windows: %APPDATA%\Ohmcoin\
- * Mac OS: ~/Library/Application Support/Ohmcoin/
- * Unix/Linux: ~/.ohmcoin/
+The multi karmanode config allows you to control multiple karmanodes from a single wallet. The wallet needs to have a valid collateral output of 3000 coins for each karmanode. To use this, place a file named karmanode.conf in the data directory of your install:
+ * Windows: %APPDATA%\OHMC\
+ * Mac OS: ~/Library/Application Support/OHMC/
+ * Unix/Linux: ~/.ohmc/
 
 The new karmanode.conf format consists of a space seperated text file. Each line consisting of an alias, IP address followed by port, karmanode private key, collateral output transaction id, collateral output index, donation address and donation percentage (the latter two are optional and should be in format "address:percentage").
 
@@ -16,7 +16,7 @@ kn3 127.0.0.4:52020 92Da1aYg6sbenP6uwskJgEY2XWB5LwJ7bXRqc3UPeShtHWJDjDv db478e78
 ```
 
 In the example above:
-* the collateral for kn1 consists of transaction 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c, output index 0 has amount 10000
+* the collateral for kn1 consists of transaction 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c, output index 0 has amount 3000
 * karmanode 2 will donate 33% of its income
 * karmanode 3 will donate 100% of its income
 

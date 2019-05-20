@@ -48,7 +48,7 @@ The wallet will re-scan and you will see your available balance increase by the 
 2. Click the Receive tab.
 3. Fill in the form to request a payment.
     * Label: kn01
-    * Amount: 1000 (optional)
+    * Amount: 3000 (optional)
     * Click *Request payment*
 5. Click the *Copy Address* button
 
@@ -56,9 +56,9 @@ Create a new wallet address for each Karmanode.
 
 Close your QT Wallet.
 
-### Send 10,000 Ohmcoin to New Addresses
+### Send 3,000 Ohmcoin to New Addresses
 
-Just like setting up a standard MN. Send exactly 10,000 Ohmcoin to each new address created above.
+Just like setting up a standard MN. Send exactly 3,000 Ohmcoin to each new address created above.
 
 ### Create New Karmanode Private Keys
 
@@ -95,7 +95,7 @@ Issue the following:
 Make note of the hash (which is your collaterla_output) and index.
 
 ### Enter your Karmanode details into your karmanode.conf file
-[From the ohmcoin github repo](https://github.com/ohmcoin-crypto/ohmcoin/blob/master/doc/karmanode_conf.md)
+[From the ohmcoin github repo](https://github.com/ohmcoin-crypto/ohmcoin/blob/master/doc/karmanode-conf.md)
 
 The new karmanode.conf format consists of a space seperated text file. Each line consisting of an alias, IP address followed by port, karmanode private key, collateral output transaction id and collateral output index, donation address and donation percentage (the latter two are optional and should be in format "address:percentage").
 
