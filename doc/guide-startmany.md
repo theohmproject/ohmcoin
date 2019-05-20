@@ -8,13 +8,13 @@ There are many ways to setup a wallet to support start-many. This guide will wal
 
 ## <a name="option1"></a>Option 1. Importing an existing wallet
 
-This is the way to go if you are consolidating multiple wallets into one that supports start-many. 
+This is the way to go if you are consolidating multiple wallets into one that supports start-many.
 
-### From your single-instance MasterNode Wallet
+### From your single-instance Karmanode Wallet
 
 Open your QT Wallet and go to console (from the menu select Tools => Debug Console)
 
-Dump the private key from your MasterNode's pulic key.
+Dump the private key from your Karmanode's pulic key.
 
 ```
 walletpassphrase [your_wallet_passphrase] 600
@@ -23,7 +23,7 @@ dumpprivkey [mn_public_key]
 
 Copy the resulting priviate key. You'll use it in the next step.
 
-### From your multi-instance MasterNode Wallet
+### From your multi-instance Karmanode Wallet
 
 Open your QT Wallet and go to console (from the menu select Tools => Debug Console)
 
@@ -52,7 +52,7 @@ The wallet will re-scan and you will see your available balance increase by the 
     * Click *Request payment*
 5. Click the *Copy Address* button
 
-Create a new wallet address for each MasterNode.
+Create a new wallet address for each Karmanode.
 
 Close your QT Wallet.
 
@@ -68,7 +68,7 @@ Issue the following:
 
 ```karmanode genkey```
 
-*Note: A karmanode private key will need to be created for each MasterNode you run. You should not use the same karmanode private key for multiple MasterNodes.*
+*Note: A karmanode private key will need to be created for each Karmanode you run. You should not use the same karmanode private key for multiple karmanode.*
 
 Close your QT Wallet.
 
@@ -80,7 +80,7 @@ Create the karmanode.conf file in the same directory as your wallet.dat.
 
 Copy the karmanode private key and correspondig collateral output transaction that holds the 1K Ohmcoin.
 
-The karmanode private key may be an existing key from [Option 1](#option1), or a newly generated key from [Option 2](#option2). 
+The karmanode private key may be an existing key from [Option 1](#option1), or a newly generated key from [Option 2](#option2).
 
 *Please note, the karmanode priviate key is not the same as a wallet private key. Never put your wallet private key in the karmanode.conf file. That is equivalent to putting your 10,000 Ohmcoin on the remote server and defeats the purpose of a hot/cold setup.*
 
@@ -94,7 +94,7 @@ Issue the following:
 
 Make note of the hash (which is your collaterla_output) and index.
 
-### Enter your MasterNode details into your karmanode.conf file
+### Enter your Karmanode details into your karmanode.conf file
 [From the ohmcoin github repo](https://github.com/ohmcoin-crypto/ohmcoin/blob/master/doc/karmanode_conf.md)
 
 The new karmanode.conf format consists of a space seperated text file. Each line consisting of an alias, IP address followed by port, karmanode private key, collateral output transaction id and collateral output index, donation address and donation percentage (the latter two are optional and should be in format "address:percentage").
@@ -114,7 +114,7 @@ mn02 127.0.0.2:52020 93WaAb3htPJEV8E9aQcN23Jt97bPex7YvWfgMDTUdWJvzmrMqey aa9f103
 
 ## What about the ohmcoin.conf file?
 
-If you are using a karmanode.conf file you no longer need the ohmcoin.conf file. The exception is if you need custom settings (thanks oblox). 
+If you are using a karmanode.conf file you no longer need the ohmcoin.conf file. The exception is if you need custom settings (thanks oblox).
 
 ## Update ohmcoin.conf on server
 
@@ -127,17 +127,17 @@ Shut down the daemon and then edit the file.
 ### Edit the karmanodeprivkey
 If you generated a new karmanode private key, you will need to update the karmanodeprivkey value in your remote ohmcoin.conf file.
 
-## Start your MasterNodes
+## Start your Karmanodes
 
 ### Remote
 
-If your remote server is not running, start your remote daemon as you normally would. 
+If your remote server is not running, start your remote daemon as you normally would.
 
 I usually confirm that remote is on the correct block by issuing:
 
 ```ohmcoind getinfo```
 
-And compare with the official explorer at http://ohmcoinexplorer.coin-server.com <or> dnet.presstab.pw
+And compare with the official explorer at http://explorer.ohmcoin.org <or> dnet.presstab.pw
 
 ### Local
 
