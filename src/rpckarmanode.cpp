@@ -911,7 +911,7 @@ UniValue createkarmanodebroadcast(const UniValue& params, bool fHelp)
             "}\n"
 
             "\nExamples:\n" +
-            HelpExampleCli("createkarmanodebroadcast", "alias mymn1") + HelpExampleRpc("createkarmanodebroadcast", "alias mymn1"));
+            HelpExampleCli("createkarmanodebroadcast", "alias mykn1") + HelpExampleRpc("createkarmanodebroadcast", "alias mykn1"));
 
     EnsureWalletIsUnlocked();
 

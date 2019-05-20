@@ -1005,13 +1005,13 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
             }
 
             // verify that sig time is legit in past
-            // should be at least not earlier than block when 10000 OHMC tx got KARMANODE_MIN_CONFIRMATIONS
+            // should be at least not earlier than block when 3000 OHMC tx got KARMANODE_MIN_CONFIRMATIONS
             uint256 hashBlock = 0;
             CTransaction tx2;
             GetTransaction(vin.prevout.hash, tx2, hashBlock, true);
             BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
             if (mi != mapBlockIndex.end() && (*mi).second) {
-                CBlockIndex* pMNIndex = (*mi).second;                                                        // block for 10000 OHMC tx -> 1 confirmation
+                CBlockIndex* pMNIndex = (*mi).second;                                                        // block for 3000 OHMC tx -> 1 confirmation
                 CBlockIndex* pConfIndex = chainActive[pMNIndex->nHeight + KARMANODE_MIN_CONFIRMATIONS - 1]; // block where tx got KARMANODE_MIN_CONFIRMATIONS
                 if (pConfIndex->GetBlockTime() > sigTime) {
                     LogPrint("karmanode","mnb - Bad sigTime %d for Karmanode %s (%i conf block is at %d)\n",

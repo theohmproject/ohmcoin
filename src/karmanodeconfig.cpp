@@ -30,7 +30,7 @@ bool CKarmanodeConfig::read(std::string& strErr)
         if (configFile != NULL) {
             std::string strHeader = "# Karmanode config file\n"
                                     "# Format: alias IP:port karmanodeprivkey collateral_output_txid collateral_output_index\n"
-                                    "# Example: mn1 127.0.0.2:52020 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0\n";
+                                    "# Example: kn1 127.0.0.2:52020 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0\n";
             fwrite(strHeader.c_str(), std::strlen(strHeader.c_str()), 1, configFile);
             fclose(configFile);
         }
@@ -117,11 +117,11 @@ void CKarmanodeConfig::writeToKarmanodeConf()
 	// Add file header back as each time this runs it restarts the file
     std::string strHeader = "# Karmanode config file\n"
                             "# Format: alias IP:port karmanodeprivkey collateral_output_txid collateral_output_index\n"
-                            "# Example: mn1 127.0.0.2:52020 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0\n";
+                            "# Example: kn1 127.0.0.2:52020 93HaYBVUCYjEMeeH1Y4sBGLALQZE1Yc1K64xiqgX37tGBDQL8Xg 2bcd3c84c84f87eaa86e4e56834c92927a07f9e18718810b92e0d0324456a67c 0\n";
     fwrite(strHeader.c_str(), std::strlen(strHeader.c_str()), 1, configFile);
-	
+
 	std::string karmanodeAliasBase = "";
-	
+
 	BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
 		// Orders configs in proper strings
 		std::string karmanodeAliasLine  = mne.getAlias() + " " + mne.getIp() + " " + mne.getPrivKey() + " " + mne.getTxHash() + " " + mne.getOutputIndex() + "\n";

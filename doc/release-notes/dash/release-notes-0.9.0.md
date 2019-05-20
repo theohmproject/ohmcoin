@@ -96,7 +96,7 @@ v0.10.14 on Sept/25/2014.
   mix of inputs for the next phase without any bloat to the blockchain or to
   the users wallet.
 - Fixed "transaction too large" due to the initial splitting function
-- Stopeed collateral/fee creation when it should have been doing a full
+- Stoped collateral/fee creation when it should have been doing a full
   split instead
 - Sometimes the client would denominate less than the intended amount, then do
   small denominations to make up the difference. This slowed down the
