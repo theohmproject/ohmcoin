@@ -122,7 +122,7 @@ If you generated a new karmanode private key, you will need to update the remote
 
 Shut down the daemon and then edit the file.
 
-```sudo nano .ohmcoin/ohmcoin.conf```
+```sudo nano .ohmcoin/ohmc.conf```
 
 ### Edit the karmanodeprivkey
 If you generated a new karmanode private key, you will need to update the karmanodeprivkey value in your remote ohmcoin.conf file.

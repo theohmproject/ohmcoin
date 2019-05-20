@@ -38,8 +38,8 @@ Instructions: Homebrew
 
 #### Install dependencies using Homebrew
 
-        brew install autoconf automake berkeley-db4 libtool boost miniupnpc openssl pkg-config protobuf qt5 zeromq libevent
-        
+        brew install autoconf automake berkeley-db4 libtool boost miniupnpc openssl pkg-config protobuf qt5 zeromq libevent qrencode
+
         Note: On OSX versions lower than High Sierra, zeromq should be replaced with libzmq
 
 ### Building `ohmcoind`
@@ -52,12 +52,12 @@ Instructions: Homebrew
 2.  Make the Homebrew OpenSSL headers visible to the configure script  (do ```brew info openssl``` to find out why this is necessary, or if you use Homebrew with installation folders different from the default).
          export LDFLAGS+=-L/usr/local/opt/openssl/lib
         export CPPFLAGS+=-I/usr/local/opt/openssl/include
-        
+
 3.  Build ohmcoind:
-        
-        chmod +x share/genbuild.sh autogen.sh 
+
+        chmod +x share/genbuild.sh autogen.sh
         ./autogen.sh
-        ./configure --with-gui=qt5 
+        ./configure --with-gui=qt5
         make
 (note: if configure fails with libprotobuf not found see [Troubleshooting](#trouble) at the bottom)
 
@@ -128,15 +128,15 @@ Other commands:
     ./ohmcoind -daemon # to start the ohmcoin daemon.
     ./ohmcoin-cli --help  # for a list of command-line options.
     ./ohmcoin-cli help    # When the daemon is running, to get a list of RPC commands
-    
+
 Troubleshooting:<a name="trouble"></a>
 ---------
 * brew install not working? Try replacing zeromq with libzmq in the brew install command
-                
+
 * libprotobuf not found during ./configure? Make sure you have installed protobuf with `brew install protobuf` and then run `export PKG_CONFIG_PATH=/usr/local/lib/pkgconfig` and try again
-                
+
 * Database errors have been seen in builds on High Sierra. One solution is to build Berkeley DB from source.
-        
+
         cd ~
         wget 'http://download.oracle.com/berkeley-db/db-4.8.30.NC.tar.gz'
         tar -xzvf db-4.8.30.NC.tar.gz
@@ -147,8 +147,8 @@ Troubleshooting:<a name="trouble"></a>
 
         Then configure Ohmcoin with this build of BerkeleyDB,
         ./configure --with-gui=qt5  LDFLAGS="-L/usr/local/BerkeleyDB.4.8/lib/" CPPFLAGS="-I/usr/local/BerkeleyDB.4.8/include/"
-                
-        
+
+
 * In the case you see: `configure: error: OpenSSL ec header missing`, run the following commands:
 
         export LDFLAGS=-L/usr/local/opt/openssl/lib
