@@ -56,17 +56,17 @@ RPC changes
 | `karmanode create` | | removed - not implemented |
 | `karmanode calcscore` | `listkarmanodescores` | |
 | --- | --- | --- |
-| `mnbudget prepare` | `preparebudget` | see notes below |
-| `mnbudget submit` | `submitbudget` | see notes below |
-| `mnbudget vote-many` | `mnbudgetvote` | see notes below |
-| `mnbudget vote-alias` | `mnbudgetvote` | see notes below |
-| `mnbudget vote` | `mnbudgetvote` | see notes below |
-| `mnbudget getvotes` | `getbudgetvotes` | |
-| `mnbudget getinfo` | `getbudgetinfo` | see notes below |
-| `mnbudget show` | `getbudgetinfo` | see notes below |
-| `mnbudget projection` | `getbudgetprojection` | |
-| `mnbudget check` | `checkbudgets` | |
-| `mnbudget nextblock` | `getnextsuperblock` | |
+| `knbudget prepare` | `preparebudget` | see notes below |
+| `knbudget submit` | `submitbudget` | see notes below |
+| `knbudget vote-many` | `knbudgetvote` | see notes below |
+| `knbudget vote-alias` | `knbudgetvote` | see notes below |
+| `knbudget vote` | `knbudgetvote` | see notes below |
+| `knbudget getvotes` | `getbudgetvotes` | |
+| `knbudget getinfo` | `getbudgetinfo` | see notes below |
+| `knbudget show` | `getbudgetinfo` | see notes below |
+| `knbudget projection` | `getbudgetprojection` | |
+| `knbudget check` | `checkbudgets` | |
+| `knbudget nextblock` | `getnextsuperblock` | |
 
 ##### `startkarmanode` Command #####
 This command now handles all cases for starting a karmanode instead of having multiple commands based on the context. Command arguments have changed slightly to allow the user to decide wither or not to re-lock the wallet after the command is run. Below is the help documentation:
@@ -105,11 +105,11 @@ Examples:
 ##### `preparebudget` & `submitbudget` Commands #####
 Due to the requirement of maintaining backwards compatibility with the legacy command, these two new commands are created to handle the preparation/submission of budget proposals. Future intention is to roll these two commands back into a single command to reduce code-duplication. Paramater arguments currently remain unchanged from the legacy command equivilent.
 
-##### `mnbudgetvote` Command #####
-This command now handles all cases for submitting MN votes on a budget proposal. Backwards compatibility with the legacy command(s) has been retained, with the exception of the `vote-alias` case due to a conflict in paramater type casting. A user running `mnbudget vote-alias` will be instructed to instead use the new `mnvote` command. Below is the full help documentation for this new command:
+##### `knbudgetvote` Command #####
+This command now handles all cases for submitting MN votes on a budget proposal. Backwards compatibility with the legacy command(s) has been retained, with the exception of the `vote-alias` case due to a conflict in paramater type casting. A user running `knbudget vote-alias` will be instructed to instead use the new `mnvote` command. Below is the full help documentation for this new command:
 
 ```
-mnbudgetvote "local|many|alias" "votehash" "yes|no" ( "alias" )
+knbudgetvote "local|many|alias" "votehash" "yes|no" ( "alias" )
 
 Vote on a budget proposal
 
@@ -133,12 +133,12 @@ Result:
 }
 
 Examples:
-> pivx-cli mnbudgetvote "local" "ed2f83cedee59a91406f5f47ec4d60bf5a7f9ee6293913c82976bd2d3a658041" "yes"
-> curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "mnbudgetvote", "params": ["local" "ed2f83cedee59a91406f5f47ec4d60bf5a7f9ee6293913c82976bd2d3a658041" "yes"] }' -H 'content-type: text/plain;' http://127.0.0.1:51473/
+> pivx-cli knbudgetvote "local" "ed2f83cedee59a91406f5f47ec4d60bf5a7f9ee6293913c82976bd2d3a658041" "yes"
+> curl --user myusername --data-binary '{"jsonrpc": "1.0", "id":"curltest", "method": "knbudgetvote", "params": ["local" "ed2f83cedee59a91406f5f47ec4d60bf5a7f9ee6293913c82976bd2d3a658041" "yes"] }' -H 'content-type: text/plain;' http://127.0.0.1:51473/
 ```
 
 ##### `getbudgetinfo` Command #####
-This command now combines the old `mnbudget show` and `mnbudget getinfo` commands to reduce code duplication while still maintaining backwards compatibility with the legacy commands. Given no parameters, it returns the full list of budget proposals (`mnbudget show`). A single optional parameter allows to return information on just that proposal (`mnbudget getinfo`). Below is the full help documentation:
+This command now combines the old `knbudget show` and `knbudget getinfo` commands to reduce code duplication while still maintaining backwards compatibility with the legacy commands. Given no parameters, it returns the full list of budget proposals (`knbudget show`). A single optional parameter allows to return information on just that proposal (`knbudget getinfo`). Below is the full help documentation:
 
 ```
 getbudgetinfo ( "proposal" )

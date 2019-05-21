@@ -314,20 +314,20 @@ extern UniValue getkarmanodestatus(const UniValue& params, bool fHelp);
 extern UniValue getkarmanodewinners(const UniValue& params, bool fHelp);
 extern UniValue getkarmanodescores(const UniValue& params, bool fHelp);
 
-extern UniValue mnbudget(const UniValue& params, bool fHelp); // in rpckarmanode-budget.cpp
+extern UniValue knbudget(const UniValue& params, bool fHelp); // in rpckarmanode-budget.cpp
 extern UniValue preparebudget(const UniValue& params, bool fHelp);
 extern UniValue submitbudget(const UniValue& params, bool fHelp);
-extern UniValue mnbudgetvote(const UniValue& params, bool fHelp);
+extern UniValue knbudgetvote(const UniValue& params, bool fHelp);
 extern UniValue getbudgetvotes(const UniValue& params, bool fHelp);
 extern UniValue getnextsuperblock(const UniValue& params, bool fHelp);
 extern UniValue getbudgetprojection(const UniValue& params, bool fHelp);
 extern UniValue getbudgetinfo(const UniValue& params, bool fHelp);
-extern UniValue mnbudgetrawvote(const UniValue& params, bool fHelp);
-extern UniValue mnfinalbudget(const UniValue& params, bool fHelp);
+extern UniValue knbudgetrawvote(const UniValue& params, bool fHelp);
+extern UniValue knfinalbudget(const UniValue& params, bool fHelp);
 extern UniValue checkbudgets(const UniValue& params, bool fHelp);
 
 extern UniValue getinfo(const UniValue& params, bool fHelp); // in rpcmisc.cpp
-extern UniValue mnsync(const UniValue& params, bool fHelp);
+extern UniValue knsync(const UniValue& params, bool fHelp);
 extern UniValue spork(const UniValue& params, bool fHelp);
 extern UniValue validateaddress(const UniValue& params, bool fHelp);
 extern UniValue createmultisig(const UniValue& params, bool fHelp);

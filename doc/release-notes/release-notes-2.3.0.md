@@ -101,11 +101,11 @@ For the `list` (aka `karmanodelist`) parameter, the various "modes" have been re
 ]
 ```
 
-#### mnbudget command
+#### knbudget command
 
-An additional parameter has been added to `mnbudget` to allow a controller wallet to issue per-MN votes. The new parameter is `vote-alias` and it's use format is as follows:
+An additional parameter has been added to `knbudget` to allow a controller wallet to issue per-MN votes. The new parameter is `vote-alias` and it's use format is as follows:
 
-`mnbudget vote-alias <proposal-hash> <yes|no> <alias>`
+`knbudget vote-alias <proposal-hash> <yes|no> <alias>`
 
 All fields are required to successfully vote.
 
