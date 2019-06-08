@@ -14,7 +14,7 @@
 #include "optionsmodel.h"
 #include "sendcoinsentry.h"
 #include "walletmodel.h"
-#include "coincontrol.h"
+#include "wallet/coincontrol.h"
 #include "zohmccontroldialog.h"
 #include "spork.h"
 

@@ -5,7 +5,7 @@
 #include "libzerocoin/Denominations.h"
 #include "amount.h"
 #include "chainparams.h"
-#include "coincontrol.h"
+#include "wallet/coincontrol.h"
 #include "main.h"
 #include "wallet/wallet.h"
 #include "wallet/walletdb.h"

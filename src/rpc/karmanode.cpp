@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "activekarmanode.h"
-#include "db.h"
+#include "wallet/db.h"
 #include "init.h"
 #include "main.h"
 #include "karmanode-budget.h"
@@ -13,6 +13,10 @@
 #include "karmanodeman.h"
 #include "rpc/server.h"
 #include "utilmoneystr.h"
+
+#ifdef ENABLE_WALLET
+#include "wallet/wallet.h"
+#endif
 
 #include <univalue.h>
 

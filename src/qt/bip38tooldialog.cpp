@@ -15,7 +15,6 @@
 #include "bip38.h"
 #include "init.h"
 #include "wallet/wallet.h"
-#include "askpassphrasedialog.h"
 
 #include <string>
 #include <vector>
