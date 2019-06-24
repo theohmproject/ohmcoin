@@ -224,8 +224,8 @@ void CKarmanodeSync::ClearFulfilledRequest()
 
     BOOST_FOREACH (CNode* pnode, vNodes) {
         pnode->ClearFulfilledRequest(NetMsgType::GETSPORK);
-        pnode->ClearFulfilledRequest("mnsync");
-        pnode->ClearFulfilledRequest("mnwsync");
+        pnode->ClearFulfilledRequest("knsync");
+        pnode->ClearFulfilledRequest("knwsync");
         pnode->ClearFulfilledRequest("busync");
     }
 }
@@ -303,8 +303,8 @@ void CKarmanodeSync::Process()
                     return;
                 }
 
-                if (pnode->HasFulfilledRequest("mnsync")) continue;
-                pnode->FulfilledRequest("mnsync");
+                if (pnode->HasFulfilledRequest("knsync")) continue;
+                pnode->FulfilledRequest("knsync");
 
                 // timeout
                 if (lastKarmanodeList == 0 &&
@@ -334,8 +334,8 @@ void CKarmanodeSync::Process()
                     return;
                 }
 
-                if (pnode->HasFulfilledRequest("mnwsync")) continue;
-                pnode->FulfilledRequest("mnwsync");
+                if (pnode->HasFulfilledRequest("knwsync")) continue;
+                pnode->FulfilledRequest("knwsync");
 
                 // timeout
                 if (lastKarmanodeWinner == 0 &&

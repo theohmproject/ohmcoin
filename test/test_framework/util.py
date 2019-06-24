@@ -51,7 +51,7 @@ MOCKTIME = 0
 
 def enable_mocktime():
     #For backwared compatibility of the python scripts
-    #with previous versions of the cache, set MOCKTIME 
+    #with previous versions of the cache, set MOCKTIME
     #to Jan 1, 2014 + (201 * 10 * 60)
     global MOCKTIME
     MOCKTIME = 1388534400 + (201 * 10 * 60)
@@ -317,7 +317,7 @@ def start_node(i, dirname, extra_args=None, rpchost=None, timewait=None, binary=
     if extra_args is not None: args.extend(extra_args)
     ohmcoind_processes[i] = subprocess.Popen(args)
     if os.getenv("PYTHON_DEBUG", ""):
-        print("start_node: ohmcoed started, waiting for RPC to come up")
+        print("start_node: ohmcoind started, waiting for RPC to come up")
     url = rpc_url(i, rpchost)
     wait_for_ohmcoind_start(ohmcoind_processes[i], url, i)
     if os.getenv("PYTHON_DEBUG", ""):

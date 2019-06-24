@@ -148,7 +148,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
     return obj;
 }
 
-UniValue mnsync(const UniValue& params, bool fHelp)
+UniValue knsync(const UniValue& params, bool fHelp)
 {
     std::string strMode;
     if (params.size() == 1)
@@ -156,7 +156,7 @@ UniValue mnsync(const UniValue& params, bool fHelp)
 
     if (fHelp || params.size() != 1 || (strMode != "status" && strMode != "reset")) {
         throw runtime_error(
-            "mnsync \"status|reset\"\n"
+            "knsync \"status|reset\"\n"
             "\nReturns the sync status or resets sync.\n"
 
             "\nArguments:\n"
@@ -185,7 +185,7 @@ UniValue mnsync(const UniValue& params, bool fHelp)
             "\nResult ('reset' mode):\n"
             "\"status\"     (string) 'success'\n"
             "\nExamples:\n" +
-            HelpExampleCli("mnsync", "\"status\"") + HelpExampleRpc("mnsync", "\"status\""));
+            HelpExampleCli("knsync", "\"status\"") + HelpExampleRpc("knsync", "\"status\""));
     }
 
     if (strMode == "status") {
@@ -635,7 +635,7 @@ UniValue getstakingstatus(const UniValue& params, bool fHelp)
             "  \"walletunlocked\": true|false,     (boolean) if the wallet is unlocked\n"
             "  \"mintablecoins\": true|false,      (boolean) if the wallet has mintable coins\n"
             "  \"enoughcoins\": true|false,        (boolean) if available coins are greater than reserve balance\n"
-            "  \"mnsync\": true|false,             (boolean) if karmanode data is synced\n"
+            "  \"knsync\": true|false,             (boolean) if karmanode data is synced\n"
             "  \"staking status\": true|false,     (boolean) if the wallet is staking or not\n"
             "}\n"
             "\nExamples:\n" +
@@ -655,7 +655,7 @@ UniValue getstakingstatus(const UniValue& params, bool fHelp)
         obj.push_back(Pair("mintablecoins", pwalletMain->MintableCoins()));
         obj.push_back(Pair("enoughcoins", nReserveBalance <= pwalletMain->GetBalance()));
     }
-    obj.push_back(Pair("mnsync", karmanodeSync.IsSynced()));
+    obj.push_back(Pair("knsync", karmanodeSync.IsSynced()));
 
     bool nStaking = false;
     if (mapHashedBlocks.count(chainActive.Tip()->nHeight))

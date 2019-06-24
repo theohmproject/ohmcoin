@@ -47,7 +47,7 @@ void budgetToJSON(CBudgetProposal* pbudgetProposal, UniValue& bObj)
 
 // This command is retained for backwards compatibility, but is deprecated.
 // Future removal of this command is planned to keep things clean.
-UniValue mnbudget(const UniValue& params, bool fHelp)
+UniValue knbudget(const UniValue& params, bool fHelp)
 {
     string strCommand;
     if (params.size() >= 1)
@@ -56,7 +56,7 @@ UniValue mnbudget(const UniValue& params, bool fHelp)
     if (fHelp ||
         (strCommand != "vote-alias" && strCommand != "vote-many" && strCommand != "prepare" && strCommand != "submit" && strCommand != "vote" && strCommand != "getvotes" && strCommand != "getinfo" && strCommand != "show" && strCommand != "projection" && strCommand != "check" && strCommand != "nextblock"))
         throw runtime_error(
-            "mnbudget \"command\"... ( \"passphrase\" )\n"
+            "knbudget \"command\"... ( \"passphrase\" )\n"
             "\nVote or show current budgets\n"
             "This command is deprecated, please see individual command documentation for future reference\n\n"
 
@@ -104,9 +104,9 @@ UniValue mnbudget(const UniValue& params, bool fHelp)
         if (strCommand == "vote-alias")
             throw runtime_error(
                 "vote-alias is not supported with this command\n"
-                "Please use mnbudgetvote instead.\n"
+                "Please use knbudgetvote instead.\n"
             );
-        return mnbudgetvote(params, fHelp);
+        return knbudgetvote(params, fHelp);
     }
 
     if (strCommand == "projection") {
@@ -337,13 +337,13 @@ UniValue submitbudget(const UniValue& params, bool fHelp)
     throw runtime_error("Invalid proposal, see debug.log for details.");
 }
 
-UniValue mnbudgetvote(const UniValue& params, bool fHelp)
+UniValue knbudgetvote(const UniValue& params, bool fHelp)
 {
     std::string strCommand;
     if (params.size() >= 1) {
         strCommand = params[0].get_str();
 
-        // Backwards compatibility with legacy `mnbudget` command
+        // Backwards compatibility with legacy `knbudget` command
         if (strCommand == "vote") strCommand = "local";
         if (strCommand == "vote-many") strCommand = "many";
         if (strCommand == "vote-alias") strCommand = "alias";
@@ -352,7 +352,7 @@ UniValue mnbudgetvote(const UniValue& params, bool fHelp)
     if (fHelp || (params.size() == 3 && (strCommand != "local" && strCommand != "many")) || (params.size() == 4 && strCommand != "alias") ||
         params.size() > 4 || params.size() < 3)
         throw runtime_error(
-            "mnbudgetvote \"local|many|alias\" \"votehash\" \"yes|no\" ( \"alias\" )\n"
+            "knbudgetvote \"local|many|alias\" \"votehash\" \"yes|no\" ( \"alias\" )\n"
             "\nVote on a budget proposal\n"
 
             "\nArguments:\n"
@@ -375,8 +375,8 @@ UniValue mnbudgetvote(const UniValue& params, bool fHelp)
             "}\n"
 
             "\nExamples:\n" +
-            HelpExampleCli("mnbudgetvote", "\"local\" \"ed2f83cedee59a91406f5f47ec4d60bf5a7f9ee6293913c82976bd2d3a658041\" \"yes\"") +
-            HelpExampleRpc("mnbudgetvote", "\"local\" \"ed2f83cedee59a91406f5f47ec4d60bf5a7f9ee6293913c82976bd2d3a658041\" \"yes\""));
+            HelpExampleCli("knbudgetvote", "\"local\" \"ed2f83cedee59a91406f5f47ec4d60bf5a7f9ee6293913c82976bd2d3a658041\" \"yes\"") +
+            HelpExampleRpc("knbudgetvote", "\"local\" \"ed2f83cedee59a91406f5f47ec4d60bf5a7f9ee6293913c82976bd2d3a658041\" \"yes\""));
 
     uint256 hash = ParseHashV(params[1], "parameter 1");
     std::string strVote = params[2].get_str();
@@ -786,11 +786,11 @@ UniValue getbudgetinfo(const UniValue& params, bool fHelp)
     return ret;
 }
 
-UniValue mnbudgetrawvote(const UniValue& params, bool fHelp)
+UniValue knbudgetrawvote(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 6)
         throw runtime_error(
-            "mnbudgetrawvote \"karmanode-tx-hash\" karmanode-tx-index \"proposal-hash\" yes|no time \"vote-sig\"\n"
+            "knbudgetrawvote \"karmanode-tx-hash\" karmanode-tx-index \"proposal-hash\" yes|no time \"vote-sig\"\n"
             "\nCompile and relay a proposal vote with provided external signature instead of signing vote internally\n"
 
             "\nArguments:\n"
@@ -804,7 +804,7 @@ UniValue mnbudgetrawvote(const UniValue& params, bool fHelp)
             "\nResult:\n"
             "\"status\"     (string) Vote status or error message\n"
             "\nExamples:\n" +
-            HelpExampleCli("mnbudgetrawvote", "") + HelpExampleRpc("mnbudgetrawvote", ""));
+            HelpExampleCli("knbudgetrawvote", "") + HelpExampleRpc("knbudgetrawvote", ""));
 
     uint256 hashMnTx = ParseHashV(params[0], "mn tx hash");
     int nMnTxIndex = params[1].get_int();
@@ -849,7 +849,7 @@ UniValue mnbudgetrawvote(const UniValue& params, bool fHelp)
     }
 }
 
-UniValue mnfinalbudget(const UniValue& params, bool fHelp)
+UniValue knfinalbudget(const UniValue& params, bool fHelp)
 {
     string strCommand;
     if (params.size() >= 1)
@@ -858,7 +858,7 @@ UniValue mnfinalbudget(const UniValue& params, bool fHelp)
     if (fHelp ||
         (strCommand != "suggest" && strCommand != "vote-many" && strCommand != "vote" && strCommand != "show" && strCommand != "getvotes"))
         throw runtime_error(
-            "mnfinalbudget \"command\"... ( \"passphrase\" )\n"
+            "knfinalbudget \"command\"... ( \"passphrase\" )\n"
             "Vote or show current budgets\n"
             "\nAvailable commands:\n"
             "  vote-many   - Vote on a finalized budget\n"
@@ -868,7 +868,7 @@ UniValue mnfinalbudget(const UniValue& params, bool fHelp)
 
     if (strCommand == "vote-many") {
         if (params.size() != 2)
-            throw runtime_error("Correct usage is 'mnfinalbudget vote-many BUDGET_HASH'");
+            throw runtime_error("Correct usage is 'knfinalbudget vote-many BUDGET_HASH'");
 
         std::string strHash = params[1].get_str();
         uint256 hash(strHash);
@@ -940,7 +940,7 @@ UniValue mnfinalbudget(const UniValue& params, bool fHelp)
 
     if (strCommand == "vote") {
         if (params.size() != 2)
-            throw runtime_error("Correct usage is 'mnfinalbudget vote BUDGET_HASH'");
+            throw runtime_error("Correct usage is 'knfinalbudget vote BUDGET_HASH'");
 
         std::string strHash = params[1].get_str();
         uint256 hash(strHash);
@@ -1003,7 +1003,7 @@ UniValue mnfinalbudget(const UniValue& params, bool fHelp)
 
     if (strCommand == "getvotes") {
         if (params.size() != 2)
-            throw runtime_error("Correct usage is 'mnbudget getvotes budget-hash'");
+            throw runtime_error("Correct usage is 'knbudget getvotes budget-hash'");
 
         std::string strHash = params[1].get_str();
         uint256 hash(strHash);

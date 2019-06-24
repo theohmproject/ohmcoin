@@ -16,11 +16,11 @@ Budgets go through a series of stages before being paid:
 Prepare collateral transaction
 ------------------------
 
-mnbudget prepare \<proposal-name\> \<url\> \<payment_count\> \<block_start\> \<ohmcoin_address\> \<monthly_payment_ohmcoin\> [use_ix(true|false)]
+knbudget prepare \<proposal-name\> \<url\> \<payment_count\> \<block_start\> \<ohmcoin_address\> \<monthly_payment_ohmcoin\> [use_ix(true|false)]
 
 Example:
 ```
-mnbudget prepare cool-project http://www.cool-project/one.json 12 100000 y6R9oN12KnB9zydzTLc3LikD9cCjjQzYG7 1200 true
+knbudget prepare cool-project http://www.cool-project/one.json 12 100000 y6R9oN12KnB9zydzTLc3LikD9cCjjQzYG7 1200 true
 ```
 
 Output: `464a0eb70ea91c94295214df48c47baa72b3876cfb658744aaf863c7b5bf1ff0` - This is the collateral hash, copy this output for the next step
@@ -32,11 +32,11 @@ In this transaction we prepare collateral for "_cool-project_". This proposal wi
 Submit proposal to network
 ------------------------
 
-mnbudget submit \<proposal-name\> \<url\> \<payment_count\> \<block_start\> \<ohmcoin_address\> \<monthly_payment_ohmcoin\> \<collateral_hash\>
+knbudget submit \<proposal-name\> \<url\> \<payment_count\> \<block_start\> \<ohmcoin_address\> \<monthly_payment_ohmcoin\> \<collateral_hash\>
 
 Example:
 ```
-mnbudget submit cool-project http://www.cool-project/one.json 12 100000 y6R9oN12KnB9zydzTLc3LikD9cCjjQzYG7 1200 464a0eb70ea91c94295214df48c47baa72b3876cfb658744aaf863c7b5bf1ff0
+knbudget submit cool-project http://www.cool-project/one.json 12 100000 y6R9oN12KnB9zydzTLc3LikD9cCjjQzYG7 1200 464a0eb70ea91c94295214df48c47baa72b3876cfb658744aaf863c7b5bf1ff0
 ```
 
 Output: `a2b29778ae82e45a973a94309ffa6aa2e2388b8f95b39ab3739f0078835f0491` - This is your proposal hash, which other nodes will use to vote on it
@@ -46,11 +46,11 @@ Lobby for votes
 
 Double check your information:
 
-mnbudget getinfo \<proposal-name\>
+knbudget getinfo \<proposal-name\>
 
 Example:
 ```
-mnbudget getinfo cool-project
+knbudget getinfo cool-project
 ```
 Output:
 ```
@@ -77,11 +77,11 @@ Output:
 
 If everything looks correct, you can ask for votes from other karmanodes. To vote on a proposal, load a wallet with _karmanode.conf_ file. You do not need to access your cold wallet to vote for proposals.
 
-mnbudget vote \<proposal_hash\> [yes|no]
+knbudget vote \<proposal_hash\> [yes|no]
 
 Example:
 ```
-mnbudget vote a2b29778ae82e45a973a94309ffa6aa2e2388b8f95b39ab3739f0078835f0491 yes
+knbudget vote a2b29778ae82e45a973a94309ffa6aa2e2388b8f95b39ab3739f0078835f0491 yes
 ```
 
 Output: `Voted successfully` - Your vote has been submitted and accepted.
@@ -89,11 +89,11 @@ Output: `Voted successfully` - Your vote has been submitted and accepted.
 Make it into the budget
 ------------------------
 
-After you get enough votes, execute `mnbudget projection` to see if you made it into the budget. If you the budget was finalized at this moment which proposals would be in it. Note: Proposals must be active at least 1 day on the network and receive 10% of the karmanode network in yes votes in order to qualify (E.g. if there is 2500 karmanodes, you will need 250 yes votes.)
+After you get enough votes, execute `knbudget projection` to see if you made it into the budget. If you the budget was finalized at this moment which proposals would be in it. Note: Proposals must be active at least 1 day on the network and receive 10% of the karmanode network in yes votes in order to qualify (E.g. if there is 2500 karmanodes, you will need 250 yes votes.)
 
 Example:
 ```
-mnbudget projection
+knbudget projection
 ```
 
 Output:
@@ -145,7 +145,7 @@ RPC Commands
 ------------------------
 
 The following new RPC commands are supported:
-- mnbudget "command"... ( "passphrase" )
+- knbudget "command"... ( "passphrase" )
  * prepare            - Prepare proposal for network by signing and creating tx
  * submit             - Submit proposal for network
  * vote-many          - Vote on a Ohmcoin initiative
@@ -157,7 +157,7 @@ The following new RPC commands are supported:
  * projection         - Show the projection of which proposals will be paid the next cycle
  * check              - Scan proposals and remove invalid
 
-- mnfinalbudget "command"... ( "passphrase" )
+- knfinalbudget "command"... ( "passphrase" )
  * vote-many   - Vote on a finalized budget
  * vote        - Vote on a finalized budget
  * show        - Show existing finalized budgets
