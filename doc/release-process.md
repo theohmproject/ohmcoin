@@ -3,7 +3,7 @@ Release Process
 
 Before every release candidate:
 
-* Update translations (ping Fuzzbawls on Slack) see [translation_process.md](https://github.com/OHMC-Project/OHMC/blob/master/doc/translation_process.md#synchronising-translations).
+* Update translations (ping Fuzzbawls on Slack) see [translation_process.md](https://github.com/theohmproject/Ohmcoin/blob/master/doc/translation_process.md#synchronising-translations).
 
 Before every minor and major release:
 
@@ -24,12 +24,12 @@ If you're using the automated script (found in [contrib/gitian-build.sh](/contri
 Check out the source code in the following directory hierarchy.
 
     cd /path/to/your/toplevel/build
-    git clone https://github.com/ohmc-project/gitian.sigs.git
-    git clone https://github.com/ohmc-project/ohmc-detached-sigs.git
+    git clone https://github.com/theohmproject/gitian.sigs.git
+    git clone https://github.com/theohmproject/ohmcoin-detached-sigs.git
     git clone https://github.com/devrandom/gitian-builder.git
-    git clone https://github.com/ohmc-project/ohmc.git
+    git clone https://github.com/theohmproject/ohmcoin.git
 
-### OHMC maintainers/release engineers, suggestion for writing release notes
+### Ohmcoin maintainers/release engineers, suggestion for writing release notes
 
 Write release notes. git shortlog helps a lot, for example:
 
@@ -50,7 +50,7 @@ If you're using the automated script (found in [contrib/gitian-build.sh](/contri
 
 Setup Gitian descriptors:
 
-    pushd ./ohmc
+    pushd ./ohmcoin
     export SIGNER=(your Gitian key, ie bluematt, sipa, etc)
     export VERSION=(new version, e.g. 0.8.0)
     git fetch
@@ -84,7 +84,7 @@ Create the OS X SDK tarball, see the [OS X readme](README_osx.md) for details, a
 By default, Gitian will fetch source files as needed. To cache them ahead of time:
 
     pushd ./gitian-builder
-    make -C ../ohmc/depends download SOURCES_PATH=`pwd`/cache/common
+    make -C ../ohmcoin/depends download SOURCES_PATH=`pwd`/cache/common
     popd
 
 Only missing files will be fetched, so this is safe to re-run for each build.
@@ -92,50 +92,55 @@ Only missing files will be fetched, so this is safe to re-run for each build.
 NOTE: Offline builds must use the --url flag to ensure Gitian fetches only from local URLs. For example:
 
     pushd ./gitian-builder
-    ./bin/gbuild --url ohmc=/path/to/ohmc,signature=/path/to/sigs {rest of arguments}
+    ./bin/gbuild --url ohmcoin=/path/to/ohmcoin,signature=/path/to/sigs {rest of arguments}
     popd
 
 The gbuild invocations below <b>DO NOT DO THIS</b> by default.
 
-### Build and sign OHMC Core for Linux, Windows, and OS X:
+### Build and sign Ohmcoin Core for Linux, Windows, and OS X:
 
     pushd ./gitian-builder
-    ./bin/gbuild --memory 3000 --commit ohmc=v${VERSION} ../ohmc/contrib/gitian-descriptors/gitian-linux.yml
-    ./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../ohmc/contrib/gitian-descriptors/gitian-linux.yml
-    mv build/out/ohmc-*.tar.gz build/out/src/ohmc-*.tar.gz ../
+    ./bin/gbuild --memory 3000 --commit ohmcoin=v${VERSION} ../ohmcoin/contrib/gitian-descriptors/gitian-linux.yml
+    ./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../ohmcoin/contrib/gitian-descriptors/gitian-linux.yml
+    mv build/out/ohmcoin-*.tar.gz build/out/src/ohmcoin-*.tar.gz ../
 
-    ./bin/gbuild --memory 3000 --commit ohmc=v${VERSION} ../ohmc/contrib/gitian-descriptors/gitian-win.yml
-    ./bin/gsign --signer $SIGNER --release ${VERSION}-win-unsigned --destination ../gitian.sigs/ ../ohmc/contrib/gitian-descriptors/gitian-win.yml
-    mv build/out/ohmc-*-win-unsigned.tar.gz inputs/ohmc-win-unsigned.tar.gz
-    mv build/out/ohmc-*.zip build/out/ohmc-*.exe ../
+    ./bin/gbuild --memory 3000 --commit ohmcoin=v${VERSION} ../ohmcoin/contrib/gitian-descriptors/gitian-win.yml
+    ./bin/gsign --signer $SIGNER --release ${VERSION}-win-unsigned --destination ../gitian.sigs/ ../ohmcoin/contrib/gitian-descriptors/gitian-win.yml
+    mv build/out/ohmcoin-*-win-unsigned.tar.gz inputs/ohmcoin-win-unsigned.tar.gz
+    mv build/out/ohmcoin-*.zip build/out/ohmcoin-*.exe ../
 
-    ./bin/gbuild --memory 3000 --commit ohmc=v${VERSION} ../ohmc/contrib/gitian-descriptors/gitian-osx.yml
-    ./bin/gsign --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../ohmc/contrib/gitian-descriptors/gitian-osx.yml
-    mv build/out/ohmc-*-osx-unsigned.tar.gz inputs/ohmc-osx-unsigned.tar.gz
-    mv build/out/ohmc-*.tar.gz build/out/ohmc-*.dmg ../
+    ./bin/gbuild --memory 3000 --commit ohmcoin=v${VERSION} ../ohmcoin/contrib/gitian-descriptors/gitian-osx.yml
+    ./bin/gsign --signer $SIGNER --release ${VERSION}-osx-unsigned --destination ../gitian.sigs/ ../ohmcoin/contrib/gitian-descriptors/gitian-osx.yml
+    mv build/out/ohmcoin-*-osx-unsigned.tar.gz inputs/ohmcoin-osx-unsigned.tar.gz
+    mv build/out/ohmcoin-*.tar.gz build/out/ohmcoin-*.dmg ../
+
+    ./bin/gbuild --memory 3000 --commit ohmcoin=v${VERSION} ../ohmcoin/contrib/gitian-descriptors/gitian-aarch64.yml
+    ./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../ohmcoin/contrib/gitian-descriptors/gitian-aarch64.yml
+    mv build/out/ohmcoin-*.tar.gz build/out/src/ohmcoin-*.tar.gz ../
     popd
 
 Build output expected:
 
-  1. source tarball (`ohmc-${VERSION}.tar.gz`)
-  2. linux 32-bit and 64-bit dist tarballs (`ohmc-${VERSION}-linux[32|64].tar.gz`)
-  3. windows 32-bit and 64-bit unsigned installers and dist zips (`ohmc-${VERSION}-win[32|64]-setup-unsigned.exe`, `ohmc-${VERSION}-win[32|64].zip`)
-  4. OS X unsigned installer and dist tarball (`ohmc-${VERSION}-osx-unsigned.dmg`, `ohmc-${VERSION}-osx64.tar.gz`)
+  1. source tarball (`ohmcoin-${VERSION}.tar.gz`)
+  2. linux 32-bit and 64-bit dist tarballs (`ohmcoin-${VERSION}-linux[32|64].tar.gz`)
+  3. windows 32-bit and 64-bit unsigned installers and dist zips (`ohmcoin-${VERSION}-win[32|64]-setup-unsigned.exe`, `ohmcoin-${VERSION}-win[32|64].zip`)
+  4. OS X unsigned installer and dist tarball (`ohmcoin-${VERSION}-osx-unsigned.dmg`, `ohmcoin-${VERSION}-osx64.tar.gz`)
   5. Gitian signatures (in `gitian.sigs/${VERSION}-<linux|{win,osx}-unsigned>/(your Gitian key)/`)
 
 ### Verify other gitian builders signatures to your own. (Optional)
 
 Add other gitian builders keys to your gpg keyring, and/or refresh keys.
 
-    gpg --import ohmc/contrib/gitian-keys/*.pgp
+    gpg --import ohmcoin/contrib/gitian-keys/*.pgp
     gpg --refresh-keys
 
 Verify the signatures
 
     pushd ./gitian-builder
-    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-linux ../ohmc/contrib/gitian-descriptors/gitian-linux.yml
-    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-unsigned ../ohmc/contrib/gitian-descriptors/gitian-win.yml
-    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-unsigned ../ohmc/contrib/gitian-descriptors/gitian-osx.yml
+    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-linux ../ohmcoin/contrib/gitian-descriptors/gitian-linux.yml
+    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-unsigned ../ohmcoin/contrib/gitian-descriptors/gitian-win.yml
+    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-unsigned ../ohmcoin/contrib/gitian-descriptors/gitian-osx.yml
+    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-aarch64 ../ohmcoin/contrib/gitian-descriptors/gitian-aarch64.yml
     popd
 
 ### Next steps:
@@ -146,6 +151,7 @@ Commit your signature to gitian.sigs:
     git add ${VERSION}-linux/${SIGNER}
     git add ${VERSION}-win-unsigned/${SIGNER}
     git add ${VERSION}-osx-unsigned/${SIGNER}
+    git add ${VERSION}-aarch64/${SIGNER}
     git commit -a
     git push  # Assuming you can push to the gitian.sigs tree
     popd
@@ -156,22 +162,22 @@ Codesigner only: Create Windows/OS X detached signatures:
 
 Codesigner only: Sign the osx binary:
 
-    transfer ohmc-osx-unsigned.tar.gz to osx for signing
-    tar xf ohmc-osx-unsigned.tar.gz
+    transfer ohmcoin-osx-unsigned.tar.gz to osx for signing
+    tar xf ohmcoin-osx-unsigned.tar.gz
     ./detached-sig-create.sh -s "Key ID"
     Enter the keychain password and authorize the signature
     Move signature-osx.tar.gz back to the gitian host
 
 Codesigner only: Sign the windows binaries:
 
-    tar xf ohmc-win-unsigned.tar.gz
+    tar xf ohmcoin-win-unsigned.tar.gz
     ./detached-sig-create.sh -key /path/to/codesign.key
     Enter the passphrase for the key when prompted
     signature-win.tar.gz will be created
 
 Codesigner only: Commit the detached codesign payloads:
 
-    cd ~/ohmc-detached-sigs
+    cd ~/ohmcoin-detached-sigs
     checkout the appropriate branch for this release series
     rm -rf *
     tar xf signature-osx.tar.gz
@@ -184,25 +190,25 @@ Codesigner only: Commit the detached codesign payloads:
 Non-codesigners: wait for Windows/OS X detached signatures:
 
 - Once the Windows/OS X builds each have 3 matching signatures, they will be signed with their respective release keys.
-- Detached signatures will then be committed to the [ohmc-detached-sigs](https://github.com/OHMC-Project/ohmc-detached-sigs) repository, which can be combined with the unsigned apps to create signed binaries.
+- Detached signatures will then be committed to the [ohmcoin-detached-sigs](https://github.com/theohmproject/ohmcoin-detached-sigs) repository, which can be combined with the unsigned apps to create signed binaries.
 
 Create (and optionally verify) the signed OS X binary:
 
     pushd ./gitian-builder
-    ./bin/gbuild -i --commit signature=v${VERSION} ../ohmc/contrib/gitian-descriptors/gitian-osx-signer.yml
-    ./bin/gsign --signer $SIGNER --release ${VERSION}-osx-signed --destination ../gitian.sigs/ ../ohmc/contrib/gitian-descriptors/gitian-osx-signer.yml
-    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-signed ../ohmc/contrib/gitian-descriptors/gitian-osx-signer.yml
-    mv build/out/ohmc-osx-signed.dmg ../ohmc-${VERSION}-osx.dmg
+    ./bin/gbuild -i --commit signature=v${VERSION} ../ohmcoin/contrib/gitian-descriptors/gitian-osx-signer.yml
+    ./bin/gsign --signer $SIGNER --release ${VERSION}-osx-signed --destination ../gitian.sigs/ ../ohmcoin/contrib/gitian-descriptors/gitian-osx-signer.yml
+    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-osx-signed ../ohmcoin/contrib/gitian-descriptors/gitian-osx-signer.yml
+    mv build/out/ohmcoin-osx-signed.dmg ../ohmcoin-${VERSION}-osx.dmg
     popd
 
 Create (and optionally verify) the signed Windows binaries:
 
     pushd ./gitian-builder
-    ./bin/gbuild -i --commit signature=v${VERSION} ../ohmc/contrib/gitian-descriptors/gitian-win-signer.yml
-    ./bin/gsign --signer $SIGNER --release ${VERSION}-win-signed --destination ../gitian.sigs/ ../ohmc/contrib/gitian-descriptors/gitian-win-signer.yml
-    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-signed ../ohmc/contrib/gitian-descriptors/gitian-win-signer.yml
-    mv build/out/ohmc-*win64-setup.exe ../ohmc-${VERSION}-win64-setup.exe
-    mv build/out/ohmc-*win32-setup.exe ../ohmc-${VERSION}-win32-setup.exe
+    ./bin/gbuild -i --commit signature=v${VERSION} ../ohmcoin/contrib/gitian-descriptors/gitian-win-signer.yml
+    ./bin/gsign --signer $SIGNER --release ${VERSION}-win-signed --destination ../gitian.sigs/ ../ohmcoin/contrib/gitian-descriptors/gitian-win-signer.yml
+    ./bin/gverify -v -d ../gitian.sigs/ -r ${VERSION}-win-signed ../ohmcoin/contrib/gitian-descriptors/gitian-win-signer.yml
+    mv build/out/ohmcoin-*win64-setup.exe ../ohmcoin-${VERSION}-win64-setup.exe
+    mv build/out/ohmcoin-*win32-setup.exe ../ohmcoin-${VERSION}-win32-setup.exe
     popd
 
 Commit your signature for the signed OS X/Windows binaries:
@@ -224,23 +230,23 @@ sha256sum * > SHA256SUMS
 
 The list of files should be:
 ```
-ohmc-${VERSION}-aarch64-linux-gnu.tar.gz
-ohmc-${VERSION}-arm-linux-gnueabihf.tar.gz
-ohmc-${VERSION}-i686-pc-linux-gnu.tar.gz
-ohmc-${VERSION}-x86_64-linux-gnu.tar.gz
-ohmc-${VERSION}-osx64.tar.gz
-ohmc-${VERSION}-osx.dmg
-ohmc-${VERSION}.tar.gz
-ohmc-${VERSION}-win32-setup.exe
-ohmc-${VERSION}-win32.zip
-ohmc-${VERSION}-win64-setup.exe
-ohmc-${VERSION}-win64.zip
+ohmcoin-${VERSION}-aarch64-linux-gnu.tar.gz
+ohmcoin-${VERSION}-arm-linux-gnueabihf.tar.gz
+ohmcoin-${VERSION}-i686-pc-linux-gnu.tar.gz
+ohmcoin-${VERSION}-x86_64-linux-gnu.tar.gz
+ohmcoin-${VERSION}-osx64.tar.gz
+ohmcoin-${VERSION}-osx.dmg
+ohmcoin-${VERSION}.tar.gz
+ohmcoin-${VERSION}-win32-setup.exe
+ohmcoin-${VERSION}-win32.zip
+ohmcoin-${VERSION}-win64-setup.exe
+ohmcoin-${VERSION}-win64.zip
 ```
 The `*-debug*` files generated by the gitian build contain debug symbols
 for troubleshooting by developers. It is assumed that anyone that is interested
 in debugging can run gitian to generate the files for themselves. To avoid
 end-user confusion about which file to pick, as well as save storage
-space *do not upload these to the ohmc.org server*.
+space *do not upload these to the ohmcoin.org server*.
 
 - GPG-sign it, delete the unsigned file:
 ```
@@ -256,10 +262,10 @@ Note: check that SHA256SUMS itself doesn't end up in SHA256SUMS, which is a spur
 
   - bitcointalk announcement thread
 
-  - Optionally twitter, reddit /r/ohmc, ... but this will usually sort out itself
+  - Optionally twitter, reddit /r/ohmcoin, ... but this will usually sort out itself
 
   - Archive release notes for the new version to `doc/release-notes/` (branch `master` and branch of the release)
 
-  - Create a [new GitHub release](https://github.com/OHMC-Project/OHMC/releases/new) with a link to the archived release notes.
+  - Create a [new GitHub release](https://github.com/theohmproject/Ohmcoin/releases/new) with a link to the archived release notes.
 
   - Celebrate

@@ -78,6 +78,9 @@
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
+     <property name="showGrid">
+      <bool>false</bool>
+     </property>
      <property name="sortingEnabled">
       <bool>true</bool>
      </property>
@@ -97,7 +100,7 @@
         <string>&amp;New</string>
        </property>
        <property name="icon">
-        <iconset resource="../ohmc.qrc">
+        <iconset resource="../ohmcoin.qrc">
          <normaloff>:/icons/add</normaloff>:/icons/add</iconset>
        </property>
        <property name="autoDefault">
@@ -114,7 +117,7 @@
         <string>&amp;Copy</string>
        </property>
        <property name="icon">
-        <iconset resource="../ohmc.qrc">
+        <iconset resource="../ohmcoin.qrc">
          <normaloff>:/icons/editcopy</normaloff>:/icons/editcopy</iconset>
        </property>
        <property name="autoDefault">
@@ -131,7 +134,7 @@
         <string>&amp;Delete</string>
        </property>
        <property name="icon">
-        <iconset resource="../ohmc.qrc">
+        <iconset resource="../ohmcoin.qrc">
          <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
        </property>
        <property name="autoDefault">
@@ -161,7 +164,7 @@
         <string>&amp;Export</string>
        </property>
        <property name="icon">
-        <iconset resource="../ohmc.qrc">
+        <iconset resource="../ohmcoin.qrc">
          <normaloff>:/icons/export</normaloff>:/icons/export</iconset>
        </property>
        <property name="autoDefault">
@@ -190,7 +193,7 @@
   </layout>
  </widget>
  <resources>
-  <include location="../ohmc.qrc"/>
+  <include location="../ohmcoin.qrc"/>
  </resources>
  <connections/>
 </ui>

@@ -1,3 +1,7 @@
+// Copyright (c) 2014-2016 The Dash developers
+// Copyright (c) 2015-2017 The PIVX developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "activekarmanode.h"
 #include "addrman.h"
@@ -8,7 +12,7 @@
 #include "spork.h"
 
 //
-// Bootup the Karmanode, look for a 10000 OHMC input and register on the network
+// Bootup the Karmanode, look for a 3000 OHMC input and register on the network
 //
 void CActiveKarmanode::ManageStatus()
 {
@@ -63,17 +67,9 @@ void CActiveKarmanode::ManageStatus()
             service = CService(strMasterNodeAddr);
         }
 
-        if (Params().NetworkID() == CBaseChainParams::MAIN) {
-            if (service.GetPort() != 52020) {
-                notCapableReason = strprintf("Invalid port: %u - only 52020 is supported on mainnet.", service.GetPort());
-                LogPrintf("CActiveKarmanode::ManageStatus() - not capable: %s\n", notCapableReason);
-                return;
-            }
-        } else if (service.GetPort() == 52020) {
-            notCapableReason = strprintf("Invalid port: %u - 52020 is only supported on mainnet.", service.GetPort());
-            LogPrintf("CActiveKarmanode::ManageStatus() - not capable: %s\n", notCapableReason);
+        // The service needs the correct default port to work properly
+        if(!CKarmanodeBroadcast::CheckDefaultPort(strMasterNodeAddr, errorMessage, "CActiveKarmanode::ManageStatus()"))
             return;
-        }
 
         LogPrintf("CActiveKarmanode::ManageStatus() - Checking inbound connection to '%s'\n", service.ToString());
 
@@ -110,11 +106,16 @@ void CActiveKarmanode::ManageStatus()
                 return;
             }
 
-            if (!Register(vin, service, keyCollateralAddress, pubKeyCollateralAddress, keyKarmanode, pubKeyKarmanode, errorMessage)) {
+            CKarmanodeBroadcast mnb;
+            if (!CreateBroadcast(vin, service, keyCollateralAddress, pubKeyCollateralAddress, keyKarmanode, pubKeyKarmanode, errorMessage, mnb)) {
                 notCapableReason = "Error on Register: " + errorMessage;
                 LogPrintf("Register::ManageStatus() - %s\n", notCapableReason);
                 return;
             }
+
+            //send to all peers
+            LogPrintf("CActiveKarmanode::ManageStatus() - Relay broadcast vin = %s\n", vin.ToString());
+            mnb.Relay();
 
             LogPrintf("CActiveKarmanode::ManageStatus() - Is capable master node!\n");
             status = ACTIVE_KARMANODE_STARTED;
@@ -203,7 +204,7 @@ bool CActiveKarmanode::SendKarmanodePing(std::string& errorMessage)
         std::vector<unsigned char> vchMasterNodeSignature;
         int64_t masterNodeSignatureTime = GetAdjustedTime();
 
-        std::string strMessage = service.ToString() + boost::lexical_cast<std::string>(masterNodeSignatureTime) + boost::lexical_cast<std::string>(false);
+        std::string strMessage = service.ToString() + std::to_string(masterNodeSignatureTime) + std::to_string(false);
 
         if (!obfuScationSigner.SignMessage(strMessage, retErrorMessage, vchMasterNodeSignature, keyKarmanode)) {
             errorMessage = "dseep sign message failed: " + retErrorMessage;
@@ -218,7 +219,7 @@ bool CActiveKarmanode::SendKarmanodePing(std::string& errorMessage)
         LogPrint("karmanode", "dseep - relaying from active mn, %s \n", vin.ToString().c_str());
         LOCK(cs_vNodes);
         BOOST_FOREACH (CNode* pnode, vNodes)
-            pnode->PushMessage("dseep", vin, vchMasterNodeSignature, masterNodeSignatureTime, false);
+            pnode->PushMessage(NetMsgType::DSEEP, vin, vchMasterNodeSignature, masterNodeSignatureTime, false);
 
         /*
          * END OF "REMOVE"
@@ -227,14 +228,14 @@ bool CActiveKarmanode::SendKarmanodePing(std::string& errorMessage)
         return true;
     } else {
         // Seems like we are trying to send a ping while the Karmanode is not registered in the network
-        errorMessage = "PrivateSend Karmanode List doesn't include our Karmanode, shutting down Karmanode pinging service! " + vin.ToString();
+        errorMessage = "Obfuscation Karmanode List doesn't include our Karmanode, shutting down Karmanode pinging service! " + vin.ToString();
         status = ACTIVE_KARMANODE_NOT_CAPABLE;
         notCapableReason = errorMessage;
         return false;
     }
 }
 
-bool CActiveKarmanode::Register(std::string strService, std::string strKeyKarmanode, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage)
+bool CActiveKarmanode::CreateBroadcast(std::string strService, std::string strKeyKarmanode, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage, CKarmanodeBroadcast &mnb, bool fOffline)
 {
     CTxIn vin;
     CPubKey pubKeyCollateralAddress;
@@ -243,75 +244,56 @@ bool CActiveKarmanode::Register(std::string strService, std::string strKeyKarman
     CKey keyKarmanode;
 
     //need correct blocks to send ping
-    if (!karmanodeSync.IsBlockchainSynced()) {
-        errorMessage = GetStatus();
-        LogPrintf("CActiveKarmanode::Register() - %s\n", errorMessage);
+    if (!fOffline && !karmanodeSync.IsBlockchainSynced()) {
+        errorMessage = "Sync in progress. Must wait until sync is complete to start Karmanode";
+        LogPrintf("CActiveKarmanode::CreateBroadcast() - %s\n", errorMessage);
         return false;
     }
 
     if (!obfuScationSigner.SetKey(strKeyKarmanode, errorMessage, keyKarmanode, pubKeyKarmanode)) {
         errorMessage = strprintf("Can't find keys for karmanode %s - %s", strService, errorMessage);
-        LogPrintf("CActiveKarmanode::Register() - %s\n", errorMessage);
+        LogPrintf("CActiveKarmanode::CreateBroadcast() - %s\n", errorMessage);
         return false;
     }
 
     if (!GetMasterNodeVin(vin, pubKeyCollateralAddress, keyCollateralAddress, strTxHash, strOutputIndex)) {
         errorMessage = strprintf("Could not allocate vin %s:%s for karmanode %s", strTxHash, strOutputIndex, strService);
-        LogPrintf("CActiveKarmanode::Register() - %s\n", errorMessage);
+        LogPrintf("CActiveKarmanode::CreateBroadcast() - %s\n", errorMessage);
         return false;
     }
 
     CService service = CService(strService);
-    if (Params().NetworkID() == CBaseChainParams::MAIN) {
-        if (service.GetPort() != 52020) {
-            errorMessage = strprintf("Invalid port %u for karmanode %s - only 52020 is supported on mainnet.", service.GetPort(), strService);
-            LogPrintf("CActiveKarmanode::Register() - %s\n", errorMessage);
-            return false;
-        }
-    } else if (service.GetPort() == 52020) {
-        errorMessage = strprintf("Invalid port %u for karmanode %s - 52020 is only supported on mainnet.", service.GetPort(), strService);
-        LogPrintf("CActiveKarmanode::Register() - %s\n", errorMessage);
+
+    // The service needs the correct default port to work properly
+    if(!CKarmanodeBroadcast::CheckDefaultPort(strService, errorMessage, "CActiveKarmanode::CreateBroadcast()"))
         return false;
-    }
 
     addrman.Add(CAddress(service), CNetAddr("127.0.0.1"), 2 * 60 * 60);
 
-    return Register(vin, CService(strService), keyCollateralAddress, pubKeyCollateralAddress, keyKarmanode, pubKeyKarmanode, errorMessage);
+    return CreateBroadcast(vin, CService(strService), keyCollateralAddress, pubKeyCollateralAddress, keyKarmanode, pubKeyKarmanode, errorMessage, mnb);
 }
 
-bool CActiveKarmanode::Register(CTxIn vin, CService service, CKey keyCollateralAddress, CPubKey pubKeyCollateralAddress, CKey keyKarmanode, CPubKey pubKeyKarmanode, std::string& errorMessage)
+bool CActiveKarmanode::CreateBroadcast(CTxIn vin, CService service, CKey keyCollateralAddress, CPubKey pubKeyCollateralAddress, CKey keyKarmanode, CPubKey pubKeyKarmanode, std::string& errorMessage, CKarmanodeBroadcast &mnb)
 {
-    CKarmanodeBroadcast mnb;
+	// wait for reindex and/or import to finish
+	if (fImporting || fReindex) return false;
+
     CKarmanodePing mnp(vin);
     if (!mnp.Sign(keyKarmanode, pubKeyKarmanode)) {
         errorMessage = strprintf("Failed to sign ping, vin: %s", vin.ToString());
-        LogPrintf("CActiveKarmanode::Register() -  %s\n", errorMessage);
+        LogPrintf("CActiveKarmanode::CreateBroadcast() -  %s\n", errorMessage);
+        mnb = CKarmanodeBroadcast();
         return false;
     }
-    mnodeman.mapSeenKarmanodePing.insert(make_pair(mnp.GetHash(), mnp));
 
-    LogPrintf("CActiveKarmanode::Register() - Adding to Karmanode list\n    service: %s\n    vin: %s\n", service.ToString(), vin.ToString());
     mnb = CKarmanodeBroadcast(service, vin, pubKeyCollateralAddress, pubKeyKarmanode, PROTOCOL_VERSION);
     mnb.lastPing = mnp;
     if (!mnb.Sign(keyCollateralAddress)) {
         errorMessage = strprintf("Failed to sign broadcast, vin: %s", vin.ToString());
-        LogPrintf("CActiveKarmanode::Register() - %s\n", errorMessage);
+        LogPrintf("CActiveKarmanode::CreateBroadcast() - %s\n", errorMessage);
+        mnb = CKarmanodeBroadcast();
         return false;
     }
-    mnodeman.mapSeenKarmanodeBroadcast.insert(make_pair(mnb.GetHash(), mnb));
-    karmanodeSync.AddedKarmanodeList(mnb.GetHash());
-
-    CKarmanode* pmn = mnodeman.Find(vin);
-    if (pmn == NULL) {
-        CKarmanode mn(mnb);
-        mnodeman.Add(mn);
-    } else {
-        pmn->UpdateFromNewBroadcast(mnb);
-    }
-
-    //send to all peers
-    LogPrintf("CActiveKarmanode::Register() - RelayElectionEntry vin = %s\n", vin.ToString());
-    mnb.Relay();
 
     /*
      * IT'S SAFE TO REMOVE THIS IN FURTHER VERSIONS
@@ -329,7 +311,7 @@ bool CActiveKarmanode::Register(CTxIn vin, CService service, CKey keyCollateralA
     std::string vchPubKey(pubKeyCollateralAddress.begin(), pubKeyCollateralAddress.end());
     std::string vchPubKey2(pubKeyKarmanode.begin(), pubKeyKarmanode.end());
 
-    std::string strMessage = service.ToString() + boost::lexical_cast<std::string>(masterNodeSignatureTime) + vchPubKey + vchPubKey2 + boost::lexical_cast<std::string>(PROTOCOL_VERSION) + donationAddress + boost::lexical_cast<std::string>(donationPercantage);
+    std::string strMessage = service.ToString() + std::to_string(masterNodeSignatureTime) + vchPubKey + vchPubKey2 + std::to_string(PROTOCOL_VERSION) + donationAddress + std::to_string(donationPercantage);
 
     if (!obfuScationSigner.SignMessage(strMessage, retErrorMessage, vchMasterNodeSignature, keyCollateralAddress)) {
         errorMessage = "dsee sign message failed: " + retErrorMessage;
@@ -417,15 +399,14 @@ bool CActiveKarmanode::GetVinFromOutput(COutput out, CTxIn& vin, CPubKey& pubkey
 
     CTxDestination address1;
     ExtractDestination(pubScript, address1);
-    CBitcoinAddress address2(address1);
 
-    CKeyID keyID;
-    if (!address2.GetKeyID(keyID)) {
+    const CKeyID* keyID = boost::get<CKeyID>(&address1);
+    if (!keyID) {
         LogPrintf("CActiveKarmanode::GetMasterNodeVin - Address does not refer to a key\n");
         return false;
     }
 
-    if (!pwalletMain->GetKey(keyID, secretKey)) {
+    if (!pwalletMain->GetKey(*keyID, secretKey)) {
         LogPrintf("CActiveKarmanode::GetMasterNodeVin - Private key for address is not known\n");
         return false;
     }
@@ -468,9 +449,7 @@ vector<COutput> CActiveKarmanode::SelectCoinsKarmanode()
 
     // Filter
     BOOST_FOREACH (const COutput& out, vCoins) {
-	
-       if (out.tx->vout[out.i].nValue == MASTER_NODE_AMOUNT * COIN) { //exactly
-
+        if (out.tx->vout[out.i].nValue == MASTER_NODE_AMOUNT * COIN) { //exactly
             filteredCoins.push_back(out);
         }
     }

@@ -7,6 +7,7 @@
 
 #include "amount.h"
 #include "karmanodelist.h"
+#include "proposallist.h"
 
 #include <QStackedWidget>
 
@@ -14,11 +15,13 @@ class BitcoinGUI;
 class ClientModel;
 class OverviewPage;
 class ReceiveCoinsDialog;
+class PrivacyDialog;
 class SendCoinsDialog;
 class SendCoinsRecipient;
 class TransactionView;
 class WalletModel;
 class BlockExplorer;
+
 
 QT_BEGIN_NAMESPACE
 class QLabel;
@@ -62,24 +65,31 @@ private:
     OverviewPage* overviewPage;
     QWidget* transactionsPage;
     ReceiveCoinsDialog* receiveCoinsPage;
+    PrivacyDialog* privacyPage;
     SendCoinsDialog* sendCoinsPage;
     BlockExplorer* explorerWindow;
     KarmanodeList* karmanodeListPage;
+    QWidget* proposalListPage;
 
     TransactionView* transactionView;
+    ProposalList* proposalList;
 
     QProgressDialog* progressDialog;
     QLabel* transactionSum;
 
 public slots:
-    /** Switch to overview (home) page */
-    void gotoOverviewPage();
+            /** Switch to overview (home) page */
+            void gotoOverviewPage();
     /** Switch to history (transactions) page */
     void gotoHistoryPage();
-    /** Switch to karmanode page */
+    /** Switch to masternode page */
     void gotoKarmanodePage();
     /** Switch to explorer page */
     void gotoBlockExplorerPage();
+    /** Switch to privacy page */
+    void gotoPrivacyPage();
+    /** Switch to proposal page */
+    void gotoProposalPage();
     /** Switch to receive coins page */
     void gotoReceiveCoinsPage();
     /** Switch to send coins page */
@@ -91,12 +101,12 @@ public slots:
     void gotoVerifyMessageTab(QString addr = "");
     /** Show MultiSend Dialog */
     void gotoMultiSendDialog();
-
+    /** Show a multisig tab **/
+    void gotoMultisigDialog(int index);
     /** Show BIP 38 tool - default to Encryption tab */
     void gotoBip38Tool();
 
     /** Show incoming transaction notification for new transactions.
-
         The new items are those between start and end inclusive, under the given parent item.
     */
     void processNewTransaction(const QModelIndex& parent, int start, int /*end*/);
@@ -110,6 +120,8 @@ public slots:
     void unlockWallet();
     /** Lock wallet */
     void lockWallet();
+    /** Toggle wallet lock state */
+    void toggleLockWallet();
 
     /** Show used sending addresses */
     void usedSendingAddresses();
@@ -125,9 +137,9 @@ public slots:
     /** Update selected OHMC amount from transactionview */
     void trxAmount(QString amount);
 
-signals:
-    /** Signal that we want to show the main window */
-    void showNormalIfMinimized();
+    signals:
+            /** Signal that we want to show the main window */
+            void showNormalIfMinimized();
     /**  Fired when a message should be reported to the user */
     void message(const QString& title, const QString& message, unsigned int style);
     /** Encryption status of wallet changed */

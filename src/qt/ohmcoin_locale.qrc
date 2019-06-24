@@ -1,0 +1,30 @@
+<!DOCTYPE RCC><RCC version="1.0">
+    <qresource prefix="/translations">
+        <file alias="bg">locale/ohmcoin_bg.qm</file>
+        <file alias="ca">locale/ohmcoin_ca.qm</file>
+        <file alias="cs">locale/ohmcoin_cs.qm</file>
+        <file alias="da">locale/ohmcoin_da.qm</file>
+        <file alias="de">locale/ohmcoin_de.qm</file>
+        <file alias="en">locale/ohmcoin_en.qm</file>
+        <file alias="en_US">locale/ohmcoin_en_US.qm</file>
+        <file alias="es">locale/ohmcoin_es.qm</file>
+        <file alias="fi">locale/ohmcoin_fi.qm</file>
+        <file alias="fr_FR">locale/ohmcoin_fr_FR.qm</file>
+        <file alias="hr">locale/ohmcoin_hr.qm</file>
+        <file alias="it">locale/ohmcoin_it.qm</file>
+        <file alias="ja">locale/ohmcoin_ja.qm</file>
+        <file alias="ko_KR">locale/ohmcoin_ko_KR.qm</file>
+        <file alias="nl">locale/ohmcoin_nl.qm</file>
+        <file alias="pl">locale/ohmcoin_pl.qm</file>
+        <file alias="pt">locale/ohmcoin_pt.qm</file>
+        <file alias="pt_BR">locale/ohmcoin_pt_BR.qm</file>
+        <file alias="ro_RO">locale/ohmcoin_ro_RO.qm</file>
+        <file alias="ru">locale/ohmcoin_ru.qm</file>
+        <file alias="sk">locale/ohmcoin_sk.qm</file>
+        <file alias="sv">locale/ohmcoin_sv.qm</file>
+        <file alias="tr">locale/ohmcoin_tr.qm</file>
+        <file alias="uk">locale/ohmcoin_uk.qm</file>
+        <file alias="zh_CN">locale/ohmcoin_zh_CN.qm</file>
+        <file alias="zh_TW">locale/ohmcoin_zh_TW.qm</file>
+    </qresource>
+</RCC>

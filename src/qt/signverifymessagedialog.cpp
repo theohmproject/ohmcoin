@@ -1,7 +1,7 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
+// Copyright (c) 2019 The Ohmcoin Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -41,8 +41,17 @@ SignVerifyMessageDialog::SignVerifyMessageDialog(QWidget* parent) : QDialog(pare
     ui->messageIn_VM->installEventFilter(this);
     ui->signatureIn_VM->installEventFilter(this);
 
+    ui->addressIn_SM->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->messageIn_SM->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->signatureOut_SM->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->addressIn_VM->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->messageIn_VM->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->signatureIn_VM->setAttribute(Qt::WA_MacShowFocusRect, 0);
+
     ui->signatureOut_SM->setFont(GUIUtil::bitcoinAddressFont());
     ui->signatureIn_VM->setFont(GUIUtil::bitcoinAddressFont());
+
+    
 }
 
 SignVerifyMessageDialog::~SignVerifyMessageDialog()
@@ -105,14 +114,17 @@ void SignVerifyMessageDialog::on_signMessageButton_SM_clicked()
     /* Clear old signature to ensure users don't get confused on error with an old signature displayed */
     ui->signatureOut_SM->clear();
 
-    CBitcoinAddress addr(ui->addressIn_SM->text().toStdString());
-    if (!addr.IsValid()) {
+
+    if (!IsValidDestinationString(ui->addressIn_SM->text().toStdString())) {
+
         ui->statusLabel_SM->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_SM->setText(tr("The entered address is invalid.") + QString(" ") + tr("Please check the address and try again."));
         return;
     }
-    CKeyID keyID;
-    if (!addr.GetKeyID(keyID)) {
+    CTxDestination addr = DecodeDestination(ui->addressIn_SM->text().toStdString());
+
+    CKeyID *keyID = boost::get<CKeyID>(&addr);
+    if (!keyID) {
         ui->addressIn_SM->setValid(false);
         ui->statusLabel_SM->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_SM->setText(tr("The entered address does not refer to a key.") + QString(" ") + tr("Please check the address and try again."));
@@ -127,7 +139,7 @@ void SignVerifyMessageDialog::on_signMessageButton_SM_clicked()
     }
 
     CKey key;
-    if (!pwalletMain->GetKey(keyID, key)) {
+    if (!pwalletMain->GetKey(*keyID, key)) {
         ui->statusLabel_SM->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_SM->setText(tr("Private key for the entered address is not available."));
         return;
@@ -178,14 +190,17 @@ void SignVerifyMessageDialog::on_addressBookButton_VM_clicked()
 
 void SignVerifyMessageDialog::on_verifyMessageButton_VM_clicked()
 {
-    CBitcoinAddress addr(ui->addressIn_VM->text().toStdString());
-    if (!addr.IsValid()) {
+
+    if (!IsValidDestinationString(ui->addressIn_VM->text().toStdString())) {
+
         ui->statusLabel_VM->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_VM->setText(tr("The entered address is invalid.") + QString(" ") + tr("Please check the address and try again."));
         return;
     }
-    CKeyID keyID;
-    if (!addr.GetKeyID(keyID)) {
+
+    CTxDestination addr = DecodeDestination(ui->addressIn_VM->text().toStdString());
+    CKeyID *keyID = boost::get<CKeyID>(&addr);
+    if (!keyID) {
         ui->addressIn_VM->setValid(false);
         ui->statusLabel_VM->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_VM->setText(tr("The entered address does not refer to a key.") + QString(" ") + tr("Please check the address and try again."));
@@ -214,7 +229,7 @@ void SignVerifyMessageDialog::on_verifyMessageButton_VM_clicked()
         return;
     }
 
-    if (!(CBitcoinAddress(pubkey.GetID()) == addr)) {
+    if (!(CTxDestination(pubkey.GetID()) == addr)) {
         ui->statusLabel_VM->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_VM->setText(QString("<nobr>") + tr("Message verification failed.") + QString("</nobr>"));
         return;

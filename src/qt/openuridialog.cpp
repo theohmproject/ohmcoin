@@ -1,7 +1,7 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
+// Copyright (c) 2019 The Ohmcoin Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -17,8 +17,9 @@ OpenURIDialog::OpenURIDialog(QWidget* parent) : QDialog(parent),
                                                 ui(new Ui::OpenURIDialog)
 {
     ui->setupUi(this);
+    ui->uriEdit->setAttribute(Qt::WA_MacShowFocusRect, 0);
 #if QT_VERSION >= 0x040700
-    ui->uriEdit->setPlaceholderText("ohmc:");
+    ui->uriEdit->setPlaceholderText("ohmcoin:");
 #endif
 }
 
@@ -49,5 +50,5 @@ void OpenURIDialog::on_selectFileButton_clicked()
     if (filename.isEmpty())
         return;
     QUrl fileUri = QUrl::fromLocalFile(filename);
-    ui->uriEdit->setText("ohmc:?r=" + QUrl::toPercentEncoding(fileUri.toString()));
+    ui->uriEdit->setText("ohmcoin:?r=" + QUrl::toPercentEncoding(fileUri.toString()));
 }
