@@ -1079,7 +1079,7 @@ UniValue addwitnessaddress(const UniValue& params, bool fHelp)
         throw runtime_error(msg);
     }
 
-    if (!IsSporkActive(SPORK_19_SEGWIT_ACTIVATION) && !GetBoolArg("-walletprematurewitness", false)) {
+    if (!IsSporkActive(SPORK_20_SEGWIT_ACTIVATION) && !GetBoolArg("-walletprematurewitness", false)) {
         throw JSONRPCError(RPC_WALLET_ERROR, "Segregated witness not enabled on network");
     }
 
@@ -2712,7 +2712,7 @@ UniValue mintzerocoin(const UniValue& params, bool fHelp)
     }
 
     int64_t nTime = GetTimeMillis();
-    if(GetAdjustedTime() > GetSporkValue(SPORK_20_ZEROCOIN_MAINTENANCE_MODE))
+    if(GetAdjustedTime() > GetSporkValue(SPORK_21_ZEROCOIN_MAINTENANCE_MODE))
         throw JSONRPCError(RPC_WALLET_ERROR, "zOHMC is currently disabled due to maintenance.");
 
     EnsureWalletIsUnlocked(true);
@@ -2820,7 +2820,7 @@ UniValue spendzerocoin(const UniValue& params, bool fHelp)
 
     LOCK2(cs_main, pwalletMain->cs_wallet);
 
-    if(GetAdjustedTime() > GetSporkValue(SPORK_20_ZEROCOIN_MAINTENANCE_MODE))
+    if(GetAdjustedTime() > GetSporkValue(SPORK_21_ZEROCOIN_MAINTENANCE_MODE))
         throw JSONRPCError(RPC_WALLET_ERROR, "zOHMC is currently disabled due to maintenance.");
 
     int64_t nTimeStart = GetTimeMillis();

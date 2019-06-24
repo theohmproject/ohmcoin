@@ -36,7 +36,7 @@ PrivacyDialog::PrivacyDialog(QWidget* parent) : QDialog(parent),
     ui->payTo->setAttribute(Qt::WA_MacShowFocusRect, 0);
     ui->addAsLabel->setAttribute(Qt::WA_MacShowFocusRect, 0);
     ui->zOHMCpayAmount->setAttribute(Qt::WA_MacShowFocusRect, 0);
-    
+
 
     // "Spending 999999 zOHMC ought to be enough for anybody." - Bill Gates, 2017
     ui->zOHMCpayAmount->setValidator( new QDoubleValidator(0.0, 21000000.0, 20, this) );
@@ -113,8 +113,8 @@ PrivacyDialog::PrivacyDialog(QWidget* parent) : QDialog(parent),
     ui->WarningLabel->hide();    // Explanatory text visible in QT-Creator
     ui->dummyHideWidget->hide(); // Dummy widget with elements to hide
 
-    // Set labels/buttons depending on SPORK_16 status
-    updateSPORK16Status();
+    // Set labels/buttons depending on SPORK_18 status
+    updateSPORK18Status();
 }
 
 PrivacyDialog::~PrivacyDialog()
@@ -162,7 +162,7 @@ void PrivacyDialog::on_pushButtonMintzOHMC_clicked()
     if (!walletModel || !walletModel->getOptionsModel())
         return;
 
-    if(GetAdjustedTime() > GetSporkValue(SPORK_20_ZEROCOIN_MAINTENANCE_MODE)) {
+    if(GetAdjustedTime() > GetSporkValue(SPORK_21_ZEROCOIN_MAINTENANCE_MODE)) {
         QMessageBox::information(this, tr("Mint Zerocoin"),
                                  tr("zOHMC is currently undergoing maintenance."), QMessageBox::Ok,
                                  QMessageBox::Ok);
@@ -272,7 +272,7 @@ void PrivacyDialog::on_pushButtonSpendzOHMC_clicked()
     if (!walletModel || !walletModel->getOptionsModel() || !pwalletMain)
         return;
 
-    if(GetAdjustedTime() > GetSporkValue(SPORK_20_ZEROCOIN_MAINTENANCE_MODE)) {
+    if(GetAdjustedTime() > GetSporkValue(SPORK_21_ZEROCOIN_MAINTENANCE_MODE)) {
         QMessageBox::information(this, tr("Mint Zerocoin"),
                                  tr("zOHMC is currently undergoing maintenance."), QMessageBox::Ok, QMessageBox::Ok);
         return;
@@ -644,8 +644,8 @@ void PrivacyDialog::setBalance(const CAmount& balance, const CAmount& unconfirme
     int64_t nImmature = 0;
     QString strDenomStats, strUnconfirmed = "";
 
-    // Update/enable labels and buttons depending on the current SPORK_16 status
-    updateSPORK16Status();
+    // Update/enable labels and buttons depending on the current SPORK_18 status
+    updateSPORK18Status();
 
     for (const auto& denom : libzerocoin::zerocoinDenomList) {
         nCoins = libzerocoin::ZerocoinDenominationToInt(denom);
@@ -735,11 +735,11 @@ void PrivacyDialog::keyPressEvent(QKeyEvent* event)
     }
 }
 
-void PrivacyDialog::updateSPORK16Status()
+void PrivacyDialog::updateSPORK18Status()
 {
-    // Update/enable labels, buttons and tooltips depending on the current SPORK_16 status
+    // Update/enable labels, buttons and tooltips depending on the current SPORK_18 status
     bool fButtonsEnabled =  ui->pushButtonMintzOHMC->isEnabled();
-    bool fMaintenanceMode = GetAdjustedTime() > GetSporkValue(SPORK_20_ZEROCOIN_MAINTENANCE_MODE);
+    bool fMaintenanceMode = GetAdjustedTime() > GetSporkValue(SPORK_21_ZEROCOIN_MAINTENANCE_MODE);
     if (fMaintenanceMode && fButtonsEnabled) {
         // Mint zOHMC
         ui->pushButtonMintzOHMC->setEnabled(false);
