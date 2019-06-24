@@ -281,6 +281,7 @@ int CSporkManager::GetSporkIDByName(std::string strName)
     if (strName == "SPORK_19_MN_WINNER_MINIMUM_AGE") return SPORK_19_MN_WINNER_MINIMUM_AGE;
     if (strName == "SPORK_20_SEGWIT_ACTIVATION") return SPORK_20_SEGWIT_ACTIVATION;
     if (strName == "SPORK_21_ZEROCOIN_MAINTENANCE_MODE") return SPORK_21_ZEROCOIN_MAINTENANCE_MODE;
+    if (strName == "SPORK_21_SEGWIT_ON_COINBASE") return SPORK_22_SEGWIT_ON_COINBASE_DEFAULT;
 
     return -1;
 }
@@ -303,6 +304,7 @@ std::string CSporkManager::GetSporkNameByID(int id)
     if (id == SPORK_19_MN_WINNER_MINIMUM_AGE) return "SPORK_19_MN_WINNER_MINIMUM_AGE";
     if (id == SPORK_20_SEGWIT_ACTIVATION) return "SPORK_20_SEGWIT_ACTIVATION";
     if (id == SPORK_21_ZEROCOIN_MAINTENANCE_MODE) return "SPORK_21_ZEROCOIN_MAINTENANCE_MODE";
+    if (id == SPORK_21_SEGWIT_ON_COINBASE) return "SPORK_22_SEGWIT_ON_COINBASE";
 
     return "Unknown";
 }
