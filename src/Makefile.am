@@ -177,6 +177,7 @@ BITCOIN_CORE_H = \
   support/allocators/zeroafterfree.h \
   spork.h \
   sporkdb.h \
+  stakeinput.h \
   streams.h \
   support/cleanse.h \
   sync.h \
@@ -290,6 +291,7 @@ libbitcoin_wallet_a_SOURCES = \
   primitives/zerocoin.cpp \
   kernel.cpp \
   wallet/wallet_ismine.cpp \
+  stakeinput.cpp \
   zohmcwallet.cpp \
   zohmctracker.cpp \
   wallet/crypter.cpp \

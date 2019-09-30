@@ -20,6 +20,7 @@
 #include <string.h>
 #include <openssl/sha.h>
 #include <boost/assign/list_of.hpp>
+#include <limits>
 
 static const int SCRYPT_SCRATCHPAD_SIZE = 131072 + 63;
 
@@ -379,6 +380,18 @@ libzerocoin::ZerocoinParams* CChainParams::OldZerocoin_Params() const
     return &ZCParams;
 }
 
+bool CChainParams::HasStakeMinAgeOrDepth(const int contextHeight, const uint32_t contextTime,
+                                         const int utxoFromBlockHeight, const uint32_t utxoFromBlockTime) const
+{
+    // before stake modifier V2, the age required was 3 * 60 * 60 (3 hour) / not required on regtest
+    if (!IsStakeModifierV2(contextHeight))
+        return (NetworkID() == CBaseChainParams::REGTEST || (utxoFromBlockTime + 10800 <= contextTime));
+
+    // after stake modifier V2, we require the utxo to be nStakeMinDepth deep in the chain
+    return (contextHeight - utxoFromBlockHeight >= nStakeMinDepth);
+}
+
+
 class CMainParams : public CChainParams
 {
 public:
@@ -404,15 +417,18 @@ public:
         nRejectBlockOutdatedMajority = 2850;
         nToCheckBlockUpgradeMajority = 3000; // 24 hours (legacy)
         nMinerThreads = 0;
-        nMaturity = 4;
-        nKarmanodeCountDrift = 20;
-        nMaxMoneyOut = 30000000 * COIN;
         /* Legacy Blocktime */
         nTargetTimespanLegacy = 1 * 60 * 40;  // OHMC: 40 Minutes
         nTargetSpacingLegacy = 1 * 30;        // OHMC: 30 Seconds
         /* New Blocktime */
         nTargetTimespan = 1 * 60 * 60 * 2;    // OHMC New: 120 Minutes
         nTargetSpacing = 1 * 60 * 4;          // OHMC New: 240 Seconds
+        nStakeMinDepth = 600;
+        nFutureTimeDriftPoW = 7200;
+        nFutureTimeDriftPoS = 180;
+        nMaturity = 4;
+        nKarmanodeCountDrift = 20;
+        nMaxMoneyOut = 30000000 * COIN;
 
         /** Height or Time Based Activations **/
         nLastPOWBlock = 1001;
@@ -476,6 +492,8 @@ public:
         nPoolMaxTransactions = 3;
         strSporkKey = "04dcb6cbd18fdecce2aac1f795aa650a25749fb58eb5afc796655cce5c728a2eb38ec0ce85d67555ddde6530cd04e6fd1f7c5f818ba483ad6f098e402803225074";
         strObfuscationPoolDummyAddress = "D87q2gC9j6nNrnzCsg4aY6bHMLsT9nUhEw";
+
+        nBlockStakeModifierlV2 = 99999999; // this will be set at a later date
 
         /** Zerocoin */
         zerocoinModulus = "25195908475657893494027183240048398571429282126204032027777137836043662020707595556264018525880784"
@@ -553,8 +571,8 @@ public:
         /* New Blocktime */
         nTargetTimespan = 1 * 60 * 60 * 1;    // OHMC New: 60 Minutes
         nTargetSpacing = 1 * 60 * 2;          // OHMC New: 120 Seconds
-
         nMaturity = 15;
+        nStakeMinDepth = 100;
         nKarmanodeCountDrift = 4;
         nModifierUpdateBlock = 51197; //approx Mon, 17 Apr 2017 04:00:00 GMT
         nMaxMoneyOut = 43199500 * COIN;
@@ -597,6 +615,7 @@ public:
         nPoolMaxTransactions = 2;
         strSporkKey = "0491826db990788ac61af9f74556c07bbf049b36a2b6942a6df11011643c4076f0cb05b360de70822728dfb929bd3467336366ba7351c5772c504641b8310e4a91";
         strObfuscationPoolDummyAddress = "y57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
+        nBlockStakeModifierlV2 = 9999999; // this will be set at a later date
         nBudgetFeeConfirmations = 3; // Number of confirmations for the finalization fee. We have to make this very short
                                      // here because we only have a 8 block finalization window on testnet
 
@@ -649,9 +668,12 @@ public:
         genesis.nBits = 0x207fffff;
         genesis.nNonce = 12345;
         nMaturity = 0;
+        nStakeMinDepth = 0;
         nLastPOWBlock = 999999999; // PoS complicates Regtest because of timing issues
         nZerocoinLastOldParams = 499;
         nZerocoinStartHeight = 100;
+
+        nBlockStakeModifierlV2 = std::numeric_limits<int>::max(); // max integer value (never switch on regtest)
 
         hashGenesisBlock = genesis.GetHash();
         nDefaultPort = 51476;

@@ -8,6 +8,7 @@
 #include "base58.h"
 #include "checkpoints.h"
 #include "clientversion.h"
+#include "kernel.h"
 #include "consensus/validation.h"
 #include "consensus/upgrades.h"
 #include "main.h"
@@ -137,6 +138,7 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.push_back(Pair("modifier", strprintf("%16x", blockindex->nStakeModifier)));
     result.push_back(Pair("modifierchecksum", strprintf("%08x", GetStakeModifierChecksum(blockindex))));
 
+    result.push_back(Pair("modifierV2", blockindex->nStakeModifierV2.GetHex()));
     result.push_back(Pair("moneysupply",ValueFromAmount(blockindex->nMoneySupply)));
 
     UniValue zohmcObj(UniValue::VOBJ);
