@@ -119,9 +119,11 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
     privacyPage = new PrivacyDialog();
     receiveCoinsPage = new ReceiveCoinsDialog();
     sendCoinsPage = new SendCoinsDialog();
+    proposalList = new ProposalList(this);
 
     addWidget(overviewPage);
     addWidget(transactionsPage);
+    addWidget(proposalList);
     addWidget(privacyPage);
     addWidget(receiveCoinsPage);
     addWidget(sendCoinsPage);
@@ -133,13 +135,6 @@ WalletView::WalletView(QWidget* parent) : QStackedWidget(parent),
         addWidget(karmanodeListPage);
     }
 
-    QVBoxLayout* vbox_2 = new QVBoxLayout();
-    proposalList = new ProposalList(this);
-    vbox_2->addWidget(proposalList);
-    vbox_2->setStretch(1, 1);
-    proposalListPage = new QWidget(this);
-    proposalListPage->setLayout(vbox_2);
-    addWidget(proposalListPage);
 
     // Clicking on a transaction on the overview pre-selects the transaction on the transaction history page
     connect(overviewPage, SIGNAL(transactionClicked(QModelIndex)), transactionView, SLOT(focusTransaction(QModelIndex)));
@@ -201,6 +196,7 @@ void WalletView::setWalletModel(WalletModel* walletModel)
     this->walletModel = walletModel;
 
     // Put transaction list in tabs
+    proposalList->setModel(walletModel);
     transactionView->setModel(walletModel);
     overviewPage->setWalletModel(walletModel);
     QSettings settings;
@@ -292,7 +288,7 @@ void WalletView::gotoPrivacyPage()
 
 void WalletView::gotoProposalPage()
 {
-    setCurrentWidget(proposalListPage);
+    setCurrentWidget(proposalList);
 }
 
 
