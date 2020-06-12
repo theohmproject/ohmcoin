@@ -119,6 +119,7 @@ BITCOIN_CORE_H = \
   consensus/params.h \
   consensus/upgrades.h \
   compressor.h \
+  cuckoocache.h \
   primitives/block.h \
   primitives/deterministicmint.h \
   primitives/transaction.h \
