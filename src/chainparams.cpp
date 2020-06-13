@@ -378,7 +378,7 @@ public:
     {
         networkID = CBaseChainParams::MAIN;
         strNetworkID = "main";
-        
+
         /**
          * The message start string is designed to be unlikely to occur in normal data.
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
@@ -439,17 +439,9 @@ public:
         assert(genesis.hashMerkleRoot == uint256("0x48f5858d0f091dec3f5278144cdcca7c8926b091d5af5ea711539f29f1acaf8c"));
 
         // Dev seeders
-        vSeeds.push_back(CDNSSeedData("209.250.241.176", "209.250.241.176"));     // Primary DNS Seeder remapper
-        vSeeds.push_back(CDNSSeedData("209.250.243.131", "209.250.243.131"));     // Single node address remapper
-        vSeeds.push_back(CDNSSeedData("45.77.239.108", "45.77.239.108"));       // remapper
-        vSeeds.push_back(CDNSSeedData("107.191.44.102", "107.191.44.102"));     // remapper
-        vSeeds.push_back(CDNSSeedData("198.13.50.121", "198.13.50.121"));     // RasAlGhul
-        vSeeds.push_back(CDNSSeedData("sqdmc.net", "sqdmc.net"));     // Squid
+        vSeeds.push_back(CDNSSeedData("dns1.ohmc.tips", "dns1.ohmc.tips"));     // Squid
+        vSeeds.push_back(CDNSSeedData("dns2.ohmc.tips", "dns2.ohmc.tips"));     // Squid
 
-        // The following seeders are sponsered by some of our awesome discord community members THANKYOU!!! https://discord.gg/5yUZbHp
-        vSeeds.push_back(CDNSSeedData("5.9.71.139", "5.9.71.139"));     // Shoutout to onionring9
-        vSeeds.push_back(CDNSSeedData("207.148.30.228", "207.148.30.228"));     // Shout-out to cryptoshorty
-        vSeeds.push_back(CDNSSeedData("165.169.80.122", "165.169.80.122"));     // Shout-out to Rud
 
         base58Prefixes[PUBKEY_ADDRESS] = std::vector<unsigned char>(1, 80);
         base58Prefixes[SCRIPT_ADDRESS] = std::vector<unsigned char>(1, 13);
