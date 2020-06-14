@@ -954,7 +954,7 @@ void CBudgetManager::NewBlock()
     TRY_LOCK(cs, fBudgetNewBlock);
     if (!fBudgetNewBlock) return;
 
-    if (karmanodeSync.RequestedKarmanodeAssets <= KARMANODE_SYNC_BUDGET)
+    if (karmanodeSync.RequestedKarmanodeAssets <= KARMANODE_SYNC_BUDGET
         && Params().NetworkID() != CBaseChainParams::REGTEST)
 
     if (strBudgetMode == "suggest") { //suggest the budget we see

@@ -5066,7 +5066,7 @@ bool ProcessNewBlock(CValidationState& state, CNode* pfrom, CBlock* pblock, CDis
         return error("%s : ActivateBestChain failed", __func__);
 
     if (!fLiteMode) {
-        if (karmanodeSync.RequestedKarmanodeAssets > KARMANODE_SYNC_LIST)
+        if (karmanodeSync.RequestedKarmanodeAssets > KARMANODE_SYNC_LIST
             || Params().NetworkID() == CBaseChainParams::REGTEST) {
             obfuScationPool.NewBlock();
             karmanodePayments.ProcessBlock(GetHeight() + 10);
