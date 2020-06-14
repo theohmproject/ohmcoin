@@ -463,6 +463,9 @@ bool CKarmanodeBroadcast::Create(CTxIn txin, CService service, CKey keyCollatera
 
 bool CKarmanodeBroadcast::CheckDefaultPort(std::string strService, std::string& strErrorRet, std::string strContext)
 {
+	if(Params().NetworkID() == CBaseChainParams::REGTEST) {
+        return true;
+    }
     CService service = CService(strService);
     int nDefaultPort = Params().GetDefaultPort();
 
