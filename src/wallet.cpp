@@ -2165,23 +2165,31 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
     coinLowestLarger.first = std::numeric_limits<CAmount>::max();
     coinLowestLarger.second.first = NULL;
     vector<pair<CAmount, pair<const CWalletTx*, unsigned int> > > vValue;
-    CAmount nTotalLower = 0;
+	CAmount nTotalLower = 0;
 
 	switch(coinSelectStrategy) {
-	case CoinSelectStrategy::descentByAmount:
-		std::sort(vCoins.begin(), vCoins.end(), [](const COutput & a, const COutput & b) -> bool {
-			return a.Value() > b.Value();
-		});
+	case CoinSelectStrategy::random:
+		random_shuffle(vCoins.begin(), vCoins.end(), GetRandInt);
 		break;
 
-	case CoinSelectStrategy::random:
 	default:
-		random_shuffle(vCoins.begin(), vCoins.end(), GetRandInt);
 		break;
 	}
 
     // move denoms down on the list
     sort(vCoins.begin(), vCoins.end(), less_then_denom);
+
+	switch(coinSelectStrategy) {
+	case CoinSelectStrategy::descentByAmount:
+	// sort after sorted by denoms
+		std::sort(vCoins.begin(), vCoins.end(), [](const COutput & a, const COutput & b) -> bool {
+			return a.Value() > b.Value();
+		});
+		break;
+
+	default:
+		break;
+	}
 
     // try to find nondenom first to prevent unneeded spending of mixed coins
     for (unsigned int tryDenom = 0; tryDenom < 2; tryDenom++) {
@@ -2204,7 +2212,13 @@ bool CWallet::SelectCoinsMinConf(const CAmount& nTargetValue, int nConfMine, int
 
             pair<CAmount, pair<const CWalletTx*, unsigned int> > coin = make_pair(n, make_pair(pcoin, i));
 
-            if (n == nTargetValue) {
+            bool equalOrGreater = (n == nTargetValue);
+
+            if(coinSelectStrategy == CoinSelectStrategy::descentByAmount) {
+                equalOrGreater = (n >= nTargetValue);
+            }
+
+            if (equalOrGreater) {
                 setCoinsRet.insert(coin.second);
                 nValueRet += coin.first;
                 return true;
