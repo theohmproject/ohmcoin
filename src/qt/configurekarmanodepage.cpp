@@ -39,7 +39,7 @@ ConfigureKarmanodePage::ConfigureKarmanodePage(Mode mode, QWidget* parent) : QDi
                                                                    mode(mode)
 {
     ui->setupUi(this);
-	
+
 	GUIUtil::setupAliasWidget(ui->aliasEdit, this);
 	GUIUtil::setupIPWidget(ui->vpsIpEdit, this);
 	GUIUtil::setupPrivKeyWidget(ui->privKeyEdit, this);
@@ -107,7 +107,7 @@ void ConfigureKarmanodePage::saveCurrentRow()
     case NewConfigureKarmanode:
 		if(ui->aliasEdit->text().toStdString().empty() || ui->vpsIpEdit->text().toStdString().empty() || ui->privKeyEdit->text().toStdString().empty() || ui->outputEdit->text().toStdString().empty() || ui->outputIdEdit->text().toStdString().empty()) {
 			break;
-		}	
+		}
 		karmanodeConfig.add(ui->aliasEdit->text().toStdString(), ui->vpsIpEdit->text().toStdString(), ui->privKeyEdit->text().toStdString(), ui->outputEdit->text().toStdString(), ui->outputIdEdit->text().toStdString());
 		karmanodeConfig.writeToKarmanodeConf();
         break;
@@ -115,7 +115,7 @@ void ConfigureKarmanodePage::saveCurrentRow()
 		if(ui->aliasEdit->text().toStdString().empty() || ui->vpsIpEdit->text().toStdString().empty() || ui->privKeyEdit->text().toStdString().empty() || ui->outputEdit->text().toStdString().empty() || ui->outputIdEdit->text().toStdString().empty()) {
 			break;
 		}
-	    
+
 	    QString MnAlias = getMnAliasCache();
 		ConfigureKarmanodePage::updateAlias(ui->aliasEdit->text().toStdString(), ui->vpsIpEdit->text().toStdString(), ui->privKeyEdit->text().toStdString(), ui->outputEdit->text().toStdString(), ui->outputIdEdit->text().toStdString(), MnAlias.toStdString());
 		break;
@@ -150,8 +150,9 @@ void ConfigureKarmanodePage::updateAlias(std::string Alias, std::string IP, std:
 			karmanodeConfig.add(Alias, IP, PrivKey, TxHash, OutputIndex);
 			// write to karmanode.conf
 			karmanodeConfig.writeToKarmanodeConf();
+			return;
 		}
-	}	
+	}
 
 }
 
