@@ -512,7 +512,7 @@ map<CoinDenomination, int> GetMintMaturityHeight()
 
         if (isFinished)
             break;
-		pindex = pindex->pprev;
+        pindex = chainActive[pindex->nHeight - 1];
     }
 
     //Generate final map
