@@ -161,7 +161,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
         }
 
         if (!fStakeFound)
-            LogPrint("staking", "CreateNewBlock(): stake not found\n");
             return NULL;
     }
 
@@ -386,7 +385,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
                     continue;
 
                 bool fDoubleSerial = false;
-                for (const CTxIn& txIn : tx.vin) {
+                for (const CTxIn txIn : tx.vin) {
                     if (txIn.scriptSig.IsZerocoinSpend()) {
                         libzerocoin::CoinSpend spend = TxInToZerocoinSpend(txIn);
                         int effectiveHeight = libzerocoin::ExtractVersionFromSerial(spend.getCoinSerialNumber()) < libzerocoin::PrivateCoin::PUBKEY_VERSION ? Params().Zerocoin_LastOldParams() : Params().Zerocoin_LastOldParams() + 1;
@@ -426,7 +425,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
             ++nBlockTx;
             nFees += nTxFees;
 
-            for (const CBigNum& bnSerial : vTxSerials)
+            for (const CBigNum bnSerial : vTxSerials)
                 vBlockSerials.emplace_back(bnSerial);
 
             if (fPrintPriority) {
