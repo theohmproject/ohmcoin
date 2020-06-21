@@ -109,7 +109,7 @@ bool CheckZerocoinSpendNoDB(const CTransaction tx, string& strError)
     //max needed non-mint outputs should be 2 - one for redemption address and a possible 2nd for change
     if (tx.vout.size() > 2){
         int outs = 0;
-        for (const CTxOut& out : tx.vout) {
+        for (const CTxOut out : tx.vout) {
             if (out.IsZerocoinMint())
                 continue;
             outs++;
@@ -123,7 +123,7 @@ bool CheckZerocoinSpendNoDB(const CTransaction tx, string& strError)
 
     //compute the txout hash that is used for the zerocoinspend signatures
     CMutableTransaction txTemp;
-    for (const CTxOut& out : tx.vout) {
+    for (const CTxOut out : tx.vout) {
         txTemp.vout.push_back(out);
     }
     //    uint256 hashTxOut = txTemp.GetHash();
@@ -239,7 +239,7 @@ BOOST_AUTO_TEST_CASE(checkzerocoinspend_test)
         CTransaction tx;
         BOOST_CHECK_MESSAGE(DecodeHexTx(tx, raw.first, true), "Failed to deserialize hex transaction");
 
-        for(const CTxOut& out : tx.vout){
+        for(const CTxOut out : tx.vout){
             if(!out.scriptPubKey.empty() && out.scriptPubKey.IsZerocoinMint()) {
                 PublicCoin publicCoin(Params().OldZerocoin_Params());
                 BOOST_CHECK_MESSAGE(TxOutToPublicCoin(out, publicCoin, state), "Failed to convert CTxOut " << out.ToString() << " to PublicCoin");

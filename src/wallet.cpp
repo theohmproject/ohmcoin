@@ -3016,17 +3016,14 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
 
     if (GetTime() - nLastStakeSetUpdate > nStakeSetUpdateTime) {
         setStakeCoins.clear();
-        if (!SelectStakeCoins(setStakeCoins, nBalance - nReserveBalance)) {
-            LogPrint("staking", "CreateCoinStake(): selectStakeCoins failed\n");
+        if (!SelectStakeCoins(setStakeCoins, nBalance - nReserveBalance))
             return false;
-        }
+
         nLastStakeSetUpdate = GetTime();
     }
 
-    if (setStakeCoins.empty()) {
-        LogPrint("staking", "CreateCoinStake(): listInputs empty\n");
+    if (setStakeCoins.empty())
         return false;
-    }
 
     vector<const CWalletTx*> vwtxPrev;
 
@@ -4941,7 +4938,7 @@ bool CWallet::CreateZerocoinSpendTransaction(CAmount nValue, int nSecurityLevel,
             vSelectedMints.emplace_back(mint);
         }
     } else {
-        for (const CZerocoinMint& mint : vSelectedMints)
+        for (const CZerocoinMint mint : vSelectedMints)
             nValueSelected += ZerocoinDenominationToAmount(mint.GetDenomination());
     }
 
