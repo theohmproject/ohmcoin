@@ -6128,8 +6128,8 @@ zOHMC are mature when they have more than 20 confirmations AND more than 1 mint 
         <translation>Kies een eerder gebruikt adres</translation>
     </message>
     <message>
-        <source>Enter a Ohmcoin address (e.g. PCYiHgGJJ6xGHqivmdZrYjRnhaYf6AJ2Mp)</source>
-        <translation>Voer een Ohmcoin adres in (bv.: PCYiHgGJJ6xGHqivmdZrYjRnhaYf6AJ2Mp)</translation>
+        <source>Enter a Ohmcoin address (e.g. Z0hmc0InF23ak1nGR0cksjRnhaYf6AJ2Mp)</source>
+        <translation>Voer een Ohmcoin adres in (bv.: Z0hmc0InF23ak1nGR0cksjRnhaYf6AJ2Mp)</translation>
     </message>
     <message>
         <source>Paste address from clipboard</source>

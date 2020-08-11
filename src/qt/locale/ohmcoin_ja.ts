@@ -5794,8 +5794,8 @@ zOHMC are mature when they have more than 20 confirmations AND more than 1 mint 
         <translation>以前利用したアドレスを選択</translation>
     </message>
     <message>
-        <source>Enter a Ohmcoin address (e.g. PCYiHgGJJ6xGHqivmdZrYjRnhaYf6AJ2Mp)</source>
-        <translation>Ohmcoinアドレスを入力(例: PCYiHgGJJ6xGHqivmdZrYjRnhaYf6AJ2Mp)</translation>
+        <source>Enter a Ohmcoin address (e.g. Z0hmc0InF23ak1nGR0cksjRnhaYf6AJ2Mp)</source>
+        <translation>Ohmcoinアドレスを入力(例: Z0hmc0InF23ak1nGR0cksjRnhaYf6AJ2Mp)</translation>
     </message>
     <message>
         <source>Paste address from clipboard</source>

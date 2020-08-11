@@ -60,7 +60,7 @@
          <string/>
         </property>
         <property name="placeholderText">
-         <string>Enter a Ohmcoin address (e.g. PCYiHgGJJ6xGHqivmdZrYjRnhaYf6AJ2Mp)</string>
+         <string>Enter a Ohmcoin address (e.g. Z0hmc0InF23ak1nGR0cksjRnhaYf6AJ2Mp)</string>
         </property>
        </widget>
       </item>
