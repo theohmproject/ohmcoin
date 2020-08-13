@@ -63,6 +63,3 @@ More information at [ohmcoin.org](http://www.ohmcoin.org)
 <tr><td>Phase 9</td><td>8233927-10336327</td><td>0.00390625 OHMC</td><td>11.25 OHMC</td></tr>
 <tr><td>Phase X</td><td>10336328-Infinite</td><td>0.001953125 OHMC</td><td>5.625 OHMC</td></tr>
 </table>
-
-
-

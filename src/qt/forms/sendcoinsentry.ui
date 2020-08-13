@@ -27,8 +27,11 @@
     <enum>QFrame::Sunken</enum>
    </property>
    <layout class="QGridLayout" name="gridLayout">
-    <property name="spacing">
+    <property name="horizontalSpacing">
      <number>12</number>
+    </property>
+    <property name="verticalSpacing">
+     <number>10</number>
     </property>
     <item row="0" column="0">
      <widget class="QLabel" name="payToLabel">
@@ -51,7 +54,13 @@
       <item>
        <widget class="QValidatedLineEdit" name="payTo">
         <property name="toolTip">
-         <string>The OHMC address to send the payment to</string>
+         <string>The Ohmcoin address to send the payment to</string>
+        </property>
+        <property name="inputMask">
+         <string/>
+        </property>
+        <property name="placeholderText">
+         <string>Enter a Ohmcoin address (e.g. Z0hmc0InF23ak1nGR0cksjRnhaYf6AJ2Mp)</string>
         </property>
        </widget>
       </item>
@@ -64,8 +73,14 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../ohmc.qrc">
+         <iconset resource="../ohmcoin.qrc">
           <normaloff>:/icons/address-book</normaloff>:/icons/address-book</iconset>
+        </property>
+        <property name="iconSize">
+         <size>
+          <width>16</width>
+          <height>16</height>
+         </size>
         </property>
         <property name="shortcut">
          <string>Alt+A</string>
@@ -81,7 +96,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../ohmc.qrc">
+         <iconset resource="../ohmcoin.qrc">
           <normaloff>:/icons/editpaste</normaloff>:/icons/editpaste</iconset>
         </property>
         <property name="shortcut">
@@ -98,7 +113,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../ohmc.qrc">
+         <iconset resource="../ohmcoin.qrc">
           <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
         </property>
        </widget>
@@ -122,6 +137,12 @@
      <widget class="QLineEdit" name="addAsLabel">
       <property name="toolTip">
        <string>Enter a label for this address to add it to the list of used addresses</string>
+      </property>
+      <property name="inputMask">
+       <string/>
+      </property>
+      <property name="placeholderText">
+       <string>Enter a label for this address to add it to your address book</string>
       </property>
      </widget>
     </item>
@@ -154,7 +175,7 @@
     <item row="3" column="1">
      <widget class="QLabel" name="messageTextLabel">
       <property name="toolTip">
-       <string>A message that was attached to the OHMC: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the OHMC network.</string>
+       <string>A message that was attached to the Ohmcoin: URI which will be stored with the transaction for your reference. Note: This message will not be sent over the Ohmcoin network.</string>
       </property>
       <property name="textFormat">
        <enum>Qt::PlainText</enum>
@@ -622,7 +643,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../ohmc.qrc">
+         <iconset resource="../ohmcoin.qrc">
           <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
         </property>
        </widget>
@@ -1158,7 +1179,7 @@
          <string/>
         </property>
         <property name="icon">
-         <iconset resource="../ohmc.qrc">
+         <iconset resource="../ohmcoin.qrc">
           <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
         </property>
        </widget>
@@ -1215,6 +1236,7 @@
    <class>BitcoinAmountField</class>
    <extends>QLineEdit</extends>
    <header>bitcoinamountfield.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <tabstops>
@@ -1230,7 +1252,7 @@
   <tabstop>deleteButton_s</tabstop>
  </tabstops>
  <resources>
-  <include location="../ohmc.qrc"/>
+  <include location="../ohmcoin.qrc"/>
  </resources>
  <connections/>
 </ui>

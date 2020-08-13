@@ -1,39 +1,40 @@
-OHMC Core
+Ohmcoin Core
 =====================
 
 Setup
 ---------------------
-[OHMC Core](http://ohmc.org/wallet) is the original OHMC client and it builds the backbone of the network. However, it downloads and stores the entire history of OHMC transactions; depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more. Thankfully you only have to do this once.
+[Ohmcoin Core](http://ohmcoin.org/wallet) is the original Ohmcoin client and it builds the backbone of the network. However, it downloads and stores the entire history of Ohmcoin transactions; depending on the speed of your computer and network connection, the synchronization process can take anywhere from a few hours to a day or more. Thankfully you only have to do this once.
 
 Running
 ---------------------
-The following are some helpful notes on how to run OHMC on your native platform.
+The following are some helpful notes on how to run Ohmcoin on your native platform.
 
 ### Unix
 
 Unpack the files into a directory and run:
 
-- bin/32/ohmc-qt (GUI, 32-bit) or bin/32/ohmcd (headless, 32-bit)
-- bin/64/ohmc-qt (GUI, 64-bit) or bin/64/ohmcd (headless, 64-bit)
+- bin/32/ohmcoin-qt (GUI, 32-bit) or bin/32/ohmcoind (headless, 32-bit)
+- bin/64/ohmcoin-qt (GUI, 64-bit) or bin/64/ohmcoind (headless, 64-bit)
 
 ### Windows
 
-Unpack the files into a directory, and then run ohmc-qt.exe.
+Unpack the files into a directory, and then run ohmcoin-qt.exe.
 
 ### OSX
 
-Drag OHMC-Qt to your applications folder, and then run OHMC-Qt.
+Drag Ohmcoin-Qt to your applications folder, and then run Ohmcoin-Qt.
 
 ### Need Help?
 
-* See the documentation at the [OHMC Wiki](https://en.bitcoin.it/wiki/Main_Page) ***TODO***
+* See the documentation at the [Ohmcoin Wiki](https://en.bitcoin.it/wiki/Main_Page) ***TODO***
 for help and more information.
-* Ask for help on [BitcoinTalk](https://bitcointalk.org/index.php?topic=1262920.0) or on the [OHMC Forum](http://forum.ohmc.org/).
-* Join one of our Slack groups [OHMC Slack Groups](https://ohmc.org/slack-logins/).
+* Ask for help on [BitcoinTalk](https://bitcointalk.org/index.php?topic=1262920.0) or on the [Ohmcoin Forum](http://forum.ohmcoin.org/).
+* Join one of our Slack groups [Ohmcoin Slack Groups](https://ohmcoin.org/slack-logins/).
+* Join our Discord server [Discord Server](https://discord.gg/dTRhamf)
 
 Building
 ---------------------
-The following are developer notes on how to build OHMC on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
+The following are developer notes on how to build Ohmcoin on your native platform. They are not complete guides, but include notes on the necessary libraries, compile flags, etc.
 
 - [OSX Build Notes](build-osx.md)
 - [Unix Build Notes](build-unix.md)
@@ -41,7 +42,7 @@ The following are developer notes on how to build OHMC on your native platform. 
 
 Development
 ---------------------
-The Ohm repo's [root README](https://github.com/OHMC-Project/OHMC/blob/master/README.md) contains relevant information on the development process and automated testing.
+The Ohmcoin repo's [root README](https://github.com/theohmproject/Ohmcoin/blob/master/README.md) contains relevant information on the development process and automated testing.
 
 - [Developer Notes](developer-notes.md)
 - [Multiwallet Qt Development](multiwallet-qt.md)
@@ -55,8 +56,8 @@ The Ohm repo's [root README](https://github.com/OHMC-Project/OHMC/blob/master/RE
 
 ### Resources
 
-* Discuss on the [BitcoinTalk](https://bitcointalk.org/index.php?topic=1262920.0) or the [OHMC](http://forum.ohmc.org/) forum.
-* Join the [OHMC-Dev](https://ohmc-dev.slack.com/) Slack group ([Sign-Up](https://ohmc-dev.herokuapp.com/)).
+* Discuss on the [BitcoinTalk](https://bitcointalk.org/index.php?topic=1262920.0) or the [Ohmcoin](http://forum.ohmcoin.org/) forum.
+* Join the [Ohmcoin-Dev](https://ohmcoin-dev.slack.com/) Slack group ([Sign-Up](https://ohmcoin-dev.herokuapp.com/)).
 
 ### Miscellaneous
 - [Assets Attribution](assets-attribution.md)

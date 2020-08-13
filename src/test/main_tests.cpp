@@ -1,7 +1,6 @@
 // Copyright (c) 2014 The Bitcoin Core developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -12,41 +11,47 @@
 
 BOOST_AUTO_TEST_SUITE(main_tests)
 
-CAmount nMoneySupplyPoWEnd = 43199500 * COIN;
+CAmount nMoneySupplyPoWEnd = 18000000 * COIN;
 
 BOOST_AUTO_TEST_CASE(subsidy_limit_test)
 {
     CAmount nSum = 0;
     for (int nHeight = 0; nHeight < 1; nHeight += 1) {
-        /* premine in block 1 (60,001 OHMC) */
+        /* premine in block 1 (17,500,000 OHMC) */
         CAmount nSubsidy = GetBlockValue(nHeight);
-        BOOST_CHECK(nSubsidy <= 60001 * COIN);
+        BOOST_CHECK(nSubsidy <= 17500000 * COIN);
         nSum += nSubsidy;
     }
 
-    for (int nHeight = 1; nHeight < 86400; nHeight += 1) {
-        /* PoW Phase One */
+    for (int nHeight = 1; nHeight < 201; nHeight += 1) {
+        /* PoW premine (500,000 OHMC) */
         CAmount nSubsidy = GetBlockValue(nHeight);
-        BOOST_CHECK(nSubsidy <= 250 * COIN);
+        BOOST_CHECK(nSubsidy <= 2500 * COIN);
         nSum += nSubsidy;
     }
 
-    for (int nHeight = 86400; nHeight < 151200; nHeight += 1) {
-        /* PoW Phase Two */
+    BOOST_CHECK(nSum > 0 && nSum <= nMoneySupplyPoWEnd);
+
+    for (int nHeight = 201; nHeight < 775601; nHeight += 1) {
+        /* PoS Phase One */
         CAmount nSubsidy = GetBlockValue(nHeight);
-        BOOST_CHECK(nSubsidy <= 225 * COIN);
+        BOOST_CHECK(nSubsidy <= 7 * COIN);
         nSum += nSubsidy;
     }
 
-    for (int nHeight = 151200; nHeight < 259200; nHeight += 1) {
-        /* PoW Phase Two */
+    for (int nHeight = 775601; nHeight < 1044000; nHeight += 1) {
+        /* PoS Phase Two */
         CAmount nSubsidy = GetBlockValue(nHeight);
-        BOOST_CHECK(nSubsidy <= 45 * COIN);
-        BOOST_CHECK(MoneyRange(nSubsidy));
+        BOOST_CHECK(nSubsidy <= 4.5 * COIN);
         nSum += nSubsidy;
-        BOOST_CHECK(nSum > 0 && nSum <= nMoneySupplyPoWEnd);
     }
-    BOOST_CHECK(nSum == 4109975100000000ULL);
+
+    for (int nHeight = 1044000; nHeight < 1562398; nHeight += 1) {
+        /* PoS Phase Two */
+        CAmount nSubsidy = GetBlockValue(nHeight);
+        BOOST_CHECK(nSubsidy <= 3.6 * COIN);
+        nSum += nSubsidy;
+    }
 }
 
 BOOST_AUTO_TEST_SUITE_END()

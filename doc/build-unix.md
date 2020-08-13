@@ -1,10 +1,10 @@
 UNIX BUILD NOTES
 ====================
-Some notes on how to build OHMC in Unix.
+Some notes on how to build Ohmcoin in Unix.
 
 Note
 ---------------------
-Always use absolute paths to configure and compile ohmc and the dependencies,
+Always use absolute paths to configure and compile ohmcoin and the dependencies,
 for example, when specifying the the path of the dependency:
 
 	../dist/configure --enable-cxx --disable-shared --with-pic --prefix=$BDB_PREFIX
@@ -22,7 +22,7 @@ make
 make install # optional
 ```
 
-This will build ohmc-qt as well if the dependencies are met.
+This will build ohmcoin-qt as well if the dependencies are met.
 
 Dependencies
 ---------------------
@@ -33,6 +33,7 @@ These dependencies are required:
  ------------|------------------|----------------------
  libssl      | SSL Support      | Secure communications
  libboost    | Boost            | C++ Library
+ libevent    | Events           | Asynchronous event notification
 
 Optional dependencies:
 
@@ -43,6 +44,7 @@ Optional dependencies:
  qt          | GUI              | GUI toolkit (only needed when GUI enabled)
  protobuf    | Payments in GUI  | Data interchange format used for payment protocol (only needed when GUI enabled)
  libqrencode | QR codes in GUI  | Optional for generating QR codes (only needed when GUI enabled)
+ univalue    | Utility          | JSON parsing and encoding (bundled version will be used unless --with-system-univalue passed to configure)
 
 For the versions used in the release, see [release-process.md](release-process.md) under *Fetch and build inputs*.
 
@@ -50,14 +52,14 @@ System requirements
 --------------------
 
 C++ compilers are memory-hungry. It is recommended to have at least 1 GB of
-memory available when compiling OHMC Core. With 512MB of memory or less
+memory available when compiling Ohmcoin Core. With 512MB of memory or less
 compilation will take much longer due to swap thrashing.
 
 Dependency Build Instructions: Ubuntu & Debian
 ----------------------------------------------
 Build requirements:
 
-	sudo apt-get install build-essential libtool autotools-dev autoconf pkg-config libssl-dev
+	sudo apt-get install build-essential libtool autotools-dev autoconf pkg-config libssl-dev libevent-dev
 
 For Ubuntu 12.04 and later or Debian 7 and later libboost-all-dev has to be installed:
 
@@ -83,7 +85,7 @@ Optional:
 Dependencies for the GUI: Ubuntu & Debian
 -----------------------------------------
 
-If you want to build OHMC-Qt, make sure that the required packages for Qt development
+If you want to build Ohmcoin-Qt, make sure that the required packages for Qt development
 are installed. Qt 5 is necessary to build the GUI.
 If both Qt 4 and Qt 5 are installed, Qt 5 will be used.
 To build without GUI pass `--without-gui`.
@@ -96,12 +98,12 @@ libqrencode (optional) can be installed with:
 
     sudo apt-get install libqrencode-dev
 
-Once these are installed, they will be found by configure and a ohmc-qt executable will be
+Once these are installed, they will be found by configure and a ohmcoin-qt executable will be
 built by default.
 
 Notes
 -----
-The release is built with GCC and then "strip ohmcd" to strip the debug
+The release is built with GCC and then "strip ohmcoind" to strip the debug
 symbols, which reduces the executable size by about 90%.
 
 
@@ -130,10 +132,10 @@ Berkeley DB
 It is recommended to use Berkeley DB 4.8. If you have to build it yourself:
 
 ```bash
-OHMC_ROOT=$(pwd)
+Ohmcoin_ROOT=$(pwd)
 
-# Pick some path to install BDB to, here we create a directory within the ohmc directory
-BDB_PREFIX="${OHMC_ROOT}/db4"
+# Pick some path to install BDB to, here we create a directory within the ohmcoin directory
+BDB_PREFIX="${Ohmcoin_ROOT}/db4"
 mkdir -p $BDB_PREFIX
 
 # Fetch the source and verify that it is not tampered with
@@ -148,8 +150,8 @@ cd db-4.8.30.NC/build_unix/
 ../dist/configure --enable-cxx --disable-shared --with-pic --prefix=$BDB_PREFIX
 make install
 
-# Configure OHMC Core to use our own-built instance of BDB
-cd $OHMC_ROOT
+# Configure Ohmcoin Core to use our own-built instance of BDB
+cd $Ohmcoin_ROOT
 ./configure (other args...) LDFLAGS="-L${BDB_PREFIX}/lib/" CPPFLAGS="-I${BDB_PREFIX}/include/"
 ```
 
@@ -166,7 +168,7 @@ If you need to build Boost yourself:
 
 Security
 --------
-To help make your OHMC installation more secure by making certain attacks impossible to
+To help make your Ohmcoin installation more secure by making certain attacks impossible to
 exploit even if a vulnerability is found, binaries are hardened by default.
 This can be disabled with:
 
@@ -188,9 +190,9 @@ Hardening enables the following features:
     On an Amd64 processor where a library was not compiled with -fPIC, this will cause an error
     such as: "relocation R_X86_64_32 against `......' can not be used when making a shared object;"
 
-    To test that you have built OHMC executable, install scanelf, part of paxutils, and use:
+    To test that you have built PIE executable, install scanelf, part of paxutils, and use:
 
-    	scanelf -e ./ohmcd
+    	scanelf -e ./ohmcoind
 
     The output should contain:
      TYPE
@@ -198,13 +200,13 @@ Hardening enables the following features:
 
 * Non-executable Stack
     If the stack is executable then trivial stack based buffer overflow exploits are possible if
-    vulnerable buffers are found. By default, ohmc should be built with a non-executable stack
+    vulnerable buffers are found. By default, ohmcoin should be built with a non-executable stack
     but if one of the libraries it uses asks for an executable stack or someone makes a mistake
     and uses a compiler extension which requires an executable stack, it will silently build an
     executable without the non-executable stack protection.
 
     To verify that the stack is non-executable after compiling use:
-    `scanelf -e ./ohmcd`
+    `scanelf -e ./ohmcoind`
 
     the output should contain:
 	STK/REL/PTL

@@ -1,7 +1,6 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -39,6 +38,13 @@ Bip38ToolDialog::Bip38ToolDialog(QWidget* parent) : QDialog(parent),
     ui->encryptedKeyIn_DEC->installEventFilter(this);
     ui->passphraseIn_DEC->installEventFilter(this);
     ui->decryptedKeyOut_DEC->installEventFilter(this);
+
+    ui->addressIn_ENC->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->passphraseIn_ENC->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->encryptedKeyOut_ENC->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->encryptedKeyIn_DEC->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->passphraseIn_DEC->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    ui->decryptedKeyOut_DEC->setAttribute(Qt::WA_MacShowFocusRect, 0);
 }
 
 Bip38ToolDialog::~Bip38ToolDialog()
@@ -123,15 +129,16 @@ void Bip38ToolDialog::on_encryptKeyButton_ENC_clicked()
         return;
     }
 
-    CBitcoinAddress addr(ui->addressIn_ENC->text().toStdString());
-    if (!addr.IsValid()) {
+    if (!IsValidDestinationString(ui->addressIn_ENC->text().toStdString())) {
         ui->statusLabel_ENC->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_ENC->setText(tr("The entered address is invalid.") + QString(" ") + tr("Please check the address and try again."));
         return;
     }
 
-    CKeyID keyID;
-    if (!addr.GetKeyID(keyID)) {
+    CTxDestination addr = DecodeDestination(ui->addressIn_ENC->text().toStdString());
+
+    CKeyID keyID = GetKeyForDestination(*pwalletMain, addr);
+    if (keyID.IsNull()) {
         ui->addressIn_ENC->setValid(false);
         ui->statusLabel_ENC->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_ENC->setText(tr("The entered address does not refer to a key.") + QString(" ") + tr("Please check the address and try again."));
@@ -152,7 +159,7 @@ void Bip38ToolDialog::on_encryptKeyButton_ENC_clicked()
         return;
     }
 
-    std::string encryptedKey = BIP38_Encrypt(addr.ToString(), qstrPassphrase.toStdString(), key.GetPrivKey_256());
+    std::string encryptedKey = BIP38_Encrypt(EncodeDestination(addr), qstrPassphrase.toStdString(), key.GetPrivKey_256(), key.IsCompressed());
     ui->encryptedKeyOut_ENC->setText(QString::fromStdString(encryptedKey));
 }
 
@@ -172,6 +179,12 @@ void Bip38ToolDialog::on_clearButton_ENC_clicked()
 }
 
 CKey key;
+void Bip38ToolDialog::on_pasteButton_DEC_clicked()
+{
+    // Paste text from clipboard into recipient field
+    ui->encryptedKeyIn_DEC->setText(QApplication::clipboard()->text());
+}
+
 void Bip38ToolDialog::on_decryptKeyButton_DEC_clicked()
 {
     string strPassphrase = ui->passphraseIn_DEC->text().toStdString();
@@ -187,10 +200,10 @@ void Bip38ToolDialog::on_decryptKeyButton_DEC_clicked()
 
     key.Set(privKey.begin(), privKey.end(), fCompressed);
     CPubKey pubKey = key.GetPubKey();
-    CBitcoinAddress address(pubKey.GetID());
+    CTxDestination address(pubKey.GetID());
 
-    ui->decryptedKeyOut_DEC->setText(QString::fromStdString(HexStr(privKey)));
-    ui->addressOut_DEC->setText(QString::fromStdString(address.ToString()));
+    ui->decryptedKeyOut_DEC->setText(QString::fromStdString(CBitcoinSecret(key).ToString()));
+    ui->addressOut_DEC->setText(QString::fromStdString(EncodeDestination(address)));
 }
 
 void Bip38ToolDialog::on_importAddressButton_DEC_clicked()
@@ -202,17 +215,19 @@ void Bip38ToolDialog::on_importAddressButton_DEC_clicked()
         return;
     }
 
-    CBitcoinAddress address(ui->addressOut_DEC->text().toStdString());
     CPubKey pubkey = key.GetPubKey();
 
-    if (!address.IsValid() || !key.IsValid() || CBitcoinAddress(pubkey.GetID()).ToString() != address.ToString()) {
+    if (!IsValidDestinationString(ui->addressOut_DEC->text().toStdString())) {
         ui->statusLabel_DEC->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_DEC->setText(tr("Data Not Valid.") + QString(" ") + tr("Please try again."));
         return;
     }
 
-    CKeyID vchAddress = pubkey.GetID();
+    CTxDestination address = DecodeDestination(ui->addressOut_DEC->text().toStdString());
+
+    if (!key.IsValid() || EncodeDestination(pubkey.GetID()) != EncodeDestination(address))
     {
+        CKeyID vchAddress = pubkey.GetID();
         ui->statusLabel_DEC->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_DEC->setText(tr("Please wait while key is imported"));
 

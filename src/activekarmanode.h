@@ -1,8 +1,8 @@
-// Copyright (c) 2009-2010 Satoshi Nakamoto
-// Copyright (c) 2009-2012 The Bitcoin developers
-// Copyright (c) 2015-2016 The Dash developers
+// Copyright (c) 2014-2016 The Dash developers
+// Copyright (c) 2015-2017 The PIVX developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef ACTIVEKARMANODE_H
 #define ACTIVEKARMANODE_H
 
@@ -10,7 +10,7 @@
 #include "key.h"
 #include "karmanode.h"
 #include "net.h"
-#include "privatesend.h"
+#include "obfuscation.h"
 #include "sync.h"
 #include "wallet.h"
 
@@ -30,8 +30,8 @@ private:
     /// Ping Karmanode
     bool SendKarmanodePing(std::string& errorMessage);
 
-    /// Register any Karmanode
-    bool Register(CTxIn vin, CService service, CKey key, CPubKey pubKey, CKey keyKarmanode, CPubKey pubKeyKarmanode, std::string& errorMessage);
+    /// Create Karmanode broadcast, needs to be relayed manually after that
+    bool CreateBroadcast(CTxIn vin, CService service, CKey key, CPubKey pubKey, CKey keyKarmanode, CPubKey pubKeyKarmanode, std::string& errorMessage, CKarmanodeBroadcast &mnb);
 
     /// Get 3000 OHMC input that can be used for the Karmanode
     bool GetMasterNodeVin(CTxIn& vin, CPubKey& pubkey, CKey& secretKey, std::string strTxHash, std::string strOutputIndex);
@@ -58,8 +58,8 @@ public:
     void ManageStatus();
     std::string GetStatus();
 
-    /// Register remote Karmanode
-    bool Register(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage);
+    /// Create Karmanode broadcast, needs to be relayed manually after that
+    bool CreateBroadcast(std::string strService, std::string strKey, std::string strTxHash, std::string strOutputIndex, std::string& errorMessage, CKarmanodeBroadcast &mnb, bool fOffline = false);
 
     /// Get 3000 OHMC input that can be used for the Karmanode
     bool GetMasterNodeVin(CTxIn& vin, CPubKey& pubkey, CKey& secretKey);

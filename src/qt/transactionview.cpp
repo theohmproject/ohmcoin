@@ -86,27 +86,39 @@ TransactionView::TransactionView(QWidget* parent) : QWidget(parent), model(0), t
     typeWidget->addItem(tr("Most Common"), TransactionFilterProxy::COMMON_TYPES);
     typeWidget->addItem(tr("Received with"), TransactionFilterProxy::TYPE(TransactionRecord::RecvWithAddress) | TransactionFilterProxy::TYPE(TransactionRecord::RecvFromOther));
     typeWidget->addItem(tr("Sent to"), TransactionFilterProxy::TYPE(TransactionRecord::SendToAddress) | TransactionFilterProxy::TYPE(TransactionRecord::SendToOther));
+
+/* Obsolete Obfuscation entries. Remove once the corresponding TYPES are removed:
+ * 
     typeWidget->addItem(tr("Obfuscated"), TransactionFilterProxy::TYPE(TransactionRecord::Obfuscated));
-    typeWidget->addItem(tr("PrivateSend Make Collateral Inputs"), TransactionFilterProxy::TYPE(TransactionRecord::PrivateSendMakeCollaterals));
-    typeWidget->addItem(tr("PrivateSend Create Denominations"), TransactionFilterProxy::TYPE(TransactionRecord::PrivateSendCreateDenominations));
-    typeWidget->addItem(tr("PrivateSend Denominate"), TransactionFilterProxy::TYPE(TransactionRecord::PrivateSendDenominate));
-    typeWidget->addItem(tr("PrivateSend Collateral Payment"), TransactionFilterProxy::TYPE(TransactionRecord::PrivateSendCollateralPayment));
+    typeWidget->addItem(tr("Obfuscation Make Collateral Inputs"), TransactionFilterProxy::TYPE(TransactionRecord::ObfuscationMakeCollaterals));
+    typeWidget->addItem(tr("Obfuscation Create Denominations"), TransactionFilterProxy::TYPE(TransactionRecord::ObfuscationCreateDenominations));
+    typeWidget->addItem(tr("Obfuscation Denominate"), TransactionFilterProxy::TYPE(TransactionRecord::ObfuscationDenominate));
+    typeWidget->addItem(tr("Obfuscation Collateral Payment"), TransactionFilterProxy::TYPE(TransactionRecord::ObfuscationCollateralPayment));
+ */
+
     typeWidget->addItem(tr("To yourself"), TransactionFilterProxy::TYPE(TransactionRecord::SendToSelf));
     typeWidget->addItem(tr("Mined"), TransactionFilterProxy::TYPE(TransactionRecord::Generated));
     typeWidget->addItem(tr("Minted"), TransactionFilterProxy::TYPE(TransactionRecord::StakeMint));
     typeWidget->addItem(tr("Karmanode Reward"), TransactionFilterProxy::TYPE(TransactionRecord::MNReward));
+    typeWidget->addItem(tr("Received Ohmc from zOhmc"), TransactionFilterProxy::TYPE(TransactionRecord::RecvFromZerocoinSpend));
+    typeWidget->addItem(tr("Zerocoin Mint"), TransactionFilterProxy::TYPE(TransactionRecord::ZerocoinMint));
+    typeWidget->addItem(tr("Zerocoin Spend"), TransactionFilterProxy::TYPE(TransactionRecord::ZerocoinSpend));
+    typeWidget->addItem(tr("Zerocoin Spend, Change in zOhmc"), TransactionFilterProxy::TYPE(TransactionRecord::ZerocoinSpend_Change_zOhmc));
+    typeWidget->addItem(tr("Zerocoin Spend to Self"), TransactionFilterProxy::TYPE(TransactionRecord::ZerocoinSpend_FromMe));
     typeWidget->addItem(tr("Other"), TransactionFilterProxy::TYPE(TransactionRecord::Other));
     typeWidget->setCurrentIndex(settings.value("transactionType").toInt());
 
     hlayout->addWidget(typeWidget);
 
     addressWidget = new QLineEdit(this);
+    addressWidget->setAttribute(Qt::WA_MacShowFocusRect, 0);
 #if QT_VERSION >= 0x040700
     addressWidget->setPlaceholderText(tr("Enter address or label to search"));
 #endif
     hlayout->addWidget(addressWidget);
 
     amountWidget = new QLineEdit(this);
+    amountWidget->setAttribute(Qt::WA_MacShowFocusRect, 0);
 #if QT_VERSION >= 0x040700
     amountWidget->setPlaceholderText(tr("Min amount"));
 #endif
@@ -123,7 +135,10 @@ TransactionView::TransactionView(QWidget* parent) : QWidget(parent), model(0), t
     vlayout->setSpacing(0);
 
     QTableView* view = new QTableView(this);
+    view->setShowGrid(false);
     vlayout->addLayout(hlayout);
+    QSpacerItem* verticalSpacer_3 = new QSpacerItem(20, 20, QSizePolicy::Minimum, QSizePolicy::Preferred);
+    vlayout->addItem(verticalSpacer_3);
     vlayout->addWidget(createDateRangeWidget());
     vlayout->addWidget(view);
     vlayout->setSpacing(0);
@@ -135,7 +150,7 @@ TransactionView::TransactionView(QWidget* parent) : QWidget(parent), model(0), t
     hlayout->addSpacing(width);
 #endif
     // Always show scroll bar
-    view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+   // view->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
     view->setTabKeyNavigation(false);
     view->setContextMenuPolicy(Qt::CustomContextMenu);
 
@@ -327,14 +342,16 @@ void TransactionView::changedAmount(const QString& amount)
         return;
     CAmount amount_parsed = 0;
 
-    // Replace "," by "." so BitcoinUnits::parse will not fail for users entering "," as decimal separator
-    QString newAmount = amount;
-    newAmount.replace(QString(","), QString("."));
+    if (model) {
+        // Replace "," by "." so BitcoinUnits::parse will not fail for users entering "," as decimal separator
+        QString newAmount = amount;
+        newAmount.replace(QString(","), QString("."));
 
-    if (BitcoinUnits::parse(model->getOptionsModel()->getDisplayUnit(), newAmount, &amount_parsed)) {
-        transactionProxyModel->setMinAmount(amount_parsed);
-    } else {
-        transactionProxyModel->setMinAmount(0);
+        if (BitcoinUnits::parse(model->getOptionsModel()->getDisplayUnit(), newAmount, &amount_parsed)) {
+            transactionProxyModel->setMinAmount(amount_parsed);
+        } else {
+            transactionProxyModel->setMinAmount(0);
+        }
     }
 }
 
@@ -349,25 +366,31 @@ void TransactionView::exportClicked()
         return;
 
     CSVModelWriter writer(filename);
+    bool fExport = false;
 
-    // name, column, role
-    writer.setModel(transactionProxyModel);
-    writer.addColumn(tr("Confirmed"), 0, TransactionTableModel::ConfirmedRole);
-    if (model && model->haveWatchOnly())
-        writer.addColumn(tr("Watch-only"), TransactionTableModel::Watchonly);
-    writer.addColumn(tr("Date"), 0, TransactionTableModel::DateRole);
-    writer.addColumn(tr("Type"), TransactionTableModel::Type, Qt::EditRole);
-    writer.addColumn(tr("Label"), 0, TransactionTableModel::LabelRole);
-    writer.addColumn(tr("Address"), 0, TransactionTableModel::AddressRole);
-    writer.addColumn(BitcoinUnits::getAmountColumnTitle(model->getOptionsModel()->getDisplayUnit()), 0, TransactionTableModel::FormattedAmountRole);
-    writer.addColumn(tr("ID"), 0, TransactionTableModel::TxIDRole);
+    if (model) {
+        // name, column, role
+        writer.setModel(transactionProxyModel);
+        writer.addColumn(tr("Confirmed"), 0, TransactionTableModel::ConfirmedRole);
+        if (model->haveWatchOnly())
+            writer.addColumn(tr("Watch-only"), TransactionTableModel::Watchonly);
+        writer.addColumn(tr("Date"), 0, TransactionTableModel::DateRole);
+        writer.addColumn(tr("Type"), TransactionTableModel::Type, Qt::EditRole);
+        writer.addColumn(tr("Label"), 0, TransactionTableModel::LabelRole);
+        writer.addColumn(tr("Address"), 0, TransactionTableModel::AddressRole);
+        writer.addColumn(BitcoinUnits::getAmountColumnTitle(model->getOptionsModel()->getDisplayUnit()), 0, TransactionTableModel::FormattedAmountRole);
+        writer.addColumn(tr("ID"), 0, TransactionTableModel::TxIDRole);
 
-    if (!writer.write()) {
-        emit message(tr("Exporting Failed"), tr("There was an error trying to save the transaction history to %1.").arg(filename),
-            CClientUIInterface::MSG_ERROR);
-    } else {
+        fExport = writer.write();
+    }
+
+    if (fExport) {
         emit message(tr("Exporting Successful"), tr("The transaction history was successfully saved to %1.").arg(filename),
-            CClientUIInterface::MSG_INFORMATION);
+                     CClientUIInterface::MSG_INFORMATION);
+    } 
+    else {
+        emit message(tr("Exporting Failed"), tr("There was an error trying to save the transaction history to %1.").arg(filename),
+                     CClientUIInterface::MSG_ERROR);
     }
 }
 
@@ -462,7 +485,7 @@ void TransactionView::computeSum()
         amount += index.data(TransactionTableModel::AmountRole).toLongLong();
     }
     QString strAmount(BitcoinUnits::formatWithUnit(nDisplayUnit, amount, true, BitcoinUnits::separatorAlways));
-    if (amount < 0) strAmount = "<span style='color:red;'>" + strAmount + "</span>";
+    if (amount < 0) strAmount = "<span class='negative-sum'>" + strAmount + "</span>";
     emit trxAmount(strAmount);
 }
 

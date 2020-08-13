@@ -41,7 +41,7 @@ bool WalletFrame::addWallet(const QString& name, WalletModel* walletModel)
     if (!gui || !clientModel || !walletModel || mapWalletViews.count(name) > 0)
         return false;
 
-    WalletView* walletView = new WalletView(this);
+    WalletView* walletView = new WalletView(walletStack);
     walletView->setBitcoinGUI(gui);
     walletView->setClientModel(clientModel);
     walletView->setWalletModel(walletModel);
@@ -139,11 +139,25 @@ void WalletFrame::gotoReceiveCoinsPage()
         i.value()->gotoReceiveCoinsPage();
 }
 
+void WalletFrame::gotoPrivacyPage()
+{
+    QMap<QString, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoPrivacyPage();
+}
+
 void WalletFrame::gotoSendCoinsPage(QString addr)
 {
     QMap<QString, WalletView*>::const_iterator i;
     for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
         i.value()->gotoSendCoinsPage(addr);
+}
+
+void WalletFrame::gotoProposalPage()
+{
+    QMap<QString, WalletView*>::const_iterator i;
+    for (i = mapWalletViews.constBegin(); i != mapWalletViews.constEnd(); ++i)
+        i.value()->gotoProposalPage();
 }
 
 void WalletFrame::gotoSignMessageTab(QString addr)
@@ -175,6 +189,13 @@ void WalletFrame::gotoMultiSendDialog()
         walletView->gotoMultiSendDialog();
 }
 
+void WalletFrame::gotoMultisigDialog(int index)
+{
+    WalletView* walletView = currentWalletView();
+    if(walletView){
+        walletView->gotoMultisigDialog(index);
+    }
+}
 
 void WalletFrame::encryptWallet(bool status)
 {
@@ -209,6 +230,13 @@ void WalletFrame::lockWallet()
     WalletView* walletView = currentWalletView();
     if (walletView)
         walletView->lockWallet();
+}
+
+void WalletFrame::toggleLockWallet()
+{
+    WalletView* walletView = currentWalletView();
+    if (walletView)
+        walletView->toggleLockWallet();
 }
 
 void WalletFrame::usedSendingAddresses()
