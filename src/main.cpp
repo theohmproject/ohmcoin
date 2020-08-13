@@ -2170,8 +2170,9 @@ double ConvertBitsToDouble(unsigned int nBits)
 
 int64_t GetBlockValue(int nHeight)
 {
-    if (nHeight < 1001 && nHeight > 0)
+    if (nHeight < 1001 && nHeight > 0) {
         return 30000 * COIN;
+    }
 
     if (nHeight == 0) {
         return 1 * COIN;
@@ -2184,17 +2185,14 @@ int64_t GetBlockValue(int nHeight)
     } else if (nHeight <= 2373122 && nHeight >= 1941122) {
         return 0.125 * COIN;
     } else if (nHeight <= 2977923 && nHeight >= 2373123) {
-        return 0.0625 * COIN;
-    } else if (nHeight <= 4029124 && nHeight >= 2977924) {
-        return 0.03125 * COIN;
-    } else if (nHeight <= 6131525 && nHeight >= 4029125) {
-        return 0.015625 * COIN;
-    } else if (nHeight <= 8233926 && nHeight >= 6131526) {
-        return 0.0078125 * COIN;
-    } else if (nHeight <= 10336327 && nHeight >= 8233927) {
-        return 0.00390625 * COIN;
-    } else if (nHeight >= 10336328) {
-        return 0.001953125 * COIN;
+      bool bVerAct = CBlockIndex::IsSuperMajority(7, pindexLast, Params().RejectBlockOutdatedMajority());
+      if (bVerAct) {
+          return 6 * COIN;
+      } else {
+          return 0.0625 * COIN;
+      }
+    } else if (nHeight >= Params().DisableLegacyTimeHeight()) {
+        return 6 * COIN;
     } else {
         return 1 * COIN;
     }
@@ -4560,6 +4558,12 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     // Reject block.nVersion=3 blocks when 95% (75% on testnet) of the network has upgraded:
     if (block.nVersion < 4 && CBlockIndex::IsSuperMajority(4, pindexPrev, Params().RejectBlockOutdatedMajority())) {
         return state.Invalid(error("%s : rejected nVersion=3 block", __func__),
+                             REJECT_OBSOLETE, "bad-version");
+    }
+
+    // Reject block.nVersion=6 blocks or lower when 95% (75% on testnet) of the network has upgraded:
+    if (block.nVersion < 7 && CBlockIndex::IsSuperMajority(7, pindexPrev, Params().RejectBlockOutdatedMajority())) {
+        return state.Invalid(error("%s : rejected nVersion=%d block", __func__, block.nVersion),
                              REJECT_OBSOLETE, "bad-version");
     }
 
@@ -7327,7 +7331,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         // timeout. We compensate for in-flight blocks to prevent killing off peers due to our own downstream link
         // being saturated. We only count validated in-flight blocks so peers can't advertize nonexisting block hashes
         // to unreasonably increase our timeout.
-        if (!pto->fDisconnect && state.vBlocksInFlight.size() > 0 && state.vBlocksInFlight.front().nTime < nNow - 500000 * Params().TargetSpacing() * (4 + state.vBlocksInFlight.front().nValidatedQueuedBefore)) {
+        if (!pto->fDisconnect && state.vBlocksInFlight.size() > 0 && state.vBlocksInFlight.front().nTime < nNow - 500000 * Params().TargetSpacingLegacy() * (4 + state.vBlocksInFlight.front().nValidatedQueuedBefore)) {
             LogPrintf("Timeout downloading block %s from peer=%d, disconnecting\n", state.vBlocksInFlight.front().hash.ToString(), pto->id);
             pto->fDisconnect = true;
         }

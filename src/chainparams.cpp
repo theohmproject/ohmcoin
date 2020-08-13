@@ -393,15 +393,20 @@ public:
         nDefaultPort = 52020;
         bnProofOfWorkLimit = ~uint256(0) >> 20;
         nMaxReorganizationDepth = 100;
-        nEnforceBlockUpgradeMajority = 750;
-        nRejectBlockOutdatedMajority = 950;
-        nToCheckBlockUpgradeMajority = 1000;
+        nEnforceBlockUpgradeMajority = 2250;
+        nRejectBlockOutdatedMajority = 2850;
+        nToCheckBlockUpgradeMajority = 3000; // 24 hours (legacy)
         nMinerThreads = 0;
-        nTargetTimespan = 1 * 30; // OHMC: 30 Seconds
-        nTargetSpacing = 1 * 30;  // OHMC: 30 Seconds
         nMaturity = 4;
         nKarmanodeCountDrift = 20;
         nMaxMoneyOut = 30000000 * COIN;
+        /* Legacy Blocktime */
+        nTargetTimespanLegacy = 1 * 60 * 40;  // OHMC: 40 Minutes
+        nTargetSpacingLegacy = 1 * 30;        // OHMC: 30 Seconds
+        /* New Blocktime */
+        nTargetTimespan = 1 * 60 * 60 * 2;    // OHMC New: 120 Minutes
+        nTargetSpacing = 1 * 60 * 4;          // OHMC New: 240 Seconds
+        nDisableLegacyTimeHeight = 2977924;   // Height legacy blocktime disables
 
         /** Height or Time Based Activations **/
         nLastPOWBlock = 1001;

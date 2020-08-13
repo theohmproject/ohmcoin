@@ -71,11 +71,20 @@ public:
     bool SkipProofOfWorkCheck() const { return fSkipProofOfWorkCheck; }
     /** Make standard checks */
     bool RequireStandard() const { return fRequireStandard; }
+    /** Legacy blocktime setting */
+    int64_t TargetTimespanLegacy() const { return nTargetTimespanLegacy; }
+    int64_t TargetSpacingLegacy() const { return nTargetSpacingLegacy; }
+    int64_t IntervalLegacy() const { return nTargetTimespanLegacy / nTargetSpacingLegacy; }
+    /** New blocktime setting */
     int64_t TargetTimespan() const { return nTargetTimespan; }
     int64_t TargetSpacing() const { return nTargetSpacing; }
     int64_t Interval() const { return nTargetTimespan / nTargetSpacing; }
+    /** Disable Legacy Blocktime Height */
+    int DisableLegacyTimeHeight() const { return nDisableLegacyTimeHeight; }
+    /** Majurity Checks */
     int COINBASE_MATURITY() const { return nMaturity; }
     unsigned int StakeMaturity() const { return nStakeMaturity; }
+    /** Max Money Checks */
     CAmount MaxMoneyOut() const { return nMaxMoneyOut; }
     /** The karmanode count that we will allow the see-saw reward payments to be off by */
     int KarmanodeCountDrift() const { return nKarmanodeCountDrift; }
@@ -129,6 +138,9 @@ protected:
     int nToCheckBlockUpgradeMajority;
     int64_t nTargetTimespan;
     int64_t nTargetSpacing;
+    int64_t nTargetTimespanLegacy;
+    int64_t nTargetSpacingLegacy;
+    int nDisableLegacyTimeHeight;
     int nLastPOWBlock;
     int nKarmanodeCountDrift;
     int nMaturity;
