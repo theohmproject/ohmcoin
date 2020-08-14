@@ -94,6 +94,7 @@ bool fAddrIndex = true;
 bool fIsBareMultisigStd = true;
 bool fCheckBlockIndex = false;
 bool fVerifyingBlocks = false;
+bool fIgnoreLegacyBlocks = false;
 unsigned int nCoinCacheSize = 5000;
 unsigned int nBytesPerSigOp = DEFAULT_BYTES_PER_SIGOP;
 bool fAlerts = DEFAULT_ALERTS;
@@ -2185,8 +2186,7 @@ int64_t GetBlockValue(int nHeight)
     } else if (nHeight <= 2373122 && nHeight >= 1941122) {
         return 0.125 * COIN;
     } else if (nHeight <= 2977923 && nHeight >= 2373123) {
-      bool bVerAct = CBlockIndex::IsSuperMajority(7, pindexLast, Params().RejectBlockOutdatedMajority());
-      if (bVerAct) {
+      if (fIgnoreLegacyBlocks) {
           return 6 * COIN;
       } else {
           return 0.0625 * COIN;
@@ -4940,6 +4940,9 @@ bool AcceptBlock(CBlock& block, CValidationState& state, CBlockIndex** ppindex, 
     } catch (std::runtime_error& e) {
         return state.Error(std::string("System error: ") + e.what());
     }
+
+    /* Update storage varaible for ignoring legacy blocks (version 6 and prior) */
+    fIgnoreLegacyBlocks = CBlockIndex::IsSuperMajority(7, pindex, Params().RejectBlockOutdatedMajority());
 
     return true;
 }
