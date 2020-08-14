@@ -9,6 +9,7 @@
 #include "checkpoints.h"
 #include "clientversion.h"
 #include "consensus/validation.h"
+#include "consensus/upgrades.h"
 #include "main.h"
 #include "rpcserver.h"
 #include "sync.h"
