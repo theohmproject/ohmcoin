@@ -4,8 +4,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef PIVX_CONSENSUS_UPGRADES_H
-#define PIVX_CONSENSUS_UPGRADES_H
+#ifndef BITCOIN_CONSENSUS_UPGRADES_H
+#define BITCOIN_CONSENSUS_UPGRADES_H
 
 #include "consensus/params.h"
 #include "optional.h"
