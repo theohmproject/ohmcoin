@@ -220,6 +220,7 @@ libbitcoin_server_a_SOURCES = \
   checkpoints.cpp \
   httprpc.cpp \
   httpserver.cpp \
+  consensus/upgrades.cpp \
   init.cpp \
   leveldbwrapper.cpp \
   main.cpp \
@@ -365,7 +366,6 @@ libbitcoin_common_a_SOURCES = \
   coins.cpp \
   compressor.cpp \
   consensus/merkle.cpp \
-  consensus/upgrades.h \
   primitives/block.cpp \
   primitives/deterministicmint.cpp \
   primitives/transaction.cpp \
