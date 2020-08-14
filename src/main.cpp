@@ -2175,6 +2175,22 @@ int64_t GetBlockValue(int nHeight)
         return 30000 * COIN;
     }
 
+    if (Params().NetworkID() == CBaseChainParams::TESTNET) {
+        if (nHeight <= 3000 && nHeight >= 1001) {
+            return 1 * COIN;
+        } else if (nHeight <= 33001 && nHeight >= 3001) {
+          if (fIgnoreLegacyBlocks) {
+              return 6 * COIN;
+          } else {
+              return 3.14159 * COIN;
+          }
+        } else if (nHeight >= Params().DisableLegacyTimeHeight()) {
+            return 6 * COIN;
+        } else {
+            return 1 * COIN;
+        }
+    }
+
     if (nHeight == 0) {
         return 1 * COIN;
     } else if (nHeight <= 904320 && nHeight >= 1000) {
@@ -4542,13 +4558,6 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     if (pcheckpoint && nHeight < pcheckpoint->nHeight)
         return state.DoS(0, error("%s : forked chain older than last checkpoint (height %d)", __func__, nHeight));
 
-    // Reject block.nVersion=1 blocks when 95% (75% on testnet) of the network has upgraded:
-    if (block.nVersion < 2 &&
-        CBlockIndex::IsSuperMajority(2, pindexPrev, Params().RejectBlockOutdatedMajority())) {
-        return state.Invalid(error("%s : rejected nVersion=1 block", __func__),
-                             REJECT_OBSOLETE, "bad-version");
-    }
-
     // Reject block.nVersion=2 blocks when 95% (75% on testnet) of the network has upgraded:
     if (block.nVersion < 3 && CBlockIndex::IsSuperMajority(3, pindexPrev, Params().RejectBlockOutdatedMajority())) {
         return state.Invalid(error("%s : rejected nVersion=2 block", __func__),
@@ -4562,9 +4571,16 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     }
 
     // Reject block.nVersion=6 blocks or lower when 95% (75% on testnet) of the network has upgraded:
-    if (block.nVersion < 7 && CBlockIndex::IsSuperMajority(7, pindexPrev, Params().RejectBlockOutdatedMajority())) {
+    /*if (block.nVersion < 7 && CBlockIndex::IsSuperMajority(7, pindexPrev, Params().RejectBlockOutdatedMajority())) {
         return state.Invalid(error("%s : rejected nVersion=%d block", __func__, block.nVersion),
                              REJECT_OBSOLETE, "bad-version");
+    }*/
+
+    // Reject outdated version blocks
+    if (block.nVersion < 7 && consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME))
+    {
+        std::string stringErr = strprintf("rejected block version %d at height %d", block.nVersion, nHeight);
+        return state.Invalid(false, REJECT_OBSOLETE, "bad-version", stringErr);
     }
 
     return true;
