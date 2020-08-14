@@ -26,6 +26,7 @@ bool ShutdownRequested();
 void Interrupt(boost::thread_group& threadGroup);
 void Shutdown();
 void PrepareShutdown();
+bool InitNUParams();
 bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler);
 
 /** The help message mode determines what help message to show */
