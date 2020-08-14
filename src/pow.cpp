@@ -35,10 +35,12 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return Params().ProofOfWorkLimit().GetCompact();
     }
 
+    // Target block time spacing
+    int64_t nTargetSpacing = Params().TargetSpacingLegacy();
+
     if (pindexLast->nHeight > Params().LAST_POW_BLOCK()) {
         uint256 bnTargetLimit = (~uint256(0) >> 24);
         // Block time targeting
-        int64_t nTargetSpacing = Params().TargetSpacingLegacy();
         int64_t nTargetTimespan = Params().TargetTimespanLegacy();
         int64_t nInterval = Params().IntervalLegacy();
 
