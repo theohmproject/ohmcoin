@@ -583,7 +583,7 @@ static UniValue SoftForkMajorityDesc(int version, CBlockIndex* pindex, const Con
         idx = Consensus::BASE_NETWORK;
         break;
     case 7:
-        idx = Consensus::UPGRADE_V3_BLOCKTIME;
+        idx = Consensus::UPGRADE_V3_0_BLOCKTIME;
         break;
     default:
         rv.push_back(Pair("status", false));
@@ -669,6 +669,8 @@ UniValue getblockchaininfo(const UniValue& params, bool fHelp)
             HelpExampleCli("getblockchaininfo", "") + HelpExampleRpc("getblockchaininfo", ""));
 
     LOCK(cs_main);
+
+    const Consensus::Params& consensusParams = Params().GetConsensus();
 
     UniValue obj(UniValue::VOBJ);
     obj.push_back(Pair("chain",                Params().NetworkIDString()));
