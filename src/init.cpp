@@ -18,6 +18,7 @@
 #include "amount.h"
 #include "checkpoints.h"
 #include "compat/sanity.h"
+#include "consensus/upgrades.h"
 #include "consensus/validation.h"
 #include "httpserver.h"
 #include "httprpc.h"
@@ -55,6 +56,9 @@
 #ifndef WIN32
 #include <signal.h>
 #endif
+
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
 
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/replace.hpp>
