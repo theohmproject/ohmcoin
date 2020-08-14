@@ -16,7 +16,6 @@
 #include "chainparams.h"
 #include "checkpoints.h"
 #include "checkqueue.h"
-#include "consensus/consensus.h"
 #include "consensus/merkle.h"
 #include "consensus/validation.h"
 #include "init.h"
@@ -4527,6 +4526,7 @@ bool CheckWork(const CBlock block, CBlockIndex* const pindexPrev)
 
 bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& state, CBlockIndex* const pindexPrev)
 {
+    const Consensus::Params& consensus = Params().GetConsensus();
     uint256 hash = block.GetHash();
 
     if (hash == Params().HashGenesisBlock())
