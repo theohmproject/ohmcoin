@@ -119,6 +119,8 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
     // TODO: replace this with a call to main to assess validity of a mempool
     // transaction (which in most cases can be a no-op).
     bool fIncludeWitness = IsSporkActive(SPORK_20_SEGWIT_ACTIVATION);
+    
+    bool fZerocoinActive = false; // we don't have zerocoin... TODO: Remove!
 
     // Create coinbase tx
     CMutableTransaction txNew;
