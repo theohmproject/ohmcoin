@@ -53,8 +53,8 @@ public:
         READWRITE(nNonce);
 
         //zerocoin active, header changes to include accumulator checksum
-        if(nVersion > 5)
-            READWRITE(nAccumulatorCheckpoint);
+        /*if(nVersion > 5)
+            READWRITE(nAccumulatorCheckpoint);*/
     }
 
     void SetNull()
