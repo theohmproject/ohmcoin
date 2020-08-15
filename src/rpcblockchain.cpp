@@ -9,15 +9,19 @@
 #include "checkpoints.h"
 #include "clientversion.h"
 #include "consensus/validation.h"
+#include "consensus/upgrades.h"
 #include "main.h"
 #include "rpcserver.h"
 #include "sync.h"
 #include "txdb.h"
 #include "util.h"
 #include "utilmoneystr.h"
+#include "kernel.h"
 
 #include <stdint.h>
 #include <univalue.h>
+
+#include "karmanodeman.h"
 
 using namespace std;
 
@@ -82,6 +86,10 @@ UniValue blockheaderToJSON(const CBlockIndex* blockindex)
 UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false)
 {
     UniValue result(UniValue::VOBJ);
+    int64_t KNPayment = GetKarmanodePayment(blockindex->nHeight, GetBlockValue(blockindex->nHeight));
+    int64_t StakerPayment = blockindex->nMint - KNPayment;
+    double KNRewardPercent = floor(((double)KNPayment / (double)blockindex->nMint) * 100);
+
     result.push_back(Pair("hash", block.GetHash().GetHex()));
     int confirmations = -1;
     // Only report confirmations if the block is on the main chain
@@ -116,6 +124,16 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     CBlockIndex* pnext = chainActive.Next(blockindex);
     if (pnext)
         result.push_back(Pair("nextblockhash", pnext->GetBlockHash().GetHex()));
+
+    result.push_back(Pair("flags", strprintf("%s", blockindex->IsProofOfStake() ? "proof-of-stake" : "proof-of-work")));
+    result.push_back(Pair("nflags:", strprintf("%i", blockindex->nFlags)));
+    result.push_back(Pair("mint", ValueFromAmount(GetBlockValue(blockindex->nHeight))));
+
+    result.push_back(Pair("knReward", ValueFromAmount(KNPayment)));
+    result.push_back(Pair("knRewardPercent", KNRewardPercent));
+    result.push_back(Pair("stakerPayment", ValueFromAmount(StakerPayment)));
+    result.push_back(Pair("modifier", strprintf("%16x", blockindex->nStakeModifier)));
+    result.push_back(Pair("modifierchecksum", strprintf("%08x", GetStakeModifierChecksum(blockindex))));
 
     result.push_back(Pair("moneysupply",ValueFromAmount(blockindex->nMoneySupply)));
 
@@ -550,6 +568,72 @@ UniValue verifychain(const UniValue& params, bool fHelp)
     return fVerified;
 }
 
+/** Implementation of IsSuperMajority with better feedback */
+static UniValue SoftForkMajorityDesc(int version, CBlockIndex* pindex, const Consensus::Params& consensusParams)
+{
+    UniValue rv(UniValue::VOBJ);
+    Consensus::UpgradeIndex idx;
+    switch(version) {
+    case 1:
+    case 2:
+    case 3:
+    case 4:
+    case 5:
+    case 6:
+        idx = Consensus::BASE_NETWORK;
+        break;
+    case 7:
+        idx = Consensus::UPGRADE_V3_0_BLOCKTIME;
+        break;
+    default:
+        rv.push_back(Pair("status", false));
+        return rv;
+    }
+    rv.push_back(Pair("status", consensusParams.NetworkUpgradeActive(pindex->nHeight, idx)));
+    return rv;
+}
+static UniValue SoftForkDesc(const std::string &name, int version, CBlockIndex* pindex)
+{
+    const Consensus::Params& consensus = Params().GetConsensus();
+    UniValue rv(UniValue::VOBJ);
+    rv.push_back(Pair("id", name));
+    rv.push_back(Pair("version", version));
+    rv.push_back(Pair("reject", SoftForkMajorityDesc(version, pindex, consensus)));
+    return rv;
+}
+
+static UniValue NetworkUpgradeDesc(const Consensus::Params& consensusParams, Consensus::UpgradeIndex idx, int height)
+{
+    UniValue rv(UniValue::VOBJ);
+    auto upgrade = NetworkUpgradeInfo[idx];
+    rv.push_back(Pair("activationheight", consensusParams.vUpgrades[idx].nActivationHeight));
+    switch (NetworkUpgradeState(height, consensusParams, idx)) {
+        case UPGRADE_DISABLED: rv.push_back(Pair("status", "disabled")); break;
+        case UPGRADE_PENDING: rv.push_back(Pair("status", "pending")); break;
+        case UPGRADE_ACTIVE: rv.push_back(Pair("status", "active")); break;
+    }
+    rv.push_back(Pair("info", upgrade.strInfo));
+    return rv;
+}
+
+void NetworkUpgradeDescPushBack(
+        UniValue& networkUpgrades,
+        const Consensus::Params& consensusParams,
+        Consensus::UpgradeIndex idx,
+        int height)
+{
+    // Network upgrades with an activation height of NO_ACTIVATION_HEIGHT are
+    // hidden. This is used when network upgrade implementations are merged
+    // without specifying the activation height.
+    if (consensusParams.vUpgrades[idx].nActivationHeight != Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT) {
+        std::string name = NetworkUpgradeInfo[idx].strName;
+        std::replace(name.begin(), name.end(), '_', ' '); // Beautify the name
+        networkUpgrades.push_back(Pair(
+                name,
+                NetworkUpgradeDesc(consensusParams, idx, height)));
+    }
+}
+
 UniValue getblockchaininfo(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
@@ -565,11 +649,28 @@ UniValue getblockchaininfo(const UniValue& params, bool fHelp)
             "  \"difficulty\": xxxxxx,     (numeric) the current difficulty\n"
             "  \"verificationprogress\": xxxx, (numeric) estimate of verification progress [0..1]\n"
             "  \"chainwork\": \"xxxx\"     (string) total amount of work in active chain, in hexadecimal\n"
+            "  \"softforks\": [            (array) status of softforks in progress\n"
+            "     {\n"
+            "        \"id\": \"xxxx\",        (string) name of softfork\n"
+            "        \"version\": xx,         (numeric) block version\n"
+            "        \"reject\": {           (object) progress toward rejecting pre-softfork blocks\n"
+            "           \"status\": xx,       (boolean) true if threshold reached\n"
+            "        },\n"
+            "     }, ...\n"
+            "  ],\n"
+            "  \"upgrades\": {                (object) status of network upgrades\n"
+            "     \"name\" : {                (string) name of upgrade\n"
+            "        \"activationheight\": xxxxxx,  (numeric) block height of activation\n"
+            "        \"status\": \"xxxx\",      (string) status of upgrade\n"
+            "        \"info\": \"xxxx\",        (string) additional information about upgrade\n"
+            "     }, ...\n"
             "}\n"
             "\nExamples:\n" +
             HelpExampleCli("getblockchaininfo", "") + HelpExampleRpc("getblockchaininfo", ""));
 
     LOCK(cs_main);
+
+    const Consensus::Params& consensusParams = Params().GetConsensus();
 
     UniValue obj(UniValue::VOBJ);
     obj.push_back(Pair("chain",                Params().NetworkIDString()));
@@ -579,6 +680,16 @@ UniValue getblockchaininfo(const UniValue& params, bool fHelp)
     obj.push_back(Pair("difficulty",           (double)GetDifficulty()));
     obj.push_back(Pair("verificationprogress", Checkpoints::GuessVerificationProgress(chainActive.Tip())));
     obj.push_back(Pair("chainwork",            chainActive.Tip()->nChainWork.GetHex()));
+    CBlockIndex* tip = chainActive.Tip();
+    UniValue softforks(UniValue::VARR);
+    //softforks.push_back(SoftForkDesc("blocktime", 7, tip));
+    obj.push_back(Pair("softforks",             softforks));
+    UniValue upgrades(UniValue::VOBJ);
+    for (int i = Consensus::BASE_NETWORK + 1; i < (int) Consensus::MAX_NETWORK_UPGRADES; i++) {
+        NetworkUpgradeDescPushBack(upgrades, consensusParams, Consensus::UpgradeIndex(i), tip->nHeight);
+    }
+    obj.push_back(Pair("upgrades", upgrades));
+
     return obj;
 }
 
