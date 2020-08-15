@@ -120,13 +120,6 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
     // transaction (which in most cases can be a no-op).
     bool fIncludeWitness = IsSporkActive(SPORK_20_SEGWIT_ACTIVATION);
 
-    // Make sure to create the correct block version after zerocoin is enabled
-    bool fZerocoinActive = chainActive.Height() >= Params().Zerocoin_StartHeight();
-    if (fZerocoinActive)
-        pblock->nVersion = 6;
-    else
-        pblock->nVersion = 5;
-
     // Create coinbase tx
     CMutableTransaction txNew;
     txNew.vin.resize(1);
