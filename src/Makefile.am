@@ -116,6 +116,8 @@ BITCOIN_CORE_H = \
   compat/sanity.h \
   consensus/merkle.h \
   consensus/validation.h \
+  consensus/params.h \
+  consensus/upgrades.h \
   compressor.h \
   primitives/block.h \
   primitives/deterministicmint.h \
@@ -219,6 +221,8 @@ libbitcoin_server_a_SOURCES = \
   checkpoints.cpp \
   httprpc.cpp \
   httpserver.cpp \
+  consensus/params.cpp \
+  consensus/upgrades.cpp \
   init.cpp \
   leveldbwrapper.cpp \
   main.cpp \
@@ -364,6 +368,7 @@ libbitcoin_common_a_SOURCES = \
   coins.cpp \
   compressor.cpp \
   consensus/merkle.cpp \
+  consensus/upgrades.cpp \
   primitives/block.cpp \
   primitives/deterministicmint.cpp \
   primitives/transaction.cpp \
