@@ -25,7 +25,8 @@ namespace Consensus {
 */
 enum UpgradeIndex : uint32_t {
     BASE_NETWORK, // Base Network
-    UPGRADE_V3_0_BLOCKTIME, // Blocktime consensus change
+    UPGRADE_V3_0_BLOCKTIME, // Block time consensus change
+    UPGRADE_V3_0_BLOCKREWARD, // Block reward consensus change
     UPGRADE_V3_1_DUMMY,
     UPGRADE_V3_2_DUMMY,
     UPGRADE_TESTDUMMY,

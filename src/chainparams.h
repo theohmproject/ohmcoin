@@ -81,8 +81,6 @@ public:
     int64_t TargetTimespan() const { return nTargetTimespan; }
     int64_t TargetSpacing() const { return nTargetSpacing; }
     int64_t Interval() const { return nTargetTimespan / nTargetSpacing; }
-    /** Disable Legacy Blocktime Height */
-    int DisableLegacyTimeHeight() const { return nDisableLegacyTimeHeight; }
     /** Majurity Checks */
     int COINBASE_MATURITY() const { return nMaturity; }
     unsigned int StakeMaturity() const { return nStakeMaturity; }
@@ -142,7 +140,6 @@ protected:
     int64_t nTargetSpacing;
     int64_t nTargetTimespanLegacy;
     int64_t nTargetSpacingLegacy;
-    int nDisableLegacyTimeHeight;
     int nLastPOWBlock;
     int nKarmanodeCountDrift;
     int nMaturity;

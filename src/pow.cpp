@@ -45,10 +45,10 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         int64_t nInterval = Params().IntervalLegacy();
 
         // New time activation check
-        bool bVerAct = CBlockIndex::IsSuperMajority(7, pindexLast, Params().RejectBlockOutdatedMajority());
-        bool bHeightReach = pindexLast->nHeight >= Params().DisableLegacyTimeHeight();
-        // Actiavte on 95% upgrade threshold, or forced by block height set.
-        if (bVerAct || bHeightReach) {
+        bool fVerAct = CBlockIndex::IsSuperMajority(6, pindexLast, Params().RejectBlockOutdatedMajority());
+        bool fUpgradeActiveV3 = consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME);
+        // Actiavte on 95% upgrade threshold, or forced by upgrade block height.
+        if (fVerAct || fUpgradeActiveV3) {
           nTargetSpacing = Params().TargetSpacing();
           nTargetTimespan = Params().TargetTimespan();
           nInterval = Params().Interval();

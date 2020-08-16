@@ -94,7 +94,6 @@ bool fAddrIndex = true;
 bool fIsBareMultisigStd = true;
 bool fCheckBlockIndex = false;
 bool fVerifyingBlocks = false;
-bool fIgnoreLegacyBlocks = false;
 unsigned int nCoinCacheSize = 5000;
 unsigned int nBytesPerSigOp = DEFAULT_BYTES_PER_SIGOP;
 bool fAlerts = DEFAULT_ALERTS;
@@ -2175,17 +2174,18 @@ int64_t GetBlockValue(int nHeight)
         return 30000 * COIN;
     }
 
+    bool fUpgradeActiveV3 = consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKREWARD);
+
     if (Params().NetworkID() == CBaseChainParams::TESTNET) {
         if (nHeight <= 3000 && nHeight >= 1001) {
             return 1 * COIN;
         } else if (nHeight <= 33001 && nHeight >= 3001) {
-          if (fIgnoreLegacyBlocks) {
-              return 6 * COIN;
-          } else {
-              return 3.14159 * COIN;
-          }
-        } else if (nHeight >= Params().DisableLegacyTimeHeight()) {
-            return 6 * COIN;
+            return 3.14159 * COIN;
+        } else if (nHeight >= 33002) {
+            if (fUpgradeActiveV3) {
+                return 6 * COIN;
+            }
+            return 3 * COIN;
         } else {
             return 1 * COIN;
         }
@@ -2202,13 +2202,12 @@ int64_t GetBlockValue(int nHeight)
     } else if (nHeight <= 2373122 && nHeight >= 1941122) {
         return 0.125 * COIN;
     } else if (nHeight <= 2977923 && nHeight >= 2373123) {
-      if (fIgnoreLegacyBlocks) {
-          return 6 * COIN;
-      } else {
-          return 0.0625 * COIN;
-      }
-    } else if (nHeight >= Params().DisableLegacyTimeHeight()) {
-        return 6 * COIN;
+        return 0.0625 * COIN;
+    } else if (nHeight >= 2373124) {
+        if (fUpgradeActiveV3) {
+            return 6 * COIN;
+        }
+        return 3 * COIN;
     } else {
         return 1 * COIN;
     }
@@ -4577,14 +4576,10 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
                              REJECT_OBSOLETE, "bad-version");
     }
 
-    // Reject block.nVersion=6 blocks or lower when 95% (75% on testnet) of the network has upgraded:
-    /*if (block.nVersion < 7 && CBlockIndex::IsSuperMajority(7, pindexPrev, Params().RejectBlockOutdatedMajority())) {
-        return state.Invalid(error("%s : rejected nVersion=%d block", __func__, block.nVersion),
-                             REJECT_OBSOLETE, "bad-version");
-    }*/
-
     // Reject outdated version blocks
-    if (block.nVersion < 7 && consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME))
+    if ((block.nVersion < 6 && nHeight >= 1) &&
+        (consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME)) ||
+        (consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKREWARD)))
     {
         std::string stringErr = strprintf("rejected block version %d at height %d", block.nVersion, nHeight);
         return state.Invalid(false, REJECT_OBSOLETE, "bad-version", stringErr);
@@ -4963,9 +4958,6 @@ bool AcceptBlock(CBlock& block, CValidationState& state, CBlockIndex** ppindex, 
     } catch (std::runtime_error& e) {
         return state.Error(std::string("System error: ") + e.what());
     }
-
-    /* Update storage varaible for ignoring legacy blocks (version 6 and prior) */
-    fIgnoreLegacyBlocks = CBlockIndex::IsSuperMajority(7, pindex, Params().RejectBlockOutdatedMajority());
 
     return true;
 }
@@ -7065,8 +7057,16 @@ int ActiveProtocol()
     // own ModifierUpgradeBlock()
 
 {
-    if (IsSporkActive(SPORK_18_NEW_PROTOCOL_ENFORCEMENT_5))
+    if (IsSporkActive(SPORK_24_NEW_PROTOCOL_ENFORCEMENT_6))
+        // Enforce protocol 71025 or higher..
         return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
+    if (IsSporkActive(SPORK_23_NEW_BLOCKTIME_ENFORCEMENT))
+        // Enforce protocol 71020 and greater.
+        return MIN_PEER_VERSION_ADJ_BLOCKTIME;
+    if (IsSporkActive(SPORK_18_NEW_PROTOCOL_ENFORCEMENT_5))
+        // Enforce protocol 71011
+        return MIN_PEER_MNANNOUNCE;
+    // Default  protocol
     return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT;
 }
 

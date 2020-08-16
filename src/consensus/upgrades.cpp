@@ -23,6 +23,10 @@ const struct NUInfo NetworkUpgradeInfo[Consensus::MAX_NETWORK_UPGRADES] = {
                 /*.strInfo =*/ "Activation of OHMC version 3.0 Block Time upgrade",
         },
         {
+                /*.strName =*/ "v3_0_blockreward",
+                /*.strInfo =*/ "Activation of OHMC version 3.0 Block Reward upgrade",
+        },
+        {
                 /*.strName =*/ "v3_1_dummy",
                 /*.strInfo =*/ "Placeholder for future OHMC version 3.1 upgrade",
         },

@@ -406,7 +406,6 @@ public:
         /* New Blocktime */
         nTargetTimespan = 1 * 60 * 60 * 2;    // OHMC New: 120 Minutes
         nTargetSpacing = 1 * 60 * 4;          // OHMC New: 240 Seconds
-        nDisableLegacyTimeHeight = 2977924;   // Height legacy blocktime disables
 
         /** Height or Time Based Activations **/
         nLastPOWBlock = 1001;
@@ -497,6 +496,9 @@ public:
         consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
         consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nActivationHeight = 2977924;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nProtocolVersion = 71020;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nActivationHeight = 2977924;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nProtocolVersion = 71020;
         consensus.vUpgrades[Consensus::UPGRADE_V3_1_DUMMY].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
         consensus.vUpgrades[Consensus::UPGRADE_V3_2_DUMMY].nActivationHeight =
@@ -537,7 +539,6 @@ public:
         /* New Blocktime */
         nTargetTimespan = 1 * 60 * 60 * 1;    // OHMC New: 60 Minutes
         nTargetSpacing = 1 * 60 * 2;          // OHMC New: 120 Seconds
-        nDisableLegacyTimeHeight = 33001;     // Height legacy blocktime disables
 
         nMaturity = 15;
         nKarmanodeCountDrift = 4;
@@ -591,6 +592,7 @@ public:
          consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight =
                  Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
          consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nActivationHeight = 33001;
+         consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nActivationHeight = 33002;
          consensus.vUpgrades[Consensus::UPGRADE_V3_1_DUMMY].nActivationHeight =
                  Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
          consensus.vUpgrades[Consensus::UPGRADE_V3_2_DUMMY].nActivationHeight =
@@ -628,7 +630,6 @@ public:
         /* New Blocktime */
         nTargetTimespan = 1 * 60 * 60 * 2;          // OHMC New: 120 Minutes
         nTargetSpacing = 1 * 60 * 4;                // OHMC New: 240 Seconds
-        nDisableLegacyTimeHeight = 33001;           // Height legacy blocktime disables
         bnProofOfWorkLimit = ~uint256(0) >> 1;
         genesis.nTime = 1454124731;
         genesis.nBits = 0x207fffff;
@@ -666,7 +667,8 @@ public:
                 Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
         consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
-        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nActivationHeight = 33001;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nActivationHeight = 33002;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nActivationHeight = 33002;
         consensus.vUpgrades[Consensus::UPGRADE_V3_1_DUMMY].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
         consensus.vUpgrades[Consensus::UPGRADE_V3_2_DUMMY].nActivationHeight =

@@ -119,8 +119,19 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
     // TODO: replace this with a call to main to assess validity of a mempool
     // transaction (which in most cases can be a no-op).
     bool fIncludeWitness = IsSporkActive(SPORK_20_SEGWIT_ACTIVATION);
-    
+
+    // Blocktime and Reward update.
+    bool fEnforceBlockTimeUpdate = IsSporkActive(SPORK_23_NEW_BLOCKTIME_ENFORCEMENT);
+    bool fUpgradeActiveV3 = consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME);
     bool fZerocoinActive = false; // we don't have zerocoin... TODO: Remove!
+
+    if (!fUpgradeActiveV3) {
+        pblock->nVersion = 5;
+    } else {
+        if (!fEnforceBlockTimeUpdate) {
+            pblock->nVersion = 6;
+        }
+    }
 
     // Create coinbase tx
     CMutableTransaction txNew;
