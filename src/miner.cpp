@@ -122,7 +122,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
 
     // Blocktime and Reward update.
     bool fEnforceBlockTimeUpdate = IsSporkActive(SPORK_23_NEW_BLOCKTIME_ENFORCEMENT);
-    bool fUpgradeActiveV3 = consensus.NetworkUpgradeActive(chainActive.Tip()->nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME);
+    bool fUpgradeActiveV3 = Params().GetConsensus().NetworkUpgradeActive(chainActive.Tip()->nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME);
     bool fZerocoinActive = false; // we don't have zerocoin... TODO: Remove!
 
     if (!fUpgradeActiveV3) {
