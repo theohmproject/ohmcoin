@@ -11,6 +11,7 @@
 #include "chainparamsbase.h"
 #include "checkpoints.h"
 #include "primitives/block.h"
+#include "consensus/params.h"
 #include "protocol.h"
 #include "uint256.h"
 
@@ -46,6 +47,7 @@ public:
     };
 
     const uint256& HashGenesisBlock() const { return hashGenesisBlock; }
+    const Consensus::Params& GetConsensus() const { return consensus; }
     const MessageStartChars& MessageStart() const { return pchMessageStart; }
     const std::vector<unsigned char>& AlertKey() const { return vAlertPubKey; }
     int GetDefaultPort() const { return nDefaultPort; }
@@ -71,11 +73,18 @@ public:
     bool SkipProofOfWorkCheck() const { return fSkipProofOfWorkCheck; }
     /** Make standard checks */
     bool RequireStandard() const { return fRequireStandard; }
+    /** Legacy blocktime setting */
+    int64_t TargetTimespanLegacy() const { return nTargetTimespanLegacy; }
+    int64_t TargetSpacingLegacy() const { return nTargetSpacingLegacy; }
+    int64_t IntervalLegacy() const { return nTargetTimespanLegacy / nTargetSpacingLegacy; }
+    /** New blocktime setting */
     int64_t TargetTimespan() const { return nTargetTimespan; }
     int64_t TargetSpacing() const { return nTargetSpacing; }
     int64_t Interval() const { return nTargetTimespan / nTargetSpacing; }
+    /** Majurity Checks */
     int COINBASE_MATURITY() const { return nMaturity; }
     unsigned int StakeMaturity() const { return nStakeMaturity; }
+    /** Max Money Checks */
     CAmount MaxMoneyOut() const { return nMaxMoneyOut; }
     /** The karmanode count that we will allow the see-saw reward payments to be off by */
     int KarmanodeCountDrift() const { return nKarmanodeCountDrift; }
@@ -129,6 +138,8 @@ protected:
     int nToCheckBlockUpgradeMajority;
     int64_t nTargetTimespan;
     int64_t nTargetSpacing;
+    int64_t nTargetTimespanLegacy;
+    int64_t nTargetSpacingLegacy;
     int nLastPOWBlock;
     int nKarmanodeCountDrift;
     int nMaturity;
@@ -142,6 +153,7 @@ protected:
     CBaseChainParams::Network networkID;
     std::string strNetworkID;
     CBlock genesis;
+    Consensus::Params consensus;
     std::vector<CAddress> vFixedSeeds;
     bool fMiningRequiresPeers;
     bool fAllowMinDifficultyBlocks;
@@ -206,5 +218,10 @@ void SelectParams(CBaseChainParams::Network network);
  * Returns false if an invalid combination is given.
  */
 bool SelectParamsFromCommandLine();
+
+/**
+ * Allows modifying the network upgrade regtest parameters.
+ */
+void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight);
 
 #endif // BITCOIN_CHAINPARAMS_H

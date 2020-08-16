@@ -393,22 +393,24 @@ public:
         nDefaultPort = 52020;
         bnProofOfWorkLimit = ~uint256(0) >> 20;
         nMaxReorganizationDepth = 100;
-        nEnforceBlockUpgradeMajority = 750;
-        nRejectBlockOutdatedMajority = 950;
-        nToCheckBlockUpgradeMajority = 1000;
+        nEnforceBlockUpgradeMajority = 2250;
+        nRejectBlockOutdatedMajority = 2850;
+        nToCheckBlockUpgradeMajority = 3000; // 24 hours (legacy)
         nMinerThreads = 0;
-        nTargetTimespan = 1 * 30; // OHMC: 30 Seconds
-        nTargetSpacing = 1 * 30;  // OHMC: 30 Seconds
         nMaturity = 4;
         nKarmanodeCountDrift = 20;
         nMaxMoneyOut = 30000000 * COIN;
+        /* Legacy Blocktime */
+        nTargetTimespanLegacy = 1 * 60 * 40;  // OHMC: 40 Minutes
+        nTargetSpacingLegacy = 1 * 30;        // OHMC: 30 Seconds
+        /* New Blocktime */
+        nTargetTimespan = 1 * 60 * 60 * 2;    // OHMC New: 120 Minutes
+        nTargetSpacing = 1 * 60 * 4;          // OHMC New: 240 Seconds
 
         /** Height or Time Based Activations **/
         nLastPOWBlock = 1001;
 
         nModifierUpdateBlock = 615800;
-
-        nZerocoinStartHeight = 999999999;
 
         /**
          * Build the genesis block. Note that the output of the genesis coinbase cannot
@@ -477,7 +479,7 @@ public:
             "8441436038339044149526344321901146575444541784240209246165157233507787077498171257724679629263863563732899121548"
             "31438167899885040445364023527381951378636564391212010397122822120720357";
 
-
+        nZerocoinStartHeight = 999999999;
         nZerocoinLastOldParams = 99999999; // Updated to defer zerocoin v2 for further testing.
 
         nMaxZerocoinSpendsPerTransaction = 7; // Assume about 20kb each
@@ -485,8 +487,23 @@ public:
         nMintRequiredConfirmations = 20; //the maximum amount of confirmations until accumulated in 19
         nRequiredAccumulation = 1;
         nDefaultSecurityLevel = 100; //full security level for accumulators
-        nZerocoinHeaderVersion = 6; //Block headers must be this version once zerocoin is active
+        nZerocoinHeaderVersion = 99; //Block headers must be this version once zerocoin is active
         nBudgetFeeConfirmations = 3; // Number of confirmations for the finalization fee
+
+        // Network upgrades
+        consensus.vUpgrades[Consensus::BASE_NETWORK].nActivationHeight =
+                Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
+        consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight =
+                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nActivationHeight = 2977924;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nProtocolVersion = 71020;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nActivationHeight = 2977924;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nProtocolVersion = 71020;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_1_DUMMY].nActivationHeight =
+                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_2_DUMMY].nActivationHeight =
+                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const
@@ -516,20 +533,25 @@ public:
         nRejectBlockOutdatedMajority = 75;
         nToCheckBlockUpgradeMajority = 100;
         nMinerThreads = 0;
-        nTargetTimespan = 1 * 60; // Ohmcoin: 1 day
-        nTargetSpacing = 1 * 10;  // Ohmcoin: 1 minute
+        /* Legacy Blocktime */
+        nTargetTimespanLegacy = 1 * 60 * 40;  // OHMC: 40 Minutes
+        nTargetSpacingLegacy = 1 * 22;        // OHMC: 22 Seconds
+        /* New Blocktime */
+        nTargetTimespan = 1 * 60 * 60 * 1;    // OHMC New: 60 Minutes
+        nTargetSpacing = 1 * 60 * 2;          // OHMC New: 120 Seconds
+
         nMaturity = 15;
         nKarmanodeCountDrift = 4;
         nModifierUpdateBlock = 51197; //approx Mon, 17 Apr 2017 04:00:00 GMT
         nMaxMoneyOut = 43199500 * COIN;
         nLastPOWBlock = 200;
-        nZerocoinStartHeight = 200;
+        nZerocoinStartHeight = 999999999;
 
         nZerocoinLastOldParams = 50000;
 
         //! Modify the testnet genesis block so the timestamp is valid for a later start.
-        genesis.nTime = 1454124731;
-        genesis.nNonce = 2402015;
+        genesis.nTime = 1597378077;
+        genesis.nNonce = 8142020;
 
         hashGenesisBlock = genesis.GetHash();
         //assert(hashGenesisBlock == uint256("0xfab709a0c107fe7cf6b0d552c514ef3228f9e0f107cd3c9b2fcea96512342cd8"));
@@ -563,6 +585,18 @@ public:
         strObfuscationPoolDummyAddress = "y57cqfGRkekRyDRNeJiLtYVEbvhXrNbmox";
         nBudgetFeeConfirmations = 3; // Number of confirmations for the finalization fee. We have to make this very short
                                      // here because we only have a 8 block finalization window on testnet
+
+         // Network upgrades
+         consensus.vUpgrades[Consensus::BASE_NETWORK].nActivationHeight =
+                 Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
+         consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight =
+                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+         consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nActivationHeight = 33001;
+         consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nActivationHeight = 33002;
+         consensus.vUpgrades[Consensus::UPGRADE_V3_1_DUMMY].nActivationHeight =
+                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+         consensus.vUpgrades[Consensus::UPGRADE_V3_2_DUMMY].nActivationHeight =
+                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
     }
     const Checkpoints::CCheckpointData& Checkpoints() const
     {
@@ -590,8 +624,12 @@ public:
         nRejectBlockOutdatedMajority = 950;
         nToCheckBlockUpgradeMajority = 1000;
         nMinerThreads = 1;
-        nTargetTimespan = 24 * 60 * 60; // Ohmcoin: 1 day
-        nTargetSpacing = 1 * 60;        // Ohmcoin: 1 minutes
+        /* Legacy Blocktime */
+        nTargetTimespanLegacy = 1 * 60 * 60 * 24;   // OHMC: 24 Hours
+        nTargetSpacingLegacy = 1 * 30;              // OHMC: 22 Seconds
+        /* New Blocktime */
+        nTargetTimespan = 1 * 60 * 60 * 2;          // OHMC New: 120 Minutes
+        nTargetSpacing = 1 * 60 * 4;                // OHMC New: 240 Seconds
         bnProofOfWorkLimit = ~uint256(0) >> 1;
         genesis.nTime = 1454124731;
         genesis.nBits = 0x207fffff;
@@ -623,10 +661,29 @@ public:
         //     "PublicKey": "04866dc02c998b7e1ab16fe14e0d86554595da90c36acb706a4d763b58ed0edb1f82c87e3ced065c5b299b26e12496956b9e5f9f19aa008b5c46229b15477c875a"
         // }
         strSporkKey = "04866dc02c998b7e1ab16fe14e0d86554595da90c36acb706a4d763b58ed0edb1f82c87e3ced065c5b299b26e12496956b9e5f9f19aa008b5c46229b15477c875a";
+
+        // Network upgrades
+        consensus.vUpgrades[Consensus::BASE_NETWORK].nActivationHeight =
+                Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
+        consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight =
+                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nActivationHeight = 33002;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nActivationHeight = 33002;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_1_DUMMY].nActivationHeight =
+                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+        consensus.vUpgrades[Consensus::UPGRADE_V3_2_DUMMY].nActivationHeight =
+                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
     }
+
     const Checkpoints::CCheckpointData& Checkpoints() const
     {
         return dataRegtest;
+    }
+
+    void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)
+    {
+        assert(idx > Consensus::BASE_NETWORK && idx < Consensus::MAX_NETWORK_UPGRADES);
+        consensus.vUpgrades[idx].nActivationHeight = nActivationHeight;
     }
 };
 static CRegTestParams regTestParams;
@@ -714,4 +771,9 @@ bool SelectParamsFromCommandLine()
 
     SelectParams(network);
     return true;
+}
+
+void UpdateNetworkUpgradeParameters(Consensus::UpgradeIndex idx, int nActivationHeight)
+{
+    regTestParams.UpdateNetworkUpgradeParameters(idx, nActivationHeight);
 }
