@@ -2174,6 +2174,7 @@ int64_t GetBlockValue(int nHeight)
         return 30000 * COIN;
     }
 
+    const Consensus::Params& consensus = Params().GetConsensus();
     bool fUpgradeActiveV3 = consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKREWARD);
 
     if (Params().NetworkID() == CBaseChainParams::TESTNET) {
@@ -4578,8 +4579,8 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
 
     // Reject outdated version blocks
     if ((block.nVersion < 6 && nHeight >= 1) &&
-        (consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME)) ||
-        (consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKREWARD)))
+        (consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME) ||
+        consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKREWARD)))
     {
         std::string stringErr = strprintf("rejected block version %d at height %d", block.nVersion, nHeight);
         return state.Invalid(false, REJECT_OBSOLETE, "bad-version", stringErr);
