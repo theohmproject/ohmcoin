@@ -2204,7 +2204,7 @@ int64_t GetBlockValue(int nHeight)
         return 0.125 * COIN;
     } else if (nHeight <= 2977923 && nHeight >= 2373123) {
         return 0.0625 * COIN;
-    } else if (nHeight >= 2373124) {
+    } else if (nHeight >= 2977924) {
         if (fUpgradeActiveV3) {
             return 6 * COIN;
         }
