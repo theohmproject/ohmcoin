@@ -7058,12 +7058,9 @@ int ActiveProtocol()
     // own ModifierUpgradeBlock()
 
 {
-    if (IsSporkActive(SPORK_24_NEW_PROTOCOL_ENFORCEMENT_6))
-        // Enforce protocol 71025 or higher..
-        return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
     if (IsSporkActive(SPORK_23_NEW_BLOCKTIME_ENFORCEMENT))
-        // Enforce protocol 71020 and greater.
-        return MIN_PEER_VERSION_ADJ_BLOCKTIME;
+        // Enforce protocol 71025 and greater.
+        return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
     if (IsSporkActive(SPORK_18_NEW_PROTOCOL_ENFORCEMENT_5))
         // Enforce protocol 71011
         return MIN_PEER_MNANNOUNCE;
