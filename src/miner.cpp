@@ -120,12 +120,18 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
     // transaction (which in most cases can be a no-op).
     bool fIncludeWitness = IsSporkActive(SPORK_20_SEGWIT_ACTIVATION);
 
-    // Make sure to create the correct block version after zerocoin is enabled
-    bool fZerocoinActive = chainActive.Height() >= Params().Zerocoin_StartHeight();
-    if (fZerocoinActive)
-        pblock->nVersion = 6;
-    else
+    // Blocktime and Reward update.
+    bool fEnforceBlockTimeUpdate = IsSporkActive(SPORK_23_NEW_BLOCKTIME_ENFORCEMENT);
+    bool fUpgradeActiveV3 = Params().GetConsensus().NetworkUpgradeActive(chainActive.Tip()->nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME);
+    bool fZerocoinActive = false; // we don't have zerocoin... TODO: Remove!
+
+    if (!fUpgradeActiveV3) {
         pblock->nVersion = 5;
+    } else {
+        if (!fEnforceBlockTimeUpdate) {
+            pblock->nVersion = 6;
+        }
+    }
 
     // Create coinbase tx
     CMutableTransaction txNew;

@@ -2170,8 +2170,27 @@ double ConvertBitsToDouble(unsigned int nBits)
 
 int64_t GetBlockValue(int nHeight)
 {
-    if (nHeight < 1001 && nHeight > 0)
+    if (nHeight < 1001 && nHeight > 0) {
         return 30000 * COIN;
+    }
+
+    const Consensus::Params& consensus = Params().GetConsensus();
+    bool fUpgradeActiveV3 = consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKREWARD);
+
+    if (Params().NetworkID() == CBaseChainParams::TESTNET) {
+        if (nHeight <= 3000 && nHeight >= 1001) {
+            return 1 * COIN;
+        } else if (nHeight <= 33001 && nHeight >= 3001) {
+            return 3.14159 * COIN;
+        } else if (nHeight >= 33002) {
+            if (fUpgradeActiveV3) {
+                return 6 * COIN;
+            }
+            return 3 * COIN;
+        } else {
+            return 1 * COIN;
+        }
+    }
 
     if (nHeight == 0) {
         return 1 * COIN;
@@ -2185,16 +2204,11 @@ int64_t GetBlockValue(int nHeight)
         return 0.125 * COIN;
     } else if (nHeight <= 2977923 && nHeight >= 2373123) {
         return 0.0625 * COIN;
-    } else if (nHeight <= 4029124 && nHeight >= 2977924) {
-        return 0.03125 * COIN;
-    } else if (nHeight <= 6131525 && nHeight >= 4029125) {
-        return 0.015625 * COIN;
-    } else if (nHeight <= 8233926 && nHeight >= 6131526) {
-        return 0.0078125 * COIN;
-    } else if (nHeight <= 10336327 && nHeight >= 8233927) {
-        return 0.00390625 * COIN;
-    } else if (nHeight >= 10336328) {
-        return 0.001953125 * COIN;
+    } else if (nHeight >= 2977924) {
+        if (fUpgradeActiveV3) {
+            return 6 * COIN;
+        }
+        return 3 * COIN;
     } else {
         return 1 * COIN;
     }
@@ -3473,6 +3487,43 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
             return state.Error(("Failed to record new mint to database"));
     }
 
+    //Record zOHMC serials
+    set<uint256> setAddedTx;
+    for (pair<CoinSpend, uint256> pSpend : vSpends) {
+        //record spend to database
+        if (!zerocoinDB->WriteCoinSpend(pSpend.first.getCoinSerialNumber(), pSpend.second))
+            return state.Error(("Failed to record coin serial to database"));
+
+        // Send signal to wallet if this is ours
+        if (pwalletMain) {
+            if (pwalletMain->IsMyZerocoinSpend(pSpend.first.getCoinSerialNumber())) {
+                LogPrintf("%s: %s detected zerocoinspend in transaction %s \n", __func__, pSpend.first.getCoinSerialNumber().GetHex(), pSpend.second.GetHex());
+                pwalletMain->NotifyZerocoinChanged(pwalletMain, pSpend.first.getCoinSerialNumber().GetHex(), "Used", CT_UPDATED);
+
+                //Don't add the same tx multiple times
+                if (setAddedTx.count(pSpend.second))
+                    continue;
+
+                //Search block for matching tx, turn into wtx, set merkle branch, add to wallet
+                for (CTransaction tx : block.vtx) {
+                    if (tx.GetHash() == pSpend.second) {
+                        CWalletTx wtx(pwalletMain, tx);
+                        wtx.nTimeReceived = pindex->GetBlockTime();
+                        wtx.SetMerkleBranch(block);
+                        pwalletMain->AddToWallet(wtx);
+                        setAddedTx.insert(pSpend.second);
+                    }
+                }
+            }
+        }
+    }
+
+    //Record mints to db
+    for (pair<PublicCoin, uint256> pMint : vMints) {
+        if (!zerocoinDB->WriteCoinMint(pMint.first, pMint.second))
+            return state.Error(("Failed to record new mint to database"));
+    }
+
     //Record accumulator checksums
     DatabaseChecksums(mapAccumulators);
 
@@ -4513,6 +4564,7 @@ bool CheckWork(const CBlock block, CBlockIndex* const pindexPrev)
 
 bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& state, CBlockIndex* const pindexPrev)
 {
+    const Consensus::Params& consensus = Params().GetConsensus();
     uint256 hash = block.GetHash();
 
     if (hash == Params().HashGenesisBlock())
@@ -4545,8 +4597,7 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
         return state.DoS(0, error("%s : forked chain older than last checkpoint (height %d)", __func__, nHeight));
 
     // Reject block.nVersion=1 blocks when 95% (75% on testnet) of the network has upgraded:
-    if (block.nVersion < 2 &&
-        CBlockIndex::IsSuperMajority(2, pindexPrev, Params().RejectBlockOutdatedMajority())) {
+    if (block.nVersion < 2 && CBlockIndex::IsSuperMajority(2, pindexPrev, Params().RejectBlockOutdatedMajority())) {
         return state.Invalid(error("%s : rejected nVersion=1 block", __func__),
                              REJECT_OBSOLETE, "bad-version");
     }
@@ -4561,6 +4612,15 @@ bool ContextualCheckBlockHeader(const CBlockHeader& block, CValidationState& sta
     if (block.nVersion < 4 && CBlockIndex::IsSuperMajority(4, pindexPrev, Params().RejectBlockOutdatedMajority())) {
         return state.Invalid(error("%s : rejected nVersion=3 block", __func__),
                              REJECT_OBSOLETE, "bad-version");
+    }
+
+    // Reject outdated version blocks
+    if ((block.nVersion < 6 && nHeight >= 1) &&
+        (consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME) ||
+        consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKREWARD)))
+    {
+        std::string stringErr = strprintf("rejected block version %d at height %d", block.nVersion, nHeight);
+        return state.Invalid(false, REJECT_OBSOLETE, "bad-version", stringErr);
     }
 
     return true;
@@ -7035,8 +7095,13 @@ int ActiveProtocol()
     // own ModifierUpgradeBlock()
 
 {
-    if (IsSporkActive(SPORK_18_NEW_PROTOCOL_ENFORCEMENT_5))
+    if (IsSporkActive(SPORK_23_NEW_BLOCKTIME_ENFORCEMENT))
+        // Enforce protocol 71025 and greater.
         return MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT;
+    if (IsSporkActive(SPORK_18_NEW_PROTOCOL_ENFORCEMENT_5))
+        // Enforce protocol 71011
+        return MIN_PEER_MNANNOUNCE;
+    // Default  protocol
     return MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT;
 }
 
@@ -7327,7 +7392,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
         // timeout. We compensate for in-flight blocks to prevent killing off peers due to our own downstream link
         // being saturated. We only count validated in-flight blocks so peers can't advertize nonexisting block hashes
         // to unreasonably increase our timeout.
-        if (!pto->fDisconnect && state.vBlocksInFlight.size() > 0 && state.vBlocksInFlight.front().nTime < nNow - 500000 * Params().TargetSpacing() * (4 + state.vBlocksInFlight.front().nValidatedQueuedBefore)) {
+        if (!pto->fDisconnect && state.vBlocksInFlight.size() > 0 && state.vBlocksInFlight.front().nTime < nNow - 500000 * Params().TargetSpacingLegacy() * (4 + state.vBlocksInFlight.front().nValidatedQueuedBefore)) {
             LogPrintf("Timeout downloading block %s from peer=%d, disconnecting\n", state.vBlocksInFlight.front().hash.ToString(), pto->id);
             pto->fDisconnect = true;
         }
