@@ -12,7 +12,7 @@
  * network protocol versioning
  */
 
-static const int PROTOCOL_VERSION = 71011;
+static const int PROTOCOL_VERSION = 71025;
 
 //! initial proto version, to be increased after version/verack negotiation
 static const int INIT_PROTO_VERSION = 209;
@@ -22,7 +22,7 @@ static const int GETHEADERS_VERSION = 70077;
 
 //! disconnect from peers older than this proto version
 static const int MIN_PEER_PROTO_VERSION_BEFORE_ENFORCEMENT = 71010;
-static const int MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT = 71011;
+static const int MIN_PEER_PROTO_VERSION_AFTER_ENFORCEMENT = 71025;
 
 static const int MIN_PEER_VERSION_FIXED_SIGTIME = 70004;
 
@@ -42,5 +42,7 @@ static const int MEMPOOL_GD_VERSION = 60002;
 //! "filter*" commands are disabled without NODE_BLOOM after and including this version
 static const int NO_BLOOM_VERSION = 70005;
 
+//! In this version, the blocktime and reward structure were changed
+static const int MIN_PEER_VERSION_ADJ_BLOCKTIME = 71020;
 
 #endif // BITCOIN_VERSION_H

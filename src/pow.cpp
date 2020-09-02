@@ -35,10 +35,24 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return Params().ProofOfWorkLimit().GetCompact();
     }
 
+    // Target block time spacing
+    int64_t nTargetSpacing = Params().TargetSpacingLegacy();
+
     if (pindexLast->nHeight > Params().LAST_POW_BLOCK()) {
         uint256 bnTargetLimit = (~uint256(0) >> 24);
-        int64_t nTargetSpacing = 30;
-        int64_t nTargetTimespan = 60 * 40;
+        // Block time targeting
+        int64_t nTargetTimespan = Params().TargetTimespanLegacy();
+        int64_t nInterval = Params().IntervalLegacy();
+
+        // New time activation check
+        bool fVerAct = CBlockIndex::IsSuperMajority(6, pindexLast, Params().RejectBlockOutdatedMajority());
+        bool fUpgradeActiveV3 = Params().GetConsensus().NetworkUpgradeActive(pindexLast->nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME);
+        // Actiavte on 95% upgrade threshold, or forced by upgrade block height.
+        if (fVerAct || fUpgradeActiveV3) {
+          nTargetSpacing = Params().TargetSpacing();
+          nTargetTimespan = Params().TargetTimespan();
+          nInterval = Params().Interval();
+        }
 
         int64_t nActualSpacing = 0;
         if (pindexLast->nHeight != 0)
@@ -52,7 +66,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         uint256 bnNew;
         bnNew.SetCompact(pindexLast->nBits);
 
-        int64_t nInterval = nTargetTimespan / nTargetSpacing;
         bnNew *= ((nInterval - 1) * nTargetSpacing + nActualSpacing + nActualSpacing);
         bnNew /= ((nInterval + 1) * nTargetSpacing);
 
@@ -92,7 +105,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
     uint256 bnNew(PastDifficultyAverage);
 
-    int64_t _nTargetTimespan = CountBlocks * Params().TargetSpacing();
+    int64_t _nTargetTimespan = CountBlocks * nTargetSpacing;
 
     if (nActualTimespan < _nTargetTimespan / 3)
         nActualTimespan = _nTargetTimespan / 3;
