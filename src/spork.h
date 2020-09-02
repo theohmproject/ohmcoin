@@ -53,6 +53,7 @@ using namespace boost;
 #define SPORK_2_SWIFTTX_DEFAULT 978307200                         //2001-1-1
 #define SPORK_3_SWIFTTX_BLOCK_FILTERING_DEFAULT 1424217600        //2015-2-18
 #define SPORK_5_MAX_VALUE_DEFAULT 1000                            //1000 OHMC
+
 #define SPORK_7_KARMANODE_SCANNING_DEFAULT 978307200              //2001-1-1
 #define SPORK_8_KARMANODE_PAYMENT_ENFORCEMENT_DEFAULT 4070908800  //OFF
 #define SPORK_9_KARMANODE_BUDGET_ENFORCEMENT_DEFAULT 4070908800   //OFF
@@ -72,6 +73,7 @@ using namespace boost;
 #define SPORK_22_ZEROCOIN_MAINTENANCE_MODE_DEFAULT 4070908800     //OFF
 // Sporks that forces new blocktime upgrade and protocol 71020
 #define SPORK_23_NEW_BLOCKTIME_ENFORCEMENT_DEFAULT 4070908800     //OFF DEFAULT
+
 
 class CSporkMessage;
 class CSporkManager;

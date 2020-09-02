@@ -289,7 +289,6 @@ int CSporkManager::GetSporkIDByName(std::string strName)
     if (strName == "SPORK_21_SEGWIT_ON_COINBASE") return SPORK_21_SEGWIT_ON_COINBASE_DEFAULT;
     if (strName == "SPORK_22_ZEROCOIN_MAINTENANCE_MODE") return SPORK_22_ZEROCOIN_MAINTENANCE_MODE;
     if (strName == "SPORK_23_NEW_BLOCKTIME_ENFORCEMENT") return SPORK_23_NEW_BLOCKTIME_ENFORCEMENT;
-
     return -1;
 }
 

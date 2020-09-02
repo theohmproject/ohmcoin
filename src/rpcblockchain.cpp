@@ -17,11 +17,10 @@
 #include "util.h"
 #include "utilmoneystr.h"
 #include "kernel.h"
-
 #include <stdint.h>
 #include <univalue.h>
-
 #include "karmanodeman.h"
+
 
 using namespace std;
 
@@ -90,6 +89,9 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     int64_t StakerPayment = blockindex->nMint - KNPayment;
     double KNRewardPercent = floor(((double)KNPayment / (double)blockindex->nMint) * 100);
 
+UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool txDetails = false)
+{
+    UniValue result(UniValue::VOBJ);
     result.push_back(Pair("hash", block.GetHash().GetHex()));
     int confirmations = -1;
     // Only report confirmations if the block is on the main chain
@@ -134,7 +136,6 @@ UniValue blockToJSON(const CBlock& block, const CBlockIndex* blockindex, bool tx
     result.push_back(Pair("stakerPayment", ValueFromAmount(StakerPayment)));
     result.push_back(Pair("modifier", strprintf("%16x", blockindex->nStakeModifier)));
     result.push_back(Pair("modifierchecksum", strprintf("%08x", GetStakeModifierChecksum(blockindex))));
-
     result.push_back(Pair("moneysupply",ValueFromAmount(blockindex->nMoneySupply)));
 
     UniValue zohmcObj(UniValue::VOBJ);
@@ -566,6 +567,7 @@ UniValue verifychain(const UniValue& params, bool fHelp)
     fVerifyingBlocks = false;
 
     return fVerified;
+
 }
 
 /** Implementation of IsSuperMajority with better feedback */
@@ -670,6 +672,7 @@ UniValue getblockchaininfo(const UniValue& params, bool fHelp)
 
     LOCK(cs_main);
 
+
     const Consensus::Params& consensusParams = Params().GetConsensus();
 
     UniValue obj(UniValue::VOBJ);
@@ -689,7 +692,6 @@ UniValue getblockchaininfo(const UniValue& params, bool fHelp)
         NetworkUpgradeDescPushBack(upgrades, consensusParams, Consensus::UpgradeIndex(i), tip->nHeight);
     }
     obj.push_back(Pair("upgrades", upgrades));
-
     return obj;
 }
 
