@@ -233,7 +233,7 @@ void scrypt_1024_1_1_256_sp_generic(const char *input, char *output, char *scrat
 
     for (k = 0; k < 32; k++)
         le32enc(&B[4 * k], X[k]);
-
+  
     PBKDF2_SHA256((const uint8_t *)input, 80, B, 128, 1, (uint8_t *)output, 32);
 }
 
@@ -478,7 +478,7 @@ public:
             "7259085141865462043576798423387184774447920739934236584823824281198163815010674810451660377306056201619676256133"
             "8441436038339044149526344321901146575444541784240209246165157233507787077498171257724679629263863563732899121548"
             "31438167899885040445364023527381951378636564391212010397122822120720357";
-
+            
         nZerocoinStartHeight = 999999999;
         nZerocoinLastOldParams = 99999999; // Updated to defer zerocoin v2 for further testing.
 
@@ -503,7 +503,7 @@ public:
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
         consensus.vUpgrades[Consensus::UPGRADE_V3_2_DUMMY].nActivationHeight =
                 Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
-
+                
     }
 
     const Checkpoints::CCheckpointData& Checkpoints() const
@@ -539,7 +539,6 @@ public:
         /* New Blocktime */
         nTargetTimespan = 1 * 60 * 60 * 1;    // OHMC New: 60 Minutes
         nTargetSpacing = 1 * 60 * 2;          // OHMC New: 120 Seconds
-
         nMaturity = 15;
         nKarmanodeCountDrift = 4;
         nModifierUpdateBlock = 51197; //approx Mon, 17 Apr 2017 04:00:00 GMT
