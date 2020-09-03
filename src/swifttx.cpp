@@ -1,18 +1,22 @@
-
-
+// Copyright (c) 2014-2016 The Dash developers
+// Copyright (c) 2016-2017 The PIVX developers
+// Distributed under the MIT/X11 software license, see the accompanying
+// file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "swifttx.h"
+
 #include "activekarmanode.h"
 #include "base58.h"
+#include "consensus/validation.h"
 #include "key.h"
 #include "karmanodeman.h"
 #include "net.h"
-#include "privatesend.h"
+#include "obfuscation.h"
 #include "protocol.h"
 #include "spork.h"
 #include "sync.h"
 #include "util.h"
-#include <boost/lexical_cast.hpp>
+#include "validationinterface.h"
 
 using namespace std;
 using namespace boost;
@@ -34,11 +38,11 @@ int nCompleteTXLocks;
 
 void ProcessMessageSwiftTX(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 {
-    if (fLiteMode) return; //disable all privatesend/karmanode related functionality
+    if (fLiteMode) return; //disable all obfuscation/karmanode related functionality
     if (!IsSporkActive(SPORK_2_SWIFTTX)) return;
     if (!karmanodeSync.IsBlockchainSynced()) return;
 
-    if (strCommand == "ix") {
+    if (strCommand == NetMsgType::IX) {
         //LogPrintf("ProcessMessageSwiftTX::ix\n");
         CDataStream vMsg(vRecv);
         CTransaction tx;
@@ -46,6 +50,7 @@ void ProcessMessageSwiftTX(CNode* pfrom, std::string& strCommand, CDataStream& v
 
         CInv inv(MSG_TXLOCK_REQUEST, tx.GetHash());
         pfrom->AddInventoryKnown(inv);
+        GetMainSignals().Inventory(inv.hash);
 
         if (mapTxLockReq.count(tx.GetHash()) || mapTxLockReqRejected.count(tx.GetHash())) {
             return;
@@ -85,6 +90,10 @@ void ProcessMessageSwiftTX(CNode* pfrom, std::string& strCommand, CDataStream& v
                 pfrom->addr.ToString().c_str(), pfrom->cleanSubVer.c_str(),
                 tx.GetHash().ToString().c_str());
 
+            if (GetTransactionLockSignatures(tx.GetHash()) == SWIFTTX_SIGNATURES_REQUIRED) {
+                GetMainSignals().NotifyTransactionLock(tx);
+            }
+
             return;
 
         } else {
@@ -119,7 +128,7 @@ void ProcessMessageSwiftTX(CNode* pfrom, std::string& strCommand, CDataStream& v
 
             return;
         }
-    } else if (strCommand == "txlvote") //SwiftTX Lock Consensus Votes
+    } else if (strCommand == NetMsgType::TXLVOTE) // SwiftX Lock Consensus Votes
     {
         CConsensusVote ctx;
         vRecv >> ctx;
@@ -158,6 +167,10 @@ void ProcessMessageSwiftTX(CNode* pfrom, std::string& strCommand, CDataStream& v
             RelayInv(inv);
         }
 
+        if (mapTxLockReq.count(ctx.txHash) && GetTransactionLockSignatures(ctx.txHash) == SWIFTTX_SIGNATURES_REQUIRED) {
+            GetMainSignals().NotifyTransactionLock(mapTxLockReq[ctx.txHash]);
+        }
+
         return;
     }
 }
@@ -167,8 +180,8 @@ bool IsIXTXValid(const CTransaction& txCollateral)
     if (txCollateral.vout.size() < 1) return false;
     if (txCollateral.nLockTime != 0) return false;
 
-    int64_t nValueIn = 0;
-    int64_t nValueOut = 0;
+    CAmount nValueIn = 0;
+    CAmount nValueOut = 0;
     bool missingTx = false;
 
     BOOST_FOREACH (const CTxOut o, txCollateral.vout)
@@ -187,12 +200,12 @@ bool IsIXTXValid(const CTransaction& txCollateral)
     }
 
     if (nValueOut > GetSporkValue(SPORK_5_MAX_VALUE) * COIN) {
-        LogPrint("swifttx", "IsIXTXValid - Transaction value too high - %s\n", txCollateral.ToString().c_str());
+        LogPrint("swiftx", "IsIXTXValid - Transaction value too high - %s\n", txCollateral.ToString().c_str());
         return false;
     }
 
     if (missingTx) {
-        LogPrint("swifttx", "IsIXTXValid - Unknown inputs in IX transaction - %s\n", txCollateral.ToString().c_str());
+        LogPrint("swiftx", "IsIXTXValid - Unknown inputs in IX transaction - %s\n", txCollateral.ToString().c_str());
         /*
             This happens sometimes for an unknown reason, so we'll return that it's a valid transaction.
             If someone submits an invalid transaction it will be rejected by the network anyway and this isn't
@@ -202,7 +215,7 @@ bool IsIXTXValid(const CTransaction& txCollateral)
     }
 
     if (nValueIn - nValueOut < COIN * 0.01) {
-        LogPrint("swifttx", "IsIXTXValid - did not include enough fees in transaction %d\n%s\n", nValueOut - nValueIn, txCollateral.ToString().c_str());
+        LogPrint("swiftx", "IsIXTXValid - did not include enough fees in transaction %d\n%s\n", nValueOut - nValueIn, txCollateral.ToString().c_str());
         return false;
     }
 
@@ -239,7 +252,7 @@ int64_t CreateNewLock(CTransaction tx)
         mapTxLocks.insert(make_pair(tx.GetHash(), newLock));
     } else {
         mapTxLocks[tx.GetHash()].nBlockHeight = nBlockHeight;
-        LogPrint("swifttx", "CreateNewLock - Transaction Lock Exists %s !\n", tx.GetHash().ToString().c_str());
+        LogPrint("swiftx", "CreateNewLock - Transaction Lock Exists %s !\n", tx.GetHash().ToString().c_str());
     }
 
 
@@ -254,30 +267,30 @@ void DoConsensusVote(CTransaction& tx, int64_t nBlockHeight)
     int n = mnodeman.GetKarmanodeRank(activeKarmanode.vin, nBlockHeight, MIN_SWIFTTX_PROTO_VERSION);
 
     if (n == -1) {
-        LogPrint("swifttx", "SwiftTX::DoConsensusVote - Unknown Karmanode\n");
+        LogPrint("swiftx", "SwiftX::DoConsensusVote - Unknown Karmanode\n");
         return;
     }
 
     if (n > SWIFTTX_SIGNATURES_TOTAL) {
-        LogPrint("swifttx", "SwiftTX::DoConsensusVote - Karmanode not in the top %d (%d)\n", SWIFTTX_SIGNATURES_TOTAL, n);
+        LogPrint("swiftx", "SwiftX::DoConsensusVote - Karmanode not in the top %d (%d)\n", SWIFTTX_SIGNATURES_TOTAL, n);
         return;
     }
     /*
         nBlockHeight calculated from the transaction is the authoritive source
     */
 
-    LogPrint("swifttx", "SwiftTX::DoConsensusVote - In the top %d (%d)\n", SWIFTTX_SIGNATURES_TOTAL, n);
+    LogPrint("swiftx", "SwiftX::DoConsensusVote - In the top %d (%d)\n", SWIFTTX_SIGNATURES_TOTAL, n);
 
     CConsensusVote ctx;
     ctx.vinKarmanode = activeKarmanode.vin;
     ctx.txHash = tx.GetHash();
     ctx.nBlockHeight = nBlockHeight;
     if (!ctx.Sign()) {
-        LogPrintf("SwiftTX::DoConsensusVote - Failed to sign consensus vote\n");
+        LogPrintf("SwiftX::DoConsensusVote - Failed to sign consensus vote\n");
         return;
     }
     if (!ctx.SignatureValid()) {
-        LogPrintf("SwiftTX::DoConsensusVote - Signature invalid\n");
+        LogPrintf("SwiftX::DoConsensusVote - Signature invalid\n");
         return;
     }
 
@@ -294,29 +307,29 @@ bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx)
 
     CKarmanode* pmn = mnodeman.Find(ctx.vinKarmanode);
     if (pmn != NULL)
-        LogPrint("swifttx", "SwiftTX::ProcessConsensusVote - Karmanode ADDR %s %d\n", pmn->addr.ToString().c_str(), n);
+        LogPrint("swiftx", "SwiftX::ProcessConsensusVote - Karmanode ADDR %s %d\n", pmn->addr.ToString().c_str(), n);
 
     if (n == -1) {
         //can be caused by past versions trying to vote with an invalid protocol
-        LogPrint("swifttx", "SwiftTX::ProcessConsensusVote - Unknown Karmanode\n");
+        LogPrint("swiftx", "SwiftX::ProcessConsensusVote - Unknown Karmanode\n");
         mnodeman.AskForMN(pnode, ctx.vinKarmanode);
         return false;
     }
 
     if (n > SWIFTTX_SIGNATURES_TOTAL) {
-        LogPrint("swifttx", "SwiftTX::ProcessConsensusVote - Karmanode not in the top %d (%d) - %s\n", SWIFTTX_SIGNATURES_TOTAL, n, ctx.GetHash().ToString().c_str());
+        LogPrint("swiftx", "SwiftX::ProcessConsensusVote - Karmanode not in the top %d (%d) - %s\n", SWIFTTX_SIGNATURES_TOTAL, n, ctx.GetHash().ToString().c_str());
         return false;
     }
 
     if (!ctx.SignatureValid()) {
-        LogPrintf("SwiftTX::ProcessConsensusVote - Signature invalid\n");
+        LogPrintf("SwiftX::ProcessConsensusVote - Signature invalid\n");
         // don't ban, it could just be a non-synced karmanode
         mnodeman.AskForMN(pnode, ctx.vinKarmanode);
         return false;
     }
 
     if (!mapTxLocks.count(ctx.txHash)) {
-        LogPrintf("SwiftTX::ProcessConsensusVote - New Transaction Lock %s !\n", ctx.txHash.ToString().c_str());
+        LogPrintf("SwiftX::ProcessConsensusVote - New Transaction Lock %s !\n", ctx.txHash.ToString().c_str());
 
         CTransactionLock newLock;
         newLock.nBlockHeight = 0;
@@ -325,7 +338,7 @@ bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx)
         newLock.txHash = ctx.txHash;
         mapTxLocks.insert(make_pair(ctx.txHash, newLock));
     } else
-        LogPrint("swifttx", "SwiftTX::ProcessConsensusVote - Transaction Lock Exists %s !\n", ctx.txHash.ToString().c_str());
+        LogPrint("swiftx", "SwiftX::ProcessConsensusVote - Transaction Lock Exists %s !\n", ctx.txHash.ToString().c_str());
 
     //compile consessus vote
     std::map<uint256, CTransactionLock>::iterator i = mapTxLocks.find(ctx.txHash);
@@ -340,10 +353,10 @@ bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx)
         }
 #endif
 
-        LogPrint("swifttx", "SwiftTX::ProcessConsensusVote - Transaction Lock Votes %d - %s !\n", (*i).second.CountSignatures(), ctx.GetHash().ToString().c_str());
+        LogPrint("swiftx", "SwiftX::ProcessConsensusVote - Transaction Lock Votes %d - %s !\n", (*i).second.CountSignatures(), ctx.GetHash().ToString().c_str());
 
         if ((*i).second.CountSignatures() >= SWIFTTX_SIGNATURES_REQUIRED) {
-            LogPrint("swifttx", "SwiftTX::ProcessConsensusVote - Transaction Lock Is Complete %s !\n", (*i).second.GetHash().ToString().c_str());
+            LogPrint("swiftx", "SwiftX::ProcessConsensusVote - Transaction Lock Is Complete %s !\n", (*i).second.GetHash().ToString().c_str());
 
             CTransaction& tx = mapTxLockReq[ctx.txHash];
             if (!CheckForConflictingLocks(tx)) {
@@ -391,7 +404,7 @@ bool CheckForConflictingLocks(CTransaction& tx)
     BOOST_FOREACH (const CTxIn& in, tx.vin) {
         if (mapLockedInputs.count(in.prevout)) {
             if (mapLockedInputs[in.prevout] != tx.GetHash()) {
-                LogPrintf("SwiftTX::CheckForConflictingLocks - found two complete conflicting locks - removing both. %s %s", tx.GetHash().ToString().c_str(), mapLockedInputs[in.prevout].ToString().c_str());
+                LogPrintf("SwiftX::CheckForConflictingLocks - found two complete conflicting locks - removing both. %s %s", tx.GetHash().ToString().c_str(), mapLockedInputs[in.prevout].ToString().c_str());
                 if (mapTxLocks.count(tx.GetHash())) mapTxLocks[tx.GetHash()].nExpiration = GetTime();
                 if (mapTxLocks.count(mapLockedInputs[in.prevout])) mapTxLocks[mapLockedInputs[in.prevout]].nExpiration = GetTime();
                 return true;
@@ -447,6 +460,17 @@ void CleanTransactionLocksList()
     }
 }
 
+int GetTransactionLockSignatures(uint256 txHash)
+{
+    if(fLargeWorkForkFound || fLargeWorkInvalidChainFound) return -2;
+    if (!IsSporkActive(SPORK_2_SWIFTTX)) return -1;
+
+    std::map<uint256, CTransactionLock>::iterator it = mapTxLocks.find(txHash);
+    if(it != mapTxLocks.end()) return it->second.CountSignatures();
+
+    return -1;
+}
+
 uint256 CConsensusVote::GetHash() const
 {
     return vinKarmanode.prevout.hash + vinKarmanode.prevout.n + txHash;
@@ -456,18 +480,18 @@ uint256 CConsensusVote::GetHash() const
 bool CConsensusVote::SignatureValid()
 {
     std::string errorMessage;
-    std::string strMessage = txHash.ToString().c_str() + boost::lexical_cast<std::string>(nBlockHeight);
+    std::string strMessage = txHash.ToString().c_str() + std::to_string(nBlockHeight);
     //LogPrintf("verify strMessage %s \n", strMessage.c_str());
 
     CKarmanode* pmn = mnodeman.Find(vinKarmanode);
 
     if (pmn == NULL) {
-        LogPrintf("SwiftTX::CConsensusVote::SignatureValid() - Unknown Karmanode\n");
+        LogPrintf("SwiftX::CConsensusVote::SignatureValid() - Unknown Karmanode\n");
         return false;
     }
 
     if (!obfuScationSigner.VerifyMessage(pmn->pubKeyKarmanode, vchMasterNodeSignature, strMessage, errorMessage)) {
-        LogPrintf("SwiftTX::CConsensusVote::SignatureValid() - Verify message failed\n");
+        LogPrintf("SwiftX::CConsensusVote::SignatureValid() - Verify message failed\n");
         return false;
     }
 
@@ -480,7 +504,7 @@ bool CConsensusVote::Sign()
 
     CKey key2;
     CPubKey pubkey2;
-    std::string strMessage = txHash.ToString().c_str() + boost::lexical_cast<std::string>(nBlockHeight);
+    std::string strMessage = txHash.ToString().c_str() + std::to_string(nBlockHeight);
     //LogPrintf("signing strMessage %s \n", strMessage.c_str());
     //LogPrintf("signing privkey %s \n", strMasterNodePrivKey.c_str());
 

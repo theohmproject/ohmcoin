@@ -1,0 +1,12 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Ohmcoin
+Comment=Ohmcoin P2P Cryptocurrency
+Comment[fr]=Ohmcoin, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Ohmcoin, eşten eşe kriptografik sanal para birimi
+Exec=ohmcoin-qt %u
+Terminal=false
+Type=Application
+Icon=ohmcoin128
+MimeType=x-scheme-handler/ohmcoin;
+Categories=Office;Finance;

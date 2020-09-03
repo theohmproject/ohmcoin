@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
+// Copyright (c) 2015-2017 The PIVX developers
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -11,11 +12,11 @@
 #include "tinyformat.h"
 #include "uint256.h"
 #include "util.h"
+#include "libzerocoin/Denominations.h"
 
 #include <vector>
 
 #include <boost/foreach.hpp>
-#include <boost/lexical_cast.hpp>
 
 struct CDiskBlockPos {
     int nFile;
@@ -93,9 +94,11 @@ enum BlockStatus {
     BLOCK_HAVE_UNDO = 16, //! undo data available in rev*.dat
     BLOCK_HAVE_MASK = BLOCK_HAVE_DATA | BLOCK_HAVE_UNDO,
 
-    BLOCK_FAILED_VALID = 32, //! stage after last reached validness failed
-    BLOCK_FAILED_CHILD = 64, //! descends from failed block
-    BLOCK_FAILED_MASK = BLOCK_FAILED_VALID | BLOCK_FAILED_CHILD,
+    BLOCK_FAILED_VALID       =   32, //! stage after last reached validness failed
+    BLOCK_FAILED_CHILD       =   64, //! descends from failed block
+    BLOCK_FAILED_MASK        =   BLOCK_FAILED_VALID | BLOCK_FAILED_CHILD,
+
+    BLOCK_OPT_WITNESS       =   128, //! block data in blk*.data was received with a witness-enforcing client
 };
 
 /** The block chain is a tree shaped structure starting with the
@@ -171,10 +174,15 @@ public:
     unsigned int nTime;
     unsigned int nBits;
     unsigned int nNonce;
+    uint256 nAccumulatorCheckpoint;
 
     //! (memory only) Sequential id assigned to distinguish order in which blocks are received.
     uint32_t nSequenceId;
-
+    
+    //! zerocoin specific fields
+    std::map<libzerocoin::CoinDenomination, int64_t> mapZerocoinSupply;
+    std::vector<libzerocoin::CoinDenomination> vMintDenominationsInBlock;
+    
     void SetNull()
     {
         phashBlock = NULL;
@@ -203,6 +211,12 @@ public:
         nTime = 0;
         nBits = 0;
         nNonce = 0;
+        nAccumulatorCheckpoint = 0;
+        // Start supply of each denomination with 0s
+        for (auto& denom : libzerocoin::zerocoinDenomList) {
+            mapZerocoinSupply.insert(make_pair(denom, 0));
+        }
+        vMintDenominationsInBlock.clear();
     }
 
     CBlockIndex()
@@ -219,6 +233,8 @@ public:
         nTime = block.nTime;
         nBits = block.nBits;
         nNonce = block.nNonce;
+        if(block.nVersion > 5)
+            nAccumulatorCheckpoint = block.nAccumulatorCheckpoint;
 
         //Proof of Stake
         bnChainTrust = uint256();
@@ -238,6 +254,7 @@ public:
             nStakeTime = 0;
         }
     }
+    
 
     CDiskBlockPos GetBlockPos() const
     {
@@ -270,6 +287,20 @@ public:
         block.nBits = nBits;
         block.nNonce = nNonce;
         return block;
+    }
+
+    int64_t GetZerocoinSupply() const
+    {
+        int64_t nTotal = 0;
+        for (auto& denom : libzerocoin::zerocoinDenomList) {
+            nTotal += libzerocoin::ZerocoinDenominationToAmount(denom) * mapZerocoinSupply.at(denom);
+        }
+        return nTotal;
+    }
+
+    bool MintedDenomination(libzerocoin::CoinDenomination denom) const
+    {
+        return std::find(vMintDenominationsInBlock.begin(), vMintDenominationsInBlock.end(), denom) != vMintDenominationsInBlock.end();
     }
 
     uint256 GetBlockHash() const
@@ -446,6 +477,12 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+        if(this->nVersion > 5) {
+            READWRITE(nAccumulatorCheckpoint);
+            READWRITE(mapZerocoinSupply);
+            READWRITE(vMintDenominationsInBlock);
+        }
+
     }
 
     uint256 GetBlockHash() const

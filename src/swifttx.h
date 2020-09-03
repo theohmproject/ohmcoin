@@ -1,9 +1,8 @@
-
 // Copyright (c) 2009-2012 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
+
 #ifndef SWIFTTX_H
 #define SWIFTTX_H
 
@@ -17,7 +16,7 @@
 
 /*
     At 15 signatures, 1/2 of the karmanode network can be owned by
-    one party without comprimising the security of SwiftTX
+    one party without comprimising the security of SwiftX
     (1000/2150.0)**10 = 0.00047382219560689856
     (1000/2900.0)**10 = 2.3769498616783657e-05
 
@@ -61,6 +60,9 @@ bool ProcessConsensusVote(CNode* pnode, CConsensusVote& ctx);
 
 // keep transaction locks in memory for an hour
 void CleanTransactionLocksList();
+
+// get the accepted transaction lock signatures
+int GetTransactionLockSignatures(uint256 txHash);
 
 int64_t GetAverageVoteTime();
 

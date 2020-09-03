@@ -13,6 +13,7 @@
 #include "receiverequestdialog.h"
 #include "recentrequeststablemodel.h"
 #include "walletmodel.h"
+#include "wallet.h"
 
 #include <QAction>
 #include <QCursor>
@@ -32,7 +33,21 @@ ReceiveCoinsDialog::ReceiveCoinsDialog(QWidget* parent) : QDialog(parent),
     ui->receiveButton->setIcon(QIcon());
     ui->showRequestButton->setIcon(QIcon());
     ui->removeRequestButton->setIcon(QIcon());
+    ui->reqLabel->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    //ui->reqAmount->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    //needs to be handled within bitcoinamountfield.cpp
+    ui->reqMessage->setAttribute(Qt::WA_MacShowFocusRect, 0);
+    
 #endif
+
+    // configure bech32 checkbox, disable if launched with legacy as default:
+    if (model->getDefaultAddressType() == OUTPUT_TYPE_BECH32) {
+        ui->useBech32->setCheckState(Qt::Checked);
+    } else {
+        ui->useBech32->setCheckState(Qt::Unchecked);
+    }
+
+    ui->useBech32->setVisible(model->getDefaultAddressType() != OUTPUT_TYPE_LEGACY);
 
     // context menu actions
     QAction* copyLabelAction = new QAction(tr("Copy label"), this);
@@ -73,6 +88,7 @@ void ReceiveCoinsDialog::setModel(WalletModel* model)
         tableView->setSelectionMode(QAbstractItemView::ContiguousSelection);
         tableView->setColumnWidth(RecentRequestsTableModel::Date, DATE_COLUMN_WIDTH);
         tableView->setColumnWidth(RecentRequestsTableModel::Label, LABEL_COLUMN_WIDTH);
+       // tableView->horizontalHeader()->setDefaultAlignment(Qt::AlignRight);
 
         connect(tableView->selectionModel(),
             SIGNAL(selectionChanged(QItemSelection, QItemSelection)), this,
@@ -135,7 +151,11 @@ void ReceiveCoinsDialog::on_receiveButton_clicked()
         }
     } else {
         /* Generate new receiving address */
-        address = model->getAddressTableModel()->addRow(AddressTableModel::Receive, label, "");
+        OutputType address_type = model->getDefaultAddressType();
+        if (address_type != OUTPUT_TYPE_LEGACY) {
+            address_type = ui->useBech32->isChecked() ? OUTPUT_TYPE_BECH32 : OUTPUT_TYPE_DEFAULT;
+        }
+        address = model->getAddressTableModel()->addRow(AddressTableModel::Receive, label, "", address_type);        
     }
     SendCoinsRecipient info(address, label,
         ui->reqAmount->value(), ui->reqMessage->text());

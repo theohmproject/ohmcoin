@@ -9,8 +9,8 @@
 #include <vector>
 
 /**
- * CBaseChainParams defines the base parameters (shared between ohmc-cli and ohmcd)
- * of a given instance of the Ohm system.
+ * CBaseChainParams defines the base parameters (shared between ohmcoin-cli and ohmcoind)
+ * of a given instance of the Ohmcoin system.
  */
 class CBaseChainParams
 {

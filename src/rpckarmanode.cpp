@@ -1,7 +1,5 @@
-// Copyright (c) 2010 Satoshi Nakamoto
 // Copyright (c) 2009-2012 The Bitcoin developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -16,92 +14,13 @@
 #include "rpcserver.h"
 #include "utilmoneystr.h"
 
+#include <univalue.h>
+
+#include <boost/lexical_cast.hpp>
 #include <boost/tokenizer.hpp>
-
 #include <fstream>
-using namespace json_spirit;
 
-void SendMoney(const CTxDestination& address, CAmount nValue, CWalletTx& wtxNew, AvailableCoinsType coin_type = ALL_COINS)
-{
-    // Check amount
-    if (nValue <= 0)
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid amount");
-
-    if (nValue > pwalletMain->GetBalance())
-        throw JSONRPCError(RPC_WALLET_INSUFFICIENT_FUNDS, "Insufficient funds");
-
-    string strError;
-    if (pwalletMain->IsLocked()) {
-        strError = "Error: Wallet locked, unable to create transaction!";
-        LogPrintf("SendMoney() : %s", strError);
-        throw JSONRPCError(RPC_WALLET_ERROR, strError);
-    }
-
-    // Parse ohmc address
-    CScript scriptPubKey = GetScriptForDestination(address);
-
-    // Create and send the transaction
-    CReserveKey reservekey(pwalletMain);
-    CAmount nFeeRequired;
-    if (!pwalletMain->CreateTransaction(scriptPubKey, nValue, wtxNew, reservekey, nFeeRequired, strError, NULL, coin_type)) {
-        if (nValue + nFeeRequired > pwalletMain->GetBalance())
-            strError = strprintf("Error: This transaction requires a transaction fee of at least %s because of its amount, complexity, or use of recently received funds!", FormatMoney(nFeeRequired));
-        LogPrintf("SendMoney() : %s\n", strError);
-        throw JSONRPCError(RPC_WALLET_ERROR, strError);
-    }
-    if (!pwalletMain->CommitTransaction(wtxNew, reservekey))
-        throw JSONRPCError(RPC_WALLET_ERROR, "Error: The transaction was rejected! This might happen if some of the coins in your wallet were already spent, such as if you used a copy of wallet.dat and coins were spent in the copy but not marked as spent here.");
-}
-
-Value privatesend(const Array& params, bool fHelp)
-{
-    if (fHelp || params.size() == 0)
-        throw runtime_error(
-            "privatesend <ohmcaddress> <amount>\n"
-            "ohmcaddress, reset, or auto (AutoDenominate)"
-            "<amount> is a real and will be rounded to the next 0.1" +
-            HelpRequiringPassphrase());
-
-    if (pwalletMain->IsLocked())
-        throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
-
-    if (params[0].get_str() == "auto") {
-        if (fMasterNode)
-            return "ObfuScation is not supported from karmanodes";
-
-        return "DoAutomaticDenominating " + (obfuScationPool.DoAutomaticDenominating() ? "successful" : ("failed: " + obfuScationPool.GetStatus()));
-    }
-
-    if (params[0].get_str() == "reset") {
-        obfuScationPool.Reset();
-        return "successfully reset privatesend";
-    }
-
-    if (params.size() != 2)
-        throw runtime_error(
-            "privatesend <ohmcaddress> <amount>\n"
-            "ohmcaddress, denominate, or auto (AutoDenominate)"
-            "<amount> is a real and will be rounded to the next 0.1" +
-            HelpRequiringPassphrase());
-
-    CBitcoinAddress address(params[0].get_str());
-    if (!address.IsValid())
-        throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid ohmc address");
-
-    // Amount
-    CAmount nAmount = AmountFromValue(params[1]);
-
-    // Wallet comments
-    CWalletTx wtx;
-    //    string strError = pwalletMain->SendMoneyToDestination(address.Get(), nAmount, wtx, ONLY_DENOMINATED);
-    SendMoney(address.Get(), nAmount, wtx, ONLY_DENOMINATED);
-    //    if (strError != "")
-    //        throw JSONRPCError(RPC_WALLET_ERROR, strError);
-
-    return wtx.GetHash().GetHex();
-}
-
-Value getpoolinfo(const Array& params, bool fHelp)
+UniValue getpoolinfo(const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() != 0)
         throw runtime_error(
@@ -110,7 +29,7 @@ Value getpoolinfo(const Array& params, bool fHelp)
 
             "\nResult:\n"
             "{\n"
-            "  \"current\": \"addr\",    (string) ohmc address of current karmanode\n"
+            "  \"current\": \"addr\",    (string) Ohmcoin address of current karmanode\n"
             "  \"state\": xxxx,        (string) unknown\n"
             "  \"entries\": xxxx,      (numeric) Number of entries\n"
             "  \"accepted\": xxxx,     (numeric) Number of entries accepted\n"
@@ -119,7 +38,7 @@ Value getpoolinfo(const Array& params, bool fHelp)
             "\nExamples:\n" +
             HelpExampleCli("getpoolinfo", "") + HelpExampleRpc("getpoolinfo", ""));
 
-    Object obj;
+    UniValue obj(UniValue::VOBJ);
     obj.push_back(Pair("current_karmanode", mnodeman.GetCurrentMasterNode()->addr.ToString()));
     obj.push_back(Pair("state", obfuScationPool.GetState()));
     obj.push_back(Pair("entries", obfuScationPool.GetEntriesCount()));
@@ -127,9 +46,9 @@ Value getpoolinfo(const Array& params, bool fHelp)
     return obj;
 }
 
-// This command is retained for backwards compatibility, but is depreciated.
+// This command is retained for backwards compatibility, but is deprecated.
 // Future removal of this command is planned to keep things clean.
-Value karmanode(const Array& params, bool fHelp)
+UniValue karmanode(const UniValue& params, bool fHelp)
 {
     string strCommand;
     if (params.size() >= 1)
@@ -143,7 +62,7 @@ Value karmanode(const Array& params, bool fHelp)
         throw runtime_error(
             "karmanode \"command\"...\n"
             "\nSet of commands to execute karmanode related actions\n"
-            "This command is depreciated, please see individual command documentation for future reference\n\n"
+            "This command is deprecated, please see individual command documentation for future reference\n\n"
 
             "\nArguments:\n"
             "1. \"command\"        (string or set of strings, required) The command to execute\n"
@@ -154,7 +73,7 @@ Value karmanode(const Array& params, bool fHelp)
             "  debug        - Print karmanode status\n"
             "  genkey       - Generate new karmanodeprivkey\n"
             "  outputs      - Print karmanode compatible outputs\n"
-            "  start        - Start karmanode configured in ohmc.conf\n"
+            "  start        - Start karmanode configured in ohmcoin.conf\n"
             "  start-alias  - Start single karmanode by assigned alias configured in karmanode.conf\n"
             "  start-<mode> - Start karmanodes configured in karmanode.conf (<mode>: 'all', 'missing', 'disabled')\n"
             "  status       - Print karmanode status information\n"
@@ -163,32 +82,47 @@ Value karmanode(const Array& params, bool fHelp)
             "  winners      - Print list of karmanode winners\n");
 
     if (strCommand == "list") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return listkarmanodes(newParams, fHelp);
     }
 
     if (strCommand == "connect") {
-        Array newParams(params.size() -1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return karmanodeconnect(newParams, fHelp);
     }
 
     if (strCommand == "count") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return getkarmanodecount(newParams, fHelp);
     }
 
     if (strCommand == "current") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return karmanodecurrent(newParams, fHelp);
     }
 
     if (strCommand == "debug") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return karmanodedebug(newParams, fHelp);
     }
 
@@ -197,45 +131,63 @@ Value karmanode(const Array& params, bool fHelp)
     }
 
     if (strCommand == "genkey") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return createkarmanodekey(newParams, fHelp);
     }
 
     if (strCommand == "list-conf") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return listkarmanodeconf(newParams, fHelp);
     }
 
     if (strCommand == "outputs") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return getkarmanodeoutputs(newParams, fHelp);
     }
 
     if (strCommand == "status") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return getkarmanodestatus(newParams, fHelp);
     }
 
     if (strCommand == "winners") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return getkarmanodewinners(newParams, fHelp);
     }
 
     if (strCommand == "calcscore") {
-        Array newParams(params.size() - 1);
-        std::copy(params.begin() + 1, params.end(), newParams.begin());
+        UniValue newParams(UniValue::VARR);
+        // forward params but skip command
+        for (unsigned int i = 1; i < params.size(); i++) {
+            newParams.push_back(params[i]);
+        }
         return getkarmanodescores(newParams, fHelp);
     }
 
-    return Value::null;
+    return NullUniValue;
 }
 
-Value listkarmanodes(const Array& params, bool fHelp)
+UniValue listkarmanodes(const UniValue& params, bool fHelp)
 {
     std::string strFilter = "";
 
@@ -256,7 +208,7 @@ Value listkarmanodes(const Array& params, bool fHelp)
             "    \"txhash\": \"hash\",    (string) Collateral transaction hash\n"
             "    \"outidx\": n,         (numeric) Collateral transaction output index\n"
             "    \"status\": s,         (string) Status (ENABLED/EXPIRED/REMOVE/etc)\n"
-            "    \"addr\": \"addr\",      (string) Karmanode ohmc address\n"
+            "    \"addr\": \"addr\",      (string) Karmanode ohmcoin address\n"
             "    \"version\": v,        (numeric) Karmanode protocol version\n"
             "    \"lastseen\": ttt,     (numeric) The time in seconds since epoch (Jan 1 1970 GMT) of the last seen\n"
             "    \"activetime\": ttt,   (numeric) The time in seconds since epoch (Jan 1 1970 GMT) karmanode has been active\n"
@@ -265,9 +217,9 @@ Value listkarmanodes(const Array& params, bool fHelp)
             "  ,...\n"
             "]\n"
             "\nExamples:\n" +
-            HelpExampleCli("karmanodelist", "") + HelpExampleRpc("karmanodelist", ""));
+            HelpExampleCli("listkarmanodes", "") + HelpExampleRpc("listkarmanodes", ""));
 
-    Array ret;
+    UniValue ret(UniValue::VARR);
     int nHeight;
     {
         LOCK(cs_main);
@@ -277,7 +229,7 @@ Value listkarmanodes(const Array& params, bool fHelp)
     }
     std::vector<pair<int, CKarmanode> > vKarmanodeRanks = mnodeman.GetKarmanodeRanks(nHeight);
     BOOST_FOREACH (PAIRTYPE(int, CKarmanode) & s, vKarmanodeRanks) {
-        Object obj;
+        UniValue obj(UniValue::VOBJ);
         std::string strVin = s.second.vin.prevout.ToStringShort();
         std::string strTxHash = s.second.vin.prevout.hash.ToString();
         uint32_t oIdx = s.second.vin.prevout.n;
@@ -287,15 +239,21 @@ Value listkarmanodes(const Array& params, bool fHelp)
         if (mn != NULL) {
             if (strFilter != "" && strTxHash.find(strFilter) == string::npos &&
                 mn->Status().find(strFilter) == string::npos &&
-                CBitcoinAddress(mn->pubKeyCollateralAddress.GetID()).ToString().find(strFilter) == string::npos) continue;
+                EncodeDestination(CTxDestination(mn->pubKeyCollateralAddress.GetID())).find(strFilter) == string::npos) continue;
 
             std::string strStatus = mn->Status();
+            std::string strHost;
+            int port;
+            SplitHostPort(mn->addr.ToString(), port, strHost);
+            CNetAddr node = CNetAddr(strHost);
+            std::string strNetwork = GetNetworkName(node.GetNetwork());
 
             obj.push_back(Pair("rank", (strStatus == "ENABLED" ? s.first : 0)));
+            obj.push_back(Pair("network", strNetwork));
             obj.push_back(Pair("txhash", strTxHash));
             obj.push_back(Pair("outidx", (uint64_t)oIdx));
             obj.push_back(Pair("status", strStatus));
-            obj.push_back(Pair("addr", CBitcoinAddress(mn->pubKeyCollateralAddress.GetID()).ToString()));
+            obj.push_back(Pair("addr", EncodeDestination(mn->pubKeyCollateralAddress.GetID())));
             obj.push_back(Pair("version", mn->protocolVersion));
             obj.push_back(Pair("lastseen", (int64_t)mn->lastPing.sigTime));
             obj.push_back(Pair("activetime", (int64_t)(mn->lastPing.sigTime - mn->sigTime)));
@@ -308,7 +266,7 @@ Value listkarmanodes(const Array& params, bool fHelp)
     return ret;
 }
 
-Value karmanodeconnect(const Array& params, bool fHelp)
+UniValue karmanodeconnect(const UniValue& params, bool fHelp)
 {
     if (fHelp || (params.size() != 1))
         throw runtime_error(
@@ -319,7 +277,7 @@ Value karmanodeconnect(const Array& params, bool fHelp)
             "1. \"address\"     (string, required) IP or net address to connect to\n"
 
             "\nExamples:\n" +
-            HelpExampleCli("karmanodeconnect", "\"192.168.0.6:51472\"") + HelpExampleRpc("karmanodeconnect", "\"192.168.0.6:51472\""));
+            HelpExampleCli("karmanodeconnect", "\"192.168.0.6:52020\"") + HelpExampleRpc("karmanodeconnect", "\"192.168.0.6:52020\""));
 
     std::string strAddress = params[0].get_str();
 
@@ -328,13 +286,13 @@ Value karmanodeconnect(const Array& params, bool fHelp)
     CNode* pnode = ConnectNode((CAddress)addr, NULL, false);
     if (pnode) {
         pnode->Release();
-        return Value::null;
+        return NullUniValue;
     } else {
         throw runtime_error("error connecting\n");
     }
 }
 
-Value getkarmanodecount (const Array& params, bool fHelp)
+UniValue getkarmanodecount (const UniValue& params, bool fHelp)
 {
     if (fHelp || (params.size() > 0))
         throw runtime_error(
@@ -345,29 +303,35 @@ Value getkarmanodecount (const Array& params, bool fHelp)
             "{\n"
             "  \"total\": n,        (numeric) Total karmanodes\n"
             "  \"stable\": n,       (numeric) Stable count\n"
-            "  \"obfcompat\": n,    (numeric) PrivateSend Compatible\n"
+            "  \"obfcompat\": n,    (numeric) Obfuscation Compatible\n"
             "  \"enabled\": n,      (numeric) Enabled karmanodes\n"
             "  \"inqueue\": n       (numeric) Karmanodes in queue\n"
             "}\n"
             "\nExamples:\n" +
             HelpExampleCli("getkarmanodecount", "") + HelpExampleRpc("getkarmanodecount", ""));
 
-    Object obj;
+    UniValue obj(UniValue::VOBJ);
     int nCount = 0;
+    int ipv4 = 0, ipv6 = 0, onion = 0;
 
     if (chainActive.Tip())
         mnodeman.GetNextKarmanodeInQueueForPayment(chainActive.Tip()->nHeight, true, nCount);
+
+    mnodeman.CountNetworks(ActiveProtocol(), ipv4, ipv6, onion);
 
     obj.push_back(Pair("total", mnodeman.size()));
     obj.push_back(Pair("stable", mnodeman.stable_size()));
     obj.push_back(Pair("obfcompat", mnodeman.CountEnabled(ActiveProtocol())));
     obj.push_back(Pair("enabled", mnodeman.CountEnabled()));
     obj.push_back(Pair("inqueue", nCount));
+    obj.push_back(Pair("ipv4", ipv4));
+    obj.push_back(Pair("ipv6", ipv6));
+    obj.push_back(Pair("onion", onion));
 
     return obj;
 }
 
-Value karmanodecurrent (const Array& params, bool fHelp)
+UniValue karmanodecurrent (const UniValue& params, bool fHelp)
 {
     if (fHelp || (params.size() != 0))
         throw runtime_error(
@@ -387,11 +351,11 @@ Value karmanodecurrent (const Array& params, bool fHelp)
 
     CKarmanode* winner = mnodeman.GetCurrentMasterNode(1);
     if (winner) {
-        Object obj;
+        UniValue obj(UniValue::VOBJ);
 
         obj.push_back(Pair("protocol", (int64_t)winner->protocolVersion));
         obj.push_back(Pair("txhash", winner->vin.prevout.hash.ToString()));
-        obj.push_back(Pair("pubkey", CBitcoinAddress(winner->pubKeyCollateralAddress.GetID()).ToString()));
+        obj.push_back(Pair("pubkey", EncodeDestination(winner->pubKeyCollateralAddress.GetID())));
         obj.push_back(Pair("lastseen", (winner->lastPing == CKarmanodePing()) ? winner->sigTime : (int64_t)winner->lastPing.sigTime));
         obj.push_back(Pair("activeseconds", (winner->lastPing == CKarmanodePing()) ? 0 : (int64_t)(winner->lastPing.sigTime - winner->sigTime)));
         return obj;
@@ -400,7 +364,7 @@ Value karmanodecurrent (const Array& params, bool fHelp)
     throw runtime_error("unknown");
 }
 
-Value karmanodedebug (const Array& params, bool fHelp)
+UniValue karmanodedebug (const UniValue& params, bool fHelp)
 {
     if (fHelp || (params.size() != 0))
         throw runtime_error(
@@ -424,7 +388,7 @@ Value karmanodedebug (const Array& params, bool fHelp)
         return activeKarmanode.GetStatus();
 }
 
-Value startkarmanode (const Array& params, bool fHelp)
+UniValue startkarmanode (const UniValue& params, bool fHelp)
 {
     std::string strCommand;
     if (params.size() >= 1) {
@@ -467,15 +431,13 @@ Value startkarmanode (const Array& params, bool fHelp)
             "  ]\n"
             "}\n"
             "\nExamples:\n" +
-            HelpExampleCli("karmanodestart", "\"alias\" \"my_mn\"") + HelpExampleRpc("karmanodestart", "\"alias\" \"my_mn\""));
+            HelpExampleCli("startkarmanode", "\"alias\" \"0\" \"my_mn\"") + HelpExampleRpc("startkarmanode", "\"alias\" \"0\" \"my_mn\""));
 
     bool fLock = (params[1].get_str() == "true" ? true : false);
 
+    EnsureWalletIsUnlocked();
     if (strCommand == "local") {
         if (!fMasterNode) throw runtime_error("you must set karmanode=1 in the configuration\n");
-
-        if (pwalletMain->IsLocked())
-            throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
 
         if (activeKarmanode.status != ACTIVE_KARMANODE_STARTED) {
             activeKarmanode.status = ACTIVE_KARMANODE_INITIAL; // TODO: consider better way
@@ -488,9 +450,6 @@ Value startkarmanode (const Array& params, bool fHelp)
     }
 
     if (strCommand == "all" || strCommand == "many" || strCommand == "missing" || strCommand == "disabled") {
-        if (pwalletMain->IsLocked())
-            throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
-
         if ((strCommand == "missing" || strCommand == "disabled") &&
             (karmanodeSync.RequestedKarmanodeAssets <= KARMANODE_SYNC_LIST ||
                 karmanodeSync.RequestedKarmanodeAssets == KARMANODE_SYNC_FAILED)) {
@@ -503,7 +462,7 @@ Value startkarmanode (const Array& params, bool fHelp)
         int successful = 0;
         int failed = 0;
 
-        Array resultsObj;
+        UniValue resultsObj(UniValue::VARR);
 
         BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
             std::string errorMessage;
@@ -512,15 +471,16 @@ Value startkarmanode (const Array& params, bool fHelp)
                 continue;
             CTxIn vin = CTxIn(uint256(mne.getTxHash()), uint32_t(nIndex));
             CKarmanode* pmn = mnodeman.Find(vin);
+            CKarmanodeBroadcast mnb;
 
             if (pmn != NULL) {
                 if (strCommand == "missing") continue;
                 if (strCommand == "disabled" && pmn->IsEnabled()) continue;
             }
 
-            bool result = activeKarmanode.Register(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage);
+            bool result = activeKarmanode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb);
 
-            Object statusObj;
+            UniValue statusObj(UniValue::VOBJ);
             statusObj.push_back(Pair("alias", mne.getAlias()));
             statusObj.push_back(Pair("result", result ? "success" : "failed"));
 
@@ -537,7 +497,7 @@ Value startkarmanode (const Array& params, bool fHelp)
         if (fLock)
             pwalletMain->Lock();
 
-        Object returnObj;
+        UniValue returnObj(UniValue::VOBJ);
         returnObj.push_back(Pair("overall", strprintf("Successfully started %d karmanodes, failed to start %d, total %d", successful, failed, successful + failed)));
         returnObj.push_back(Pair("detail", resultsObj));
 
@@ -547,32 +507,31 @@ Value startkarmanode (const Array& params, bool fHelp)
     if (strCommand == "alias") {
         std::string alias = params[2].get_str();
 
-        if (pwalletMain->IsLocked())
-            throw JSONRPCError(RPC_WALLET_UNLOCK_NEEDED, "Error: Please enter the wallet passphrase with walletpassphrase first.");
-
         bool found = false;
         int successful = 0;
         int failed = 0;
 
-        Array resultsObj;
-        Object statusObj;
+        UniValue resultsObj(UniValue::VARR);
+        UniValue statusObj(UniValue::VOBJ);
         statusObj.push_back(Pair("alias", alias));
 
         BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
             if (mne.getAlias() == alias) {
                 found = true;
                 std::string errorMessage;
+                CKarmanodeBroadcast mnb;
 
-                bool result = activeKarmanode.Register(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage);
+                bool result = activeKarmanode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb);
 
                 statusObj.push_back(Pair("result", result ? "successful" : "failed"));
 
                 if (result) {
                     successful++;
-                    statusObj.push_back(Pair("error", ""));
+                    mnodeman.UpdateKarmanodeList(mnb);
+                    mnb.Relay();
                 } else {
                     failed++;
-                    statusObj.push_back(Pair("error", errorMessage));
+                    statusObj.push_back(Pair("errorMessage", errorMessage));
                 }
                 break;
             }
@@ -589,16 +548,16 @@ Value startkarmanode (const Array& params, bool fHelp)
         if (fLock)
             pwalletMain->Lock();
 
-        Object returnObj;
+        UniValue returnObj(UniValue::VOBJ);
         returnObj.push_back(Pair("overall", strprintf("Successfully started %d karmanodes, failed to start %d, total %d", successful, failed, successful + failed)));
         returnObj.push_back(Pair("detail", resultsObj));
 
         return returnObj;
     }
-    return Value::null;
+    return NullUniValue;
 }
 
-Value createkarmanodekey (const Array& params, bool fHelp)
+UniValue createkarmanodekey (const UniValue& params, bool fHelp)
 {
     if (fHelp || (params.size() != 0))
         throw runtime_error(
@@ -616,7 +575,7 @@ Value createkarmanodekey (const Array& params, bool fHelp)
     return CBitcoinSecret(secret).ToString();
 }
 
-Value getkarmanodeoutputs (const Array& params, bool fHelp)
+UniValue getkarmanodeoutputs (const UniValue& params, bool fHelp)
 {
     if (fHelp || (params.size() != 0))
         throw runtime_error(
@@ -638,9 +597,9 @@ Value getkarmanodeoutputs (const Array& params, bool fHelp)
     // Find possible candidates
     vector<COutput> possibleCoins = activeKarmanode.SelectCoinsKarmanode();
 
-    Array ret;
+    UniValue ret(UniValue::VARR);
     BOOST_FOREACH (COutput& out, possibleCoins) {
-        Object obj;
+        UniValue obj(UniValue::VOBJ);
         obj.push_back(Pair("txhash", out.tx->GetHash().ToString()));
         obj.push_back(Pair("outputidx", out.i));
         ret.push_back(obj);
@@ -649,7 +608,7 @@ Value getkarmanodeoutputs (const Array& params, bool fHelp)
     return ret;
 }
 
-Value listkarmanodeconf (const Array& params, bool fHelp)
+UniValue listkarmanodeconf (const UniValue& params, bool fHelp)
 {
     std::string strFilter = "";
 
@@ -682,7 +641,7 @@ Value listkarmanodeconf (const Array& params, bool fHelp)
     std::vector<CKarmanodeConfig::CKarmanodeEntry> mnEntries;
     mnEntries = karmanodeConfig.getEntries();
 
-    Array ret;
+    UniValue ret(UniValue::VARR);
 
     BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
         int nIndex;
@@ -698,7 +657,7 @@ Value listkarmanodeconf (const Array& params, bool fHelp)
             mne.getTxHash().find(strFilter) == string::npos &&
             strStatus.find(strFilter) == string::npos) continue;
 
-        Object mnObj;
+        UniValue mnObj(UniValue::VOBJ);
         mnObj.push_back(Pair("alias", mne.getAlias()));
         mnObj.push_back(Pair("address", mne.getIp()));
         mnObj.push_back(Pair("privateKey", mne.getPrivKey()));
@@ -711,7 +670,7 @@ Value listkarmanodeconf (const Array& params, bool fHelp)
     return ret;
 }
 
-Value getkarmanodestatus (const Array& params, bool fHelp)
+UniValue getkarmanodestatus (const UniValue& params, bool fHelp)
 {
     if (fHelp || (params.size() != 0))
         throw runtime_error(
@@ -723,7 +682,7 @@ Value getkarmanodestatus (const Array& params, bool fHelp)
             "  \"txhash\": \"xxxx\",      (string) Collateral transaction hash\n"
             "  \"outputidx\": n,        (numeric) Collateral transaction output index number\n"
             "  \"netaddr\": \"xxxx\",     (string) Karmanode network address\n"
-            "  \"addr\": \"xxxx\",        (string) ohmc address for karmanode payments\n"
+            "  \"addr\": \"xxxx\",        (string) Ohmcoin address for karmanode payments\n"
             "  \"status\": \"xxxx\",      (string) Karmanode status\n"
             "  \"message\": \"xxxx\"      (string) Karmanode status message\n"
             "}\n"
@@ -736,11 +695,11 @@ Value getkarmanodestatus (const Array& params, bool fHelp)
     CKarmanode* pmn = mnodeman.Find(activeKarmanode.vin);
 
     if (pmn) {
-        Object mnObj;
+        UniValue mnObj(UniValue::VOBJ);
         mnObj.push_back(Pair("txhash", activeKarmanode.vin.prevout.hash.ToString()));
         mnObj.push_back(Pair("outputidx", (uint64_t)activeKarmanode.vin.prevout.n));
         mnObj.push_back(Pair("netaddr", activeKarmanode.service.ToString()));
-        mnObj.push_back(Pair("addr", CBitcoinAddress(pmn->pubKeyCollateralAddress.GetID()).ToString()));
+        mnObj.push_back(Pair("addr", EncodeDestination(CTxDestination(pmn->pubKeyCollateralAddress.GetID()))));
         mnObj.push_back(Pair("status", activeKarmanode.status));
         mnObj.push_back(Pair("message", activeKarmanode.GetStatus()));
         return mnObj;
@@ -749,7 +708,7 @@ Value getkarmanodestatus (const Array& params, bool fHelp)
                         + activeKarmanode.GetStatus());
 }
 
-Value getkarmanodewinners (const Array& params, bool fHelp)
+UniValue getkarmanodewinners (const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() > 3)
         throw runtime_error(
@@ -765,7 +724,7 @@ Value getkarmanodewinners (const Array& params, bool fHelp)
             "  {\n"
             "    \"nHeight\": n,           (numeric) block height\n"
             "    \"winner\": {\n"
-            "      \"address\": \"xxxx\",    (string) ohmc MN Address\n"
+            "      \"address\": \"xxxx\",    (string) Ohmcoin MN address\n"
             "      \"nVotes\": n,          (numeric) Number of votes for winner\n"
             "    }\n"
             "  }\n"
@@ -778,7 +737,7 @@ Value getkarmanodewinners (const Array& params, bool fHelp)
             "    \"nHeight\": n,           (numeric) block height\n"
             "    \"winner\": [\n"
             "      {\n"
-            "        \"address\": \"xxxx\",  (string) ohmc MN Address\n"
+            "        \"address\": \"xxxx\",  (string) Ohmcoin MN address\n"
             "        \"nVotes\": n,        (numeric) Number of votes for winner\n"
             "      }\n"
             "      ,...\n"
@@ -806,21 +765,21 @@ Value getkarmanodewinners (const Array& params, bool fHelp)
     if (params.size() == 2)
         strFilter = params[1].get_str();
 
-    Array ret;
+    UniValue ret(UniValue::VARR);
 
     for (int i = nHeight - nLast; i < nHeight + 20; i++) {
-        Object obj;
+        UniValue obj(UniValue::VOBJ);
         obj.push_back(Pair("nHeight", i));
 
         std::string strPayment = GetRequiredPaymentsString(i);
         if (strFilter != "" && strPayment.find(strFilter) == std::string::npos) continue;
 
         if (strPayment.find(',') != std::string::npos) {
-            Array winner;
+            UniValue winner(UniValue::VARR);
             boost::char_separator<char> sep(",");
             boost::tokenizer< boost::char_separator<char> > tokens(strPayment, sep);
             BOOST_FOREACH (const string& t, tokens) {
-                Object addr;
+                UniValue addr(UniValue::VOBJ);
                 std::size_t pos = t.find(":");
                 std::string strAddress = t.substr(0,pos);
                 uint64_t nVotes = atoi(t.substr(pos+1));
@@ -830,7 +789,7 @@ Value getkarmanodewinners (const Array& params, bool fHelp)
             }
             obj.push_back(Pair("winner", winner));
         } else if (strPayment.find("Unknown") == std::string::npos) {
-            Object winner;
+            UniValue winner(UniValue::VOBJ);
             std::size_t pos = strPayment.find(":");
             std::string strAddress = strPayment.substr(0,pos);
             uint64_t nVotes = atoi(strPayment.substr(pos+1));
@@ -838,7 +797,7 @@ Value getkarmanodewinners (const Array& params, bool fHelp)
             winner.push_back(Pair("nVotes", nVotes));
             obj.push_back(Pair("winner", winner));
         } else {
-            Object winner;
+            UniValue winner(UniValue::VOBJ);
             winner.push_back(Pair("address", strPayment));
             winner.push_back(Pair("nVotes", 0));
             obj.push_back(Pair("winner", winner));
@@ -850,7 +809,7 @@ Value getkarmanodewinners (const Array& params, bool fHelp)
     return ret;
 }
 
-Value getkarmanodescores (const Array& params, bool fHelp)
+UniValue getkarmanodescores (const UniValue& params, bool fHelp)
 {
     if (fHelp || params.size() > 1)
         throw runtime_error(
@@ -877,7 +836,7 @@ Value getkarmanodescores (const Array& params, bool fHelp)
             throw runtime_error("Exception on param 2");
         }
     }
-    Object obj;
+    UniValue obj(UniValue::VOBJ);
 
     std::vector<CKarmanode> vKarmanodes = mnodeman.GetFullKarmanodeVector();
     for (int nHeight = chainActive.Tip()->nHeight - nLast; nHeight < chainActive.Tip()->nHeight + 20; nHeight++) {
@@ -896,3 +855,240 @@ Value getkarmanodescores (const Array& params, bool fHelp)
 
     return obj;
 }
+
+
+bool DecodeHexMnb(CKarmanodeBroadcast& mnb, std::string strHexMnb) {
+
+    if (!IsHex(strHexMnb))
+        return false;
+
+    vector<unsigned char> mnbData(ParseHex(strHexMnb));
+    CDataStream ssData(mnbData, SER_NETWORK, PROTOCOL_VERSION);
+    try {
+        ssData >> mnb;
+    }
+    catch (const std::exception&) {
+        return false;
+    }
+
+    return true;
+}
+UniValue createkarmanodebroadcast(const UniValue& params, bool fHelp)
+{
+    string strCommand;
+    if (params.size() >= 1)
+        strCommand = params[0].get_str();
+    if (fHelp || (strCommand != "alias" && strCommand != "all") || (strCommand == "alias" && params.size() < 2))
+        throw runtime_error(
+            "createkarmanodebroadcast \"command\" ( \"alias\")\n"
+            "\nCreates a karmanode broadcast message for one or all karmanodes configured in karmanode.conf\n" +
+            HelpRequiringPassphrase() + "\n"
+
+            "\nArguments:\n"
+            "1. \"command\"      (string, required) \"alias\" for single karmanode, \"all\" for all karmanodes\n"
+            "2. \"alias\"        (string, required if command is \"alias\") Alias of the karmanode\n"
+
+            "\nResult (all):\n"
+            "{\n"
+            "  \"overall\": \"xxx\",        (string) Overall status message indicating number of successes.\n"
+            "  \"detail\": [                (array) JSON array of broadcast objects.\n"
+            "    {\n"
+            "      \"alias\": \"xxx\",      (string) Alias of the karmanode.\n"
+            "      \"success\": true|false, (boolean) Success status.\n"
+            "      \"hex\": \"xxx\"         (string, if success=true) Hex encoded broadcast message.\n"
+            "      \"error_message\": \"xxx\"   (string, if success=false) Error message, if any.\n"
+            "    }\n"
+            "    ,...\n"
+            "  ]\n"
+            "}\n"
+
+            "\nResult (alias):\n"
+            "{\n"
+            "  \"alias\": \"xxx\",      (string) Alias of the karmanode.\n"
+            "  \"success\": true|false, (boolean) Success status.\n"
+            "  \"hex\": \"xxx\"         (string, if success=true) Hex encoded broadcast message.\n"
+            "  \"error_message\": \"xxx\"   (string, if success=false) Error message, if any.\n"
+            "}\n"
+
+            "\nExamples:\n" +
+            HelpExampleCli("createkarmanodebroadcast", "alias mykn1") + HelpExampleRpc("createkarmanodebroadcast", "alias mykn1"));
+
+    EnsureWalletIsUnlocked();
+
+    if (strCommand == "alias")
+    {
+        // wait for reindex and/or import to finish
+        if (fImporting || fReindex)
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Wait for reindex and/or import to finish");
+
+        std::string alias = params[1].get_str();
+        bool found = false;
+
+        UniValue statusObj(UniValue::VOBJ);
+        statusObj.push_back(Pair("alias", alias));
+
+        BOOST_FOREACH(CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+            if(mne.getAlias() == alias) {
+                found = true;
+                std::string errorMessage;
+                CKarmanodeBroadcast mnb;
+
+                bool success = activeKarmanode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb, true);
+
+                statusObj.push_back(Pair("success", success));
+                if(success) {
+                    CDataStream ssMnb(SER_NETWORK, PROTOCOL_VERSION);
+                    ssMnb << mnb;
+                    statusObj.push_back(Pair("hex", HexStr(ssMnb.begin(), ssMnb.end())));
+                } else {
+                    statusObj.push_back(Pair("error_message", errorMessage));
+                }
+                break;
+            }
+        }
+
+        if(!found) {
+            statusObj.push_back(Pair("success", false));
+            statusObj.push_back(Pair("error_message", "Could not find alias in config. Verify with list-conf."));
+        }
+
+        return statusObj;
+
+    }
+
+    if (strCommand == "all")
+    {
+        // wait for reindex and/or import to finish
+        if (fImporting || fReindex)
+            throw JSONRPCError(RPC_INTERNAL_ERROR, "Wait for reindex and/or import to finish");
+
+        std::vector<CKarmanodeConfig::CKarmanodeEntry> mnEntries;
+        mnEntries = karmanodeConfig.getEntries();
+
+        int successful = 0;
+        int failed = 0;
+
+        UniValue resultsObj(UniValue::VARR);
+
+        BOOST_FOREACH(CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+            std::string errorMessage;
+
+            CTxIn vin = CTxIn(uint256S(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));
+            CKarmanodeBroadcast mnb;
+
+            bool success = activeKarmanode.CreateBroadcast(mne.getIp(), mne.getPrivKey(), mne.getTxHash(), mne.getOutputIndex(), errorMessage, mnb, true);
+
+            UniValue statusObj(UniValue::VOBJ);
+            statusObj.push_back(Pair("alias", mne.getAlias()));
+            statusObj.push_back(Pair("success", success));
+
+            if(success) {
+                successful++;
+                CDataStream ssMnb(SER_NETWORK, PROTOCOL_VERSION);
+                ssMnb << mnb;
+                statusObj.push_back(Pair("hex", HexStr(ssMnb.begin(), ssMnb.end())));
+            } else {
+                failed++;
+                statusObj.push_back(Pair("error_message", errorMessage));
+            }
+
+            resultsObj.push_back(statusObj);
+        }
+
+        UniValue returnObj(UniValue::VOBJ);
+        returnObj.push_back(Pair("overall", strprintf("Successfully created broadcast messages for %d karmanodes, failed to create %d, total %d", successful, failed, successful + failed)));
+        returnObj.push_back(Pair("detail", resultsObj));
+
+        return returnObj;
+    }
+    return NullUniValue;
+}
+
+UniValue decodekarmanodebroadcast(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "decodekarmanodebroadcast \"hexstring\"\n"
+            "\nCommand to decode karmanode broadcast messages\n"
+
+            "\nArgument:\n"
+            "1. \"hexstring\"        (string) The hex encoded karmanode broadcast message\n"
+
+            "\nResult:\n"
+            "{\n"
+            "  \"vin\": \"xxxx\"                (string) The unspent output which is holding the karmanode collateral\n"
+            "  \"addr\": \"xxxx\"               (string) IP address of the karmanode\n"
+            "  \"pubkeycollateral\": \"xxxx\"   (string) Collateral address's public key\n"
+            "  \"pubkeykarmanode\": \"xxxx\"   (string) Karmanode's public key\n"
+            "  \"vchsig\": \"xxxx\"             (string) Base64-encoded signature of this message (verifiable via pubkeycollateral)\n"
+            "  \"sigtime\": \"nnn\"             (numeric) Signature timestamp\n"
+            "  \"protocolversion\": \"nnn\"     (numeric) Karmanode's protocol version\n"
+            "  \"nlastdsq\": \"nnn\"            (numeric) The last time the karmanode sent a DSQ message (for mixing) (DEPRECATED)\n"
+            "  \"lastping\" : {                 (object) JSON object with information about the karmanode's last ping\n"
+            "      \"vin\": \"xxxx\"            (string) The unspent output of the karmanode which is signing the message\n"
+            "      \"blockhash\": \"xxxx\"      (string) Current chaintip blockhash minus 12\n"
+            "      \"sigtime\": \"nnn\"         (numeric) Signature time for this ping\n"
+            "      \"vchsig\": \"xxxx\"         (string) Base64-encoded signature of this ping (verifiable via pubkeykarmanode)\n"
+            "}\n"
+
+            "\nExamples:\n" +
+            HelpExampleCli("decodekarmanodebroadcast", "hexstring") + HelpExampleRpc("decodekarmanodebroadcast", "hexstring"));
+
+    CKarmanodeBroadcast mnb;
+
+    if (!DecodeHexMnb(mnb, params[0].get_str()))
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Karmanode broadcast message decode failed");
+
+    if(!mnb.VerifySignature())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Karmanode broadcast signature verification failed");
+
+    UniValue resultObj(UniValue::VOBJ);
+
+    resultObj.push_back(Pair("vin", mnb.vin.prevout.ToString()));
+    resultObj.push_back(Pair("addr", mnb.addr.ToString()));
+    resultObj.push_back(Pair("pubkeycollateral", EncodeDestination(mnb.pubKeyCollateralAddress.GetID())));
+    resultObj.push_back(Pair("pubkeykarmanode", EncodeDestination(mnb.pubKeyKarmanode.GetID())));
+    resultObj.push_back(Pair("vchsig", EncodeBase64(&mnb.sig[0], mnb.sig.size())));
+    resultObj.push_back(Pair("sigtime", mnb.sigTime));
+    resultObj.push_back(Pair("protocolversion", mnb.protocolVersion));
+    resultObj.push_back(Pair("nlastdsq", mnb.nLastDsq));
+
+    UniValue lastPingObj(UniValue::VOBJ);
+    lastPingObj.push_back(Pair("vin", mnb.lastPing.vin.prevout.ToString()));
+    lastPingObj.push_back(Pair("blockhash", mnb.lastPing.blockHash.ToString()));
+    lastPingObj.push_back(Pair("sigtime", mnb.lastPing.sigTime));
+    lastPingObj.push_back(Pair("vchsig", EncodeBase64(&mnb.lastPing.vchSig[0], mnb.lastPing.vchSig.size())));
+
+    resultObj.push_back(Pair("lastping", lastPingObj));
+
+    return resultObj;
+}
+
+UniValue relaykarmanodebroadcast(const UniValue& params, bool fHelp)
+{
+    if (fHelp || params.size() != 1)
+        throw runtime_error(
+            "relaykarmanodebroadcast \"hexstring\"\n"
+            "\nCommand to relay karmanode broadcast messages\n"
+
+            "\nArguments:\n"
+            "1. \"hexstring\"        (string) The hex encoded karmanode broadcast message\n"
+
+            "\nExamples:\n" +
+            HelpExampleCli("relaykarmanodebroadcast", "hexstring") + HelpExampleRpc("relaykarmanodebroadcast", "hexstring"));
+
+
+    CKarmanodeBroadcast mnb;
+
+    if (!DecodeHexMnb(mnb, params[0].get_str()))
+        throw JSONRPCError(RPC_DESERIALIZATION_ERROR, "Karmanode broadcast message decode failed");
+
+    if(!mnb.VerifySignature())
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Karmanode broadcast signature verification failed");
+
+    mnodeman.UpdateKarmanodeList(mnb);
+    mnb.Relay();
+
+    return strprintf("Karmanode broadcast sent (service %s, vin %s)", mnb.addr.ToString(), mnb.vin.ToString());
+}
+

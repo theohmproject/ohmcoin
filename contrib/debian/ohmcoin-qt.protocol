@@ -1,0 +1,11 @@
+[Protocol]
+exec=ohmcoin-qt '%u'
+protocol=ohmcoin
+input=none
+output=none
+helper=true
+listing=
+reading=false
+writing=false
+makedir=false
+deleting=false

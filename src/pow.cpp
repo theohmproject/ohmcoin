@@ -1,5 +1,8 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2014 The Bitcoin developers
+// Copyright (c) 2012-2013 The PPCoin developers
+// Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2019 The Ohmcoin Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -17,7 +20,7 @@
 
 unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHeader* pblock)
 {
-    /* current difficulty formula, ohmc - DarkGravity v3, written by Evan Duffield - evan@dashpay.io */
+    /* current difficulty formula, ohmcoin - DarkGravity v3, written by Evan Duffield - evan@dashpay.io */
     const CBlockIndex* BlockLastSolved = pindexLast;
     const CBlockIndex* BlockReading = pindexLast;
     int64_t nActualTimespan = 0;
@@ -32,10 +35,24 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         return Params().ProofOfWorkLimit().GetCompact();
     }
 
+    // Target block time spacing
+    int64_t nTargetSpacing = Params().TargetSpacingLegacy();
+
     if (pindexLast->nHeight > Params().LAST_POW_BLOCK()) {
         uint256 bnTargetLimit = (~uint256(0) >> 24);
-        int64_t nTargetSpacing = 30;
-        int64_t nTargetTimespan = 60 * 40;
+        // Block time targeting
+        int64_t nTargetTimespan = Params().TargetTimespanLegacy();
+        int64_t nInterval = Params().IntervalLegacy();
+
+        // New time activation check
+        bool fVerAct = CBlockIndex::IsSuperMajority(6, pindexLast, Params().RejectBlockOutdatedMajority());
+        bool fUpgradeActiveV3 = Params().GetConsensus().NetworkUpgradeActive(pindexLast->nHeight, Consensus::UPGRADE_V3_0_BLOCKTIME);
+        // Actiavte on 95% upgrade threshold, or forced by upgrade block height.
+        if (fVerAct || fUpgradeActiveV3) {
+          nTargetSpacing = Params().TargetSpacing();
+          nTargetTimespan = Params().TargetTimespan();
+          nInterval = Params().Interval();
+        }
 
         int64_t nActualSpacing = 0;
         if (pindexLast->nHeight != 0)
@@ -49,7 +66,6 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
         uint256 bnNew;
         bnNew.SetCompact(pindexLast->nBits);
 
-        int64_t nInterval = nTargetTimespan / nTargetSpacing;
         bnNew *= ((nInterval - 1) * nTargetSpacing + nActualSpacing + nActualSpacing);
         bnNew /= ((nInterval + 1) * nTargetSpacing);
 
@@ -89,7 +105,7 @@ unsigned int GetNextWorkRequired(const CBlockIndex* pindexLast, const CBlockHead
 
     uint256 bnNew(PastDifficultyAverage);
 
-    int64_t _nTargetTimespan = CountBlocks * Params().TargetSpacing();
+    int64_t _nTargetTimespan = CountBlocks * nTargetSpacing;
 
     if (nActualTimespan < _nTargetTimespan / 3)
         nActualTimespan = _nTargetTimespan / 3;
@@ -123,8 +139,8 @@ bool CheckProofOfWork(uint256 hash, unsigned int nBits)
         return error("CheckProofOfWork() : nBits below minimum work");
 
     // Check proof of work matches claimed amount
-    ///////////if (hash > bnTarget)
-        //////////////return error("CheckProofOfWork() : hash doesn't match nBits");
+    // if (hash > bnTarget)
+    //     return error("CheckProofOfWork() : hash doesn't match nBits");
 
     return true;
 }

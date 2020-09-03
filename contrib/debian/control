@@ -1,8 +1,8 @@
 Source: ohmcoin
 Section: utils
 Priority: optional
-Maintainer: Jonas Smedegaard <dr@jones.dk> ***TODO***
-Uploaders: Micah Anderson <micah@debian.org> ***TODO***
+Maintainer: Julian Meyer <julian@ohmcoin.io>
+Uploaders: Julian Meyer <julian@ohmcoin.io>
 Build-Depends: debhelper,
  devscripts,
  automake,
@@ -17,20 +17,20 @@ Build-Depends: debhelper,
  libboost-program-options-dev (>> 1.35) | libboost-program-options1.35-dev,
  libboost-thread-dev (>> 1.35) | libboost-thread1.35-dev,
  libboost-test-dev (>> 1.35) | libboost-test1.35-dev,
- qt5-qmake,
- libqt5-dev,
+ qt4-qmake,
+ libqt4-dev,
  libqrencode-dev,
  libprotobuf-dev, protobuf-compiler
 Standards-Version: 3.9.2
 Homepage: http://www.ohmcoin.org
-Vcs-Git: git://github.com/theohmproject/ohmcoin.git
-Vcs-Browser: http://github.com/theohmproject/ohmcoin
+Vcs-Git: git://github.com/theohmproject/Ohmcoin.git
+Vcs-Browser: http://github.com/theohmproject/Ohmcoin
 
-Package: ohmcd
+Package: ohmcoind
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - daemon
- Pivx is a free open source peer-to-peer electronic cash system that
+ Ohmcoin is a free open source peer-to-peer electronic cash system that
  is completely decentralized, without the need for a central server or
  trusted parties.  Users hold the crypto keys to their own money and
  transact directly with each other, with the help of a P2P network to
@@ -39,14 +39,14 @@ Description: peer-to-peer network based digital currency - daemon
  Full transaction history is stored locally at each client.  This
  requires 1+ GB of space, slowly growing.
  .
- This package provides the daemon, pivxd, and the CLI tool
- pivx-cli to interact with the daemon.
+ This package provides the daemon, ohmcoind, and the CLI tool
+ ohmcoin-cli to interact with the daemon.
 
-Package: OHMC-Qt
+Package: ohmcoin-qt
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Description: peer-to-peer network based digital currency - Qt GUI
- Pivx is a free open source peer-to-peer electronic cash system that
+ Ohmcoin is a free open source peer-to-peer electronic cash system that
  is completely decentralized, without the need for a central server or
  trusted parties.  Users hold the crypto keys to their own money and
  transact directly with each other, with the help of a P2P network to
@@ -55,4 +55,4 @@ Description: peer-to-peer network based digital currency - Qt GUI
  Full transaction history is stored locally at each client.  This
  requires 1+ GB of space, slowly growing.
  .
- This package provides OHMC-Qt, a GUI for Pivx based on Qt.
+ This package provides Ohmcoin-Qt, a GUI for Ohmcoin based on Qt.

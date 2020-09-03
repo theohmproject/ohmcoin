@@ -1,6 +1,5 @@
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -17,6 +16,8 @@
 
 #define KARMANODES_DUMP_SECONDS (15 * 60)
 #define KARMANODES_DSEG_SECONDS (3 * 60 * 60)
+
+#define MINIMUM_PROTOCOL_VERSION_OLD_PING 70003
 
 using namespace std;
 
@@ -73,7 +74,7 @@ public:
     // Keep track of all pings I've seen
     map<uint256, CKarmanodePing> mapSeenKarmanodePing;
 
-    // keep track of dsq count to prevent karmanodes from gaming privatesend queue
+    // keep track of dsq count to prevent karmanodes from gaming obfuscation queue
     int64_t nDsqCount;
 
     ADD_SERIALIZE_METHODS;
@@ -111,6 +112,8 @@ public:
     void Clear();
 
     int CountEnabled(int protocolVersion = -1);
+
+    void CountNetworks(int protocolVersion, int& ipv4, int& ipv6, int& onion);
 
     void DsegUpdate(CNode* pnode);
 
@@ -151,6 +154,8 @@ public:
     std::string ToString() const;
 
     void Remove(CTxIn vin);
+
+    int GetEstimatedKarmanodes(int nBlock);
 
     /// Update karmanode list and maps using provided CKarmanodeBroadcast
     void UpdateKarmanodeList(CKarmanodeBroadcast mnb);

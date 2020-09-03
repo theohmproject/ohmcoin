@@ -1,18 +1,19 @@
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "karmanodeman.h"
 #include "activekarmanode.h"
 #include "addrman.h"
+#include "consensus/validation.h"
 #include "karmanode.h"
-#include "privatesend.h"
+#include "obfuscation.h"
 #include "spork.h"
 #include "util.h"
 #include <boost/filesystem.hpp>
-#include <boost/lexical_cast.hpp>
+
+#define MN_WINNER_MINIMUM_AGE 8000    // Age in seconds. This should be > KARMANODE_REMOVAL_SECONDS to avoid misconfigured new nodes in the list.
 
 /** Karmanode manager */
 CKarmanodeMan mnodeman;
@@ -78,8 +79,8 @@ bool CKarmanodeDB::Write(const CKarmanodeMan& mnodemanToSave)
     //    FileCommit(fileout);
     fileout.fclose();
 
-    LogPrintf("Written info to mncache.dat  %dms\n", GetTimeMillis() - nStart);
-    LogPrintf("  %s\n", mnodemanToSave.ToString());
+    LogPrint("karmanode","Written info to mncache.dat  %dms\n", GetTimeMillis() - nStart);
+    LogPrint("karmanode","  %s\n", mnodemanToSave.ToString());
 
     return true;
 }
@@ -153,13 +154,13 @@ CKarmanodeDB::ReadResult CKarmanodeDB::Read(CKarmanodeMan& mnodemanToLoad, bool 
         return IncorrectFormat;
     }
 
-    LogPrintf("Loaded info from mncache.dat  %dms\n", GetTimeMillis() - nStart);
-    LogPrintf("  %s\n", mnodemanToLoad.ToString());
+    LogPrint("karmanode","Loaded info from mncache.dat  %dms\n", GetTimeMillis() - nStart);
+    LogPrint("karmanode","  %s\n", mnodemanToLoad.ToString());
     if (!fDryRun) {
-        LogPrintf("Karmanode manager - cleaning....\n");
+        LogPrint("karmanode","Karmanode manager - cleaning....\n");
         mnodemanToLoad.CheckAndRemove(true);
-        LogPrintf("Karmanode manager - result:\n");
-        LogPrintf("  %s\n", mnodemanToLoad.ToString());
+        LogPrint("karmanode","Karmanode manager - result:\n");
+        LogPrint("karmanode","  %s\n", mnodemanToLoad.ToString());
     }
 
     return Ok;
@@ -172,24 +173,24 @@ void DumpKarmanodes()
     CKarmanodeDB mndb;
     CKarmanodeMan tempMnodeman;
 
-    LogPrintf("Verifying mncache.dat format...\n");
+    LogPrint("karmanode","Verifying mncache.dat format...\n");
     CKarmanodeDB::ReadResult readResult = mndb.Read(tempMnodeman, true);
     // there was an error and it was not an error on file opening => do not proceed
     if (readResult == CKarmanodeDB::FileError)
-        LogPrintf("Missing karmanode cache file - mncache.dat, will try to recreate\n");
+        LogPrint("karmanode","Missing karmanode cache file - mncache.dat, will try to recreate\n");
     else if (readResult != CKarmanodeDB::Ok) {
-        LogPrintf("Error reading mncache.dat: ");
+        LogPrint("karmanode","Error reading mncache.dat: ");
         if (readResult == CKarmanodeDB::IncorrectFormat)
-            LogPrintf("magic is ok but data has invalid format, will try to recreate\n");
+            LogPrint("karmanode","magic is ok but data has invalid format, will try to recreate\n");
         else {
-            LogPrintf("file format is unknown or invalid, please fix it manually\n");
+            LogPrint("karmanode","file format is unknown or invalid, please fix it manually\n");
             return;
         }
     }
-    LogPrintf("Writting info to mncache.dat...\n");
+    LogPrint("karmanode","Writting info to mncache.dat...\n");
     mndb.Write(mnodeman);
 
-    LogPrintf("Karmanode dump finished  %dms\n", GetTimeMillis() - nStart);
+    LogPrint("karmanode","Karmanode dump finished  %dms\n", GetTimeMillis() - nStart);
 }
 
 CKarmanodeMan::CKarmanodeMan()
@@ -225,7 +226,7 @@ void CKarmanodeMan::AskForMN(CNode* pnode, CTxIn& vin)
     // ask for the mnb info once from the node that sent mnp
 
     LogPrint("karmanode", "CKarmanodeMan::AskForMN - Asking node for missing entry, vin: %s\n", vin.prevout.hash.ToString());
-    pnode->PushMessage("dseg", vin);
+    pnode->PushMessage(NetMsgType::DSEG, vin);
     int64_t askAgain = GetTime() + KARMANODE_MIN_MNP_SECONDS;
     mWeAskedForKarmanodeListEntry[vin.prevout] = askAgain;
 }
@@ -351,7 +352,7 @@ int CKarmanodeMan::stable_size ()
 {
     int nStable_size = 0;
     int nMinProtocol = ActiveProtocol();
-    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_18_MN_WINNER_MINIMUM_AGE);
+    int64_t nKarmanode_Min_Age = MN_WINNER_MINIMUM_AGE;
     int64_t nKarmanode_Age = 0;
 
     BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
@@ -359,7 +360,7 @@ int CKarmanodeMan::stable_size ()
             continue; // Skip obsolete versions
         }
         if (IsSporkActive (SPORK_8_KARMANODE_PAYMENT_ENFORCEMENT)) {
-            nKarmanode_Age = mn.lastPing.sigTime - mn.sigTime;
+            nKarmanode_Age = GetAdjustedTime() - mn.sigTime;
             if ((nKarmanode_Age) < nKarmanode_Min_Age) {
                 continue; // Skip karmanodes younger than (default) 8000 sec (MUST be > KARMANODE_REMOVAL_SECONDS)
             }
@@ -388,6 +389,31 @@ int CKarmanodeMan::CountEnabled(int protocolVersion)
     return i;
 }
 
+void CKarmanodeMan::CountNetworks(int protocolVersion, int& ipv4, int& ipv6, int& onion)
+{
+    protocolVersion = protocolVersion == -1 ? karmanodePayments.GetMinKarmanodePaymentsProto() : protocolVersion;
+
+    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+        mn.Check();
+        std::string strHost;
+        int port;
+        SplitHostPort(mn.addr.ToString(), port, strHost);
+        CNetAddr node = CNetAddr(strHost);
+        int nNetwork = node.GetNetwork();
+        switch (nNetwork) {
+            case 1 :
+                ipv4++;
+                break;
+            case 2 :
+                ipv6++;
+                break;
+            case 3 :
+                onion++;
+                break;
+        }
+    }
+}
+
 void CKarmanodeMan::DsegUpdate(CNode* pnode)
 {
     LOCK(cs);
@@ -404,7 +430,7 @@ void CKarmanodeMan::DsegUpdate(CNode* pnode)
         }
     }
 
-    pnode->PushMessage("dseg", CTxIn());
+    pnode->PushMessage(NetMsgType::DSEG, CTxIn());
     int64_t askAgain = GetTime() + KARMANODES_DSEG_SECONDS;
     mWeAskedForKarmanodeList[pnode->addr] = askAgain;
 }
@@ -568,7 +594,7 @@ CKarmanode* CKarmanodeMan::GetCurrentMasterNode(int mod, int64_t nBlockHeight, i
 int CKarmanodeMan::GetKarmanodeRank(const CTxIn& vin, int64_t nBlockHeight, int minProtocol, bool fOnlyActive)
 {
     std::vector<pair<int64_t, CTxIn> > vecKarmanodeScores;
-    int64_t nKarmanode_Min_Age = GetSporkValue(SPORK_18_MN_WINNER_MINIMUM_AGE);
+    int64_t nKarmanode_Min_Age = MN_WINNER_MINIMUM_AGE;
     int64_t nKarmanode_Age = 0;
 
     //make sure we know about this block
@@ -578,14 +604,14 @@ int CKarmanodeMan::GetKarmanodeRank(const CTxIn& vin, int64_t nBlockHeight, int 
     // scan for winner
     BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
         if (mn.protocolVersion < minProtocol) {
-            LogPrintf("Skipping Karmanode with obsolete version %d\n", mn.protocolVersion);
+            LogPrint("karmanode","Skipping Karmanode with obsolete version %d\n", mn.protocolVersion);
             continue;                                                       // Skip obsolete versions
         }
 
         if (IsSporkActive(SPORK_8_KARMANODE_PAYMENT_ENFORCEMENT)) {
-            nKarmanode_Age = mn.lastPing.sigTime - mn.sigTime;
+            nKarmanode_Age = GetAdjustedTime() - mn.sigTime;
             if ((nKarmanode_Age) < nKarmanode_Min_Age) {
-                LogPrintf("Skipping just activated Karmanode. Age: %ld\n", nKarmanode_Age);
+                if (fDebug) LogPrint("karmanode","Skipping just activated Karmanode. Age: %ld\n", nKarmanode_Age);
                 continue;                                                   // Skip karmanodes younger than (default) 1 hour
             }
         }
@@ -689,7 +715,7 @@ void CKarmanodeMan::ProcessKarmanodeConnections()
     BOOST_FOREACH (CNode* pnode, vNodes) {
         if (pnode->fObfuScationMaster) {
             if (obfuScationPool.pSubmittedToKarmanode != NULL && pnode->addr == obfuScationPool.pSubmittedToKarmanode->addr) continue;
-            LogPrintf("Closing Karmanode connection peer=%i \n", pnode->GetId());
+            LogPrint("karmanode","Closing Karmanode connection peer=%i \n", pnode->GetId());
             pnode->fObfuScationMaster = false;
             pnode->Release();
         }
@@ -698,12 +724,12 @@ void CKarmanodeMan::ProcessKarmanodeConnections()
 
 void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataStream& vRecv)
 {
-    if (fLiteMode) return; //disable all PrivateSend/Karmanode related functionality
+    if (fLiteMode) return; //disable all Obfuscation/Karmanode related functionality
     if (!karmanodeSync.IsBlockchainSynced()) return;
 
     LOCK(cs_process_message);
 
-    if (strCommand == "mnb") { //Karmanode Broadcast
+    if (strCommand == NetMsgType::MNB) { //Karmanode Broadcast
         CKarmanodeBroadcast mnb;
         vRecv >> mnb;
 
@@ -725,7 +751,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         // make sure the vout that was signed is related to the transaction that spawned the Karmanode
         //  - this is expensive, so it's only done once per Karmanode
         if (!obfuScationSigner.IsVinAssociatedWithPubkey(mnb.vin, mnb.pubKeyCollateralAddress)) {
-            LogPrintf("mnb - Got mismatched pubkey and vin\n");
+            LogPrintf("CKarmanodeMan::ProcessMessage() : mnb - Got mismatched pubkey and vin\n");
             Misbehaving(pfrom->GetId(), 33);
             return;
         }
@@ -737,14 +763,14 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
             addrman.Add(CAddress(mnb.addr), pfrom->addr, 2 * 60 * 60);
             karmanodeSync.AddedKarmanodeList(mnb.GetHash());
         } else {
-            LogPrintf("mnb - Rejected Karmanode entry %s\n", mnb.vin.prevout.hash.ToString());
+            LogPrint("karmanode","mnb - Rejected Karmanode entry %s\n", mnb.vin.prevout.hash.ToString());
 
             if (nDoS > 0)
                 Misbehaving(pfrom->GetId(), nDoS);
         }
     }
 
-    else if (strCommand == "mnp") { //Karmanode Ping
+    else if (strCommand == NetMsgType::MNP) { //Karmanode Ping
         CKarmanodePing mnp;
         vRecv >> mnp;
 
@@ -770,7 +796,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         // we might have to ask for a karmanode entry once
         AskForMN(pfrom, mnp.vin);
 
-    } else if (strCommand == "dseg") { //Get Karmanode list or specific entry
+    } else if (strCommand == NetMsgType::DSEG) { //Get Karmanode list or specific entry
 
         CTxIn vin;
         vRecv >> vin;
@@ -784,8 +810,8 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
                 if (i != mAskedUsForKarmanodeList.end()) {
                     int64_t t = (*i).second;
                     if (GetTime() < t) {
+                        LogPrintf("CKarmanodeMan::ProcessMessage() : dseg - peer already asked me for the list\n");
                         Misbehaving(pfrom->GetId(), 34);
-                        LogPrintf("dseg - peer already asked me for the list\n");
                         return;
                     }
                 }
@@ -819,7 +845,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         }
 
         if (vin == CTxIn()) {
-            pfrom->PushMessage("ssc", KARMANODE_SYNC_LIST, nInvCount);
+            pfrom->PushMessage(NetMsgType::SSC, KARMANODE_SYNC_LIST, nInvCount);
             LogPrint("karmanode", "dseg - Sent %d Karmanode entries to peer %i\n", nInvCount, pfrom->GetId());
         }
     }
@@ -829,7 +855,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
      */
 
     // Light version for OLD MASSTERNODES - fake pings, no self-activation
-    else if (strCommand == "dsee") { //ObfuScation Election Entry
+    else if (strCommand == NetMsgType::DSEE) { //ObfuScation Election Entry
 
         if (IsSporkActive(SPORK_10_KARMANODE_PAY_UPDATED_NODES)) return;
 
@@ -851,7 +877,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
 
         // make sure signature isn't in the future (past is OK)
         if (sigTime > GetAdjustedTime() + 60 * 60) {
-            LogPrintf("dsee - Signature rejected, too far into the future %s\n", vin.prevout.hash.ToString());
+            LogPrintf("CKarmanodeMan::ProcessMessage() : dsee - Signature rejected, too far into the future %s\n", vin.prevout.hash.ToString());
             Misbehaving(pfrom->GetId(), 1);
             return;
         }
@@ -859,10 +885,10 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         std::string vchPubKey(pubkey.begin(), pubkey.end());
         std::string vchPubKey2(pubkey2.begin(), pubkey2.end());
 
-        strMessage = addr.ToString() + boost::lexical_cast<std::string>(sigTime) + vchPubKey + vchPubKey2 + boost::lexical_cast<std::string>(protocolVersion) + donationAddress.ToString() + boost::lexical_cast<std::string>(donationPercentage);
+        strMessage = addr.ToString() + std::to_string(sigTime) + vchPubKey + vchPubKey2 + std::to_string(protocolVersion) + donationAddress.ToString() + std::to_string(donationPercentage);
 
         if (protocolVersion < karmanodePayments.GetMinKarmanodePaymentsProto()) {
-            LogPrintf("dsee - ignoring outdated Karmanode %s protocol version %d < %d\n", vin.prevout.hash.ToString(), protocolVersion, karmanodePayments.GetMinKarmanodePaymentsProto());
+            LogPrintf("CKarmanodeMan::ProcessMessage() : dsee - ignoring outdated Karmanode %s protocol version %d < %d\n", vin.prevout.hash.ToString(), protocolVersion, karmanodePayments.GetMinKarmanodePaymentsProto());
             Misbehaving(pfrom->GetId(), 1);
             return;
         }
@@ -871,7 +897,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         pubkeyScript = GetScriptForDestination(pubkey.GetID());
 
         if (pubkeyScript.size() != 25) {
-            LogPrintf("dsee - pubkey the wrong size\n");
+            LogPrintf("CKarmanodeMan::ProcessMessage() : dsee - pubkey the wrong size\n");
             Misbehaving(pfrom->GetId(), 100);
             return;
         }
@@ -880,20 +906,20 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         pubkeyScript2 = GetScriptForDestination(pubkey2.GetID());
 
         if (pubkeyScript2.size() != 25) {
-            LogPrintf("dsee - pubkey2 the wrong size\n");
+            LogPrintf("CKarmanodeMan::ProcessMessage() : dsee - pubkey2 the wrong size\n");
             Misbehaving(pfrom->GetId(), 100);
             return;
         }
 
         if (!vin.scriptSig.empty()) {
-            LogPrintf("dsee - Ignore Not Empty ScriptSig %s\n", vin.prevout.hash.ToString());
+            LogPrintf("CKarmanodeMan::ProcessMessage() : dsee - Ignore Not Empty ScriptSig %s\n", vin.prevout.hash.ToString());
             Misbehaving(pfrom->GetId(), 100);
             return;
         }
 
         std::string errorMessage = "";
         if (!obfuScationSigner.VerifyMessage(pubkey, vchSig, strMessage, errorMessage)) {
-            LogPrintf("dsee - Got bad Karmanode address signature\n");
+            LogPrintf("CKarmanodeMan::ProcessMessage() : dsee - Got bad Karmanode address signature\n");
             Misbehaving(pfrom->GetId(), 100);
             return;
         }
@@ -911,7 +937,9 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
             // mn.pubkey = pubkey, IsVinAssociatedWithPubkey is validated once below,
             //   after that they just need to match
             if (count == -1 && pmn->pubKeyCollateralAddress == pubkey && (GetAdjustedTime() - pmn->nLastDsee > KARMANODE_MIN_MNB_SECONDS)) {
-                if (pmn->protocolVersion > GETHEADERS_VERSION && sigTime - pmn->lastPing.sigTime < KARMANODE_MIN_MNB_SECONDS) return;
+                if (pmn->protocolVersion > GETHEADERS_VERSION && sigTime - pmn->lastPing.sigTime < KARMANODE_MIN_MNB_SECONDS) {
+                return;
+                }
                 if (pmn->nLastDsee < sigTime) { //take the newest entry
                     LogPrint("karmanode", "dsee - Got updated entry for %s\n", vin.prevout.hash.ToString());
                     if (pmn->protocolVersion < GETHEADERS_VERSION) {
@@ -930,7 +958,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
                         if (!lockNodes) return;
                         BOOST_FOREACH (CNode* pnode, vNodes)
                             if (pnode->nVersion >= karmanodePayments.GetMinKarmanodePaymentsProto())
-                                pnode->PushMessage("dsee", vin, addr, vchSig, sigTime, pubkey, pubkey2, count, current, lastUpdated, protocolVersion, donationAddress, donationPercentage);
+                                pnode->PushMessage(NetMsgType::DSEE, vin, addr, vchSig, sigTime, pubkey, pubkey2, count, current, lastUpdated, protocolVersion, donationAddress, donationPercentage);
                     }
                 }
             }
@@ -947,7 +975,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         // make sure the vout that was signed is related to the transaction that spawned the Karmanode
         //  - this is expensive, so it's only done once per Karmanode
         if (!obfuScationSigner.IsVinAssociatedWithPubkey(vin, pubkey)) {
-            LogPrintf("dsee - Got mismatched pubkey and vin\n");
+            LogPrintf("CKarmanodeMan::ProcessMessage() : dsee - Got mismatched pubkey and vin\n");
             Misbehaving(pfrom->GetId(), 100);
             return;
         }
@@ -960,7 +988,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
 
         CValidationState state;
         CMutableTransaction tx = CMutableTransaction();
-        CTxOut vout = CTxOut(9999.99 * COIN, obfuScationPool.collateralPubKey);
+        CTxOut vout = CTxOut((MASTER_NODE_AMOUNT-0.01) * COIN, obfuScationPool.collateralPubKey);
         tx.vin.push_back(vin);
         tx.vout.push_back(vout);
 
@@ -973,22 +1001,22 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
 
         if (fAcceptable) {
             if (GetInputAge(vin) < KARMANODE_MIN_CONFIRMATIONS) {
-                LogPrintf("dsee - Input must have least %d confirmations\n", KARMANODE_MIN_CONFIRMATIONS);
+                LogPrintf("CKarmanodeMan::ProcessMessage() : dsee - Input must have least %d confirmations\n", KARMANODE_MIN_CONFIRMATIONS);
                 Misbehaving(pfrom->GetId(), 20);
                 return;
             }
 
             // verify that sig time is legit in past
-            // should be at least not earlier than block when 1000 OHMC tx got KARMANODE_MIN_CONFIRMATIONS
+            // should be at least not earlier than block when 3000 OHMC tx got KARMANODE_MIN_CONFIRMATIONS
             uint256 hashBlock = 0;
             CTransaction tx2;
             GetTransaction(vin.prevout.hash, tx2, hashBlock, true);
             BlockMap::iterator mi = mapBlockIndex.find(hashBlock);
             if (mi != mapBlockIndex.end() && (*mi).second) {
-                CBlockIndex* pMNIndex = (*mi).second;                                                        // block for 10000 OHMC tx -> 1 confirmation
+                CBlockIndex* pMNIndex = (*mi).second;                                                        // block for 3000 OHMC tx -> 1 confirmation
                 CBlockIndex* pConfIndex = chainActive[pMNIndex->nHeight + KARMANODE_MIN_CONFIRMATIONS - 1]; // block where tx got KARMANODE_MIN_CONFIRMATIONS
                 if (pConfIndex->GetBlockTime() > sigTime) {
-                    LogPrintf("mnb - Bad sigTime %d for Karmanode %s (%i conf block is at %d)\n",
+                    LogPrint("karmanode","mnb - Bad sigTime %d for Karmanode %s (%i conf block is at %d)\n",
                         sigTime, vin.prevout.hash.ToString(), KARMANODE_MIN_CONFIRMATIONS, pConfIndex->GetBlockTime());
                     return;
                 }
@@ -1019,14 +1047,14 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
                 if (!lockNodes) return;
                 BOOST_FOREACH (CNode* pnode, vNodes)
                     if (pnode->nVersion >= karmanodePayments.GetMinKarmanodePaymentsProto())
-                        pnode->PushMessage("dsee", vin, addr, vchSig, sigTime, pubkey, pubkey2, count, current, lastUpdated, protocolVersion, donationAddress, donationPercentage);
+                        pnode->PushMessage(NetMsgType::DSEE, vin, addr, vchSig, sigTime, pubkey, pubkey2, count, current, lastUpdated, protocolVersion, donationAddress, donationPercentage);
             }
         } else {
-            LogPrintf("dsee - Rejected Karmanode entry %s\n", vin.prevout.hash.ToString());
+            LogPrint("karmanode","dsee - Rejected Karmanode entry %s\n", vin.prevout.hash.ToString());
 
             int nDoS = 0;
             if (state.IsInvalid(nDoS)) {
-                LogPrintf("dsee - %s from %i %s was not accepted into the memory pool\n", tx.GetHash().ToString().c_str(),
+                LogPrint("karmanode","dsee - %s from %i %s was not accepted into the memory pool\n", tx.GetHash().ToString().c_str(),
                     pfrom->GetId(), pfrom->cleanSubVer.c_str());
                 if (nDoS > 0)
                     Misbehaving(pfrom->GetId(), nDoS);
@@ -1034,7 +1062,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         }
     }
 
-    else if (strCommand == "dseep") { //ObfuScation Election Entry Ping
+    else if (strCommand == NetMsgType::DSEEP) { //ObfuScation Election Entry Ping
 
         if (IsSporkActive(SPORK_10_KARMANODE_PAY_UPDATED_NODES)) return;
 
@@ -1044,16 +1072,16 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         bool stop;
         vRecv >> vin >> vchSig >> sigTime >> stop;
 
-        //LogPrintf("dseep - Received: vin: %s sigTime: %lld stop: %s\n", vin.ToString().c_str(), sigTime, stop ? "true" : "false");
+        //LogPrint("karmanode","dseep - Received: vin: %s sigTime: %lld stop: %s\n", vin.ToString().c_str(), sigTime, stop ? "true" : "false");
 
         if (sigTime > GetAdjustedTime() + 60 * 60) {
-            LogPrintf("dseep - Signature rejected, too far into the future %s\n", vin.prevout.hash.ToString());
+            LogPrintf("CKarmanodeMan::ProcessMessage() : dseep - Signature rejected, too far into the future %s\n", vin.prevout.hash.ToString());
             Misbehaving(pfrom->GetId(), 1);
             return;
         }
 
         if (sigTime <= GetAdjustedTime() - 60 * 60) {
-            LogPrintf("dseep - Signature rejected, too far into the past %s - %d %d \n", vin.prevout.hash.ToString(), sigTime, GetAdjustedTime());
+            LogPrintf("CKarmanodeMan::ProcessMessage() : dseep - Signature rejected, too far into the past %s - %d %d \n", vin.prevout.hash.ToString(), sigTime, GetAdjustedTime());
             Misbehaving(pfrom->GetId(), 1);
             return;
         }
@@ -1067,14 +1095,14 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
         // see if we have this Karmanode
         CKarmanode* pmn = this->Find(vin);
         if (pmn != NULL && pmn->protocolVersion >= karmanodePayments.GetMinKarmanodePaymentsProto()) {
-            // LogPrintf("dseep - Found corresponding mn for vin: %s\n", vin.ToString().c_str());
+            // LogPrint("karmanode","dseep - Found corresponding mn for vin: %s\n", vin.ToString().c_str());
             // take this only if it's newer
             if (sigTime - pmn->nLastDseep > KARMANODE_MIN_MNP_SECONDS) {
-                std::string strMessage = pmn->addr.ToString() + boost::lexical_cast<std::string>(sigTime) + boost::lexical_cast<std::string>(stop);
+                std::string strMessage = pmn->addr.ToString() + std::to_string(sigTime) + std::to_string(stop);
 
                 std::string errorMessage = "";
                 if (!obfuScationSigner.VerifyMessage(pmn->pubKeyKarmanode, vchSig, strMessage, errorMessage)) {
-                    LogPrintf("dseep - Got bad Karmanode address signature %s \n", vin.prevout.hash.ToString());
+                    LogPrint("karmanode","dseep - Got bad Karmanode address signature %s \n", vin.prevout.hash.ToString());
                     //Misbehaving(pfrom->GetId(), 100);
                     return;
                 }
@@ -1089,7 +1117,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
                     LogPrint("karmanode", "dseep - relaying %s \n", vin.prevout.hash.ToString());
                     BOOST_FOREACH (CNode* pnode, vNodes)
                         if (pnode->nVersion >= karmanodePayments.GetMinKarmanodePaymentsProto())
-                            pnode->PushMessage("dseep", vin, vchSig, sigTime, stop);
+                            pnode->PushMessage(NetMsgType::DSEEP, vin, vchSig, sigTime, stop);
                 }
             }
             return;
@@ -1122,20 +1150,18 @@ void CKarmanodeMan::Remove(CTxIn vin)
 
 void CKarmanodeMan::UpdateKarmanodeList(CKarmanodeBroadcast mnb)
 {
-    LOCK(cs);
-    mapSeenKarmanodePing.insert(std::make_pair(mnb.lastPing.GetHash(), mnb.lastPing));
-    mapSeenKarmanodeBroadcast.insert(std::make_pair(mnb.GetHash(), mnb));
+    mapSeenKarmanodePing.insert(make_pair(mnb.lastPing.GetHash(), mnb.lastPing));
+    mapSeenKarmanodeBroadcast.insert(make_pair(mnb.GetHash(), mnb));
+    karmanodeSync.AddedKarmanodeList(mnb.GetHash());
 
-    LogPrintf("CKarmanodeMan::UpdateKarmanodeList -- karmanode=%s\n", mnb.vin.prevout.ToStringShort());
+    LogPrint("karmanode","CKarmanodeMan::UpdateKarmanodeList -- karmanode=%s\n", mnb.vin.prevout.ToStringShort());
 
     CKarmanode* pmn = Find(mnb.vin);
     if (pmn == NULL) {
         CKarmanode mn(mnb);
-        if (Add(mn)) {
-            karmanodeSync.AddedKarmanodeList(mnb.GetHash());
-        }
-    } else if (pmn->UpdateFromNewBroadcast(mnb)) {
-        karmanodeSync.AddedKarmanodeList(mnb.GetHash());
+        Add(mn);
+    } else {
+    	pmn->UpdateFromNewBroadcast(mnb);
     }
 }
 

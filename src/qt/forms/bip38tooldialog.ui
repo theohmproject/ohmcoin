@@ -30,7 +30,7 @@
        <item>
         <widget class="QLabel" name="infoLabel_ENC">
          <property name="text">
-          <string>Enter a Ohm Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</string>
+          <string>Enter a Ohmcoin Address that you would like to encrypt using BIP 38. Enter a passphrase in the middle box. Press encrypt to compute the encrypted private key.</string>
          </property>
          <property name="textFormat">
           <enum>Qt::PlainText</enum>
@@ -42,45 +42,51 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_1_ENC">
-         <property name="spacing">
-          <number>0</number>
-         </property>
          <item>
           <widget class="QLabel" name="label_5">
+           <property name="minimumSize">
+            <size>
+             <width>85</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string>Address:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QValidatedLineEdit" name="addressIn_ENC">
            <property name="toolTip">
-            <string>The OHMC address to sign the message with</string>
+            <string>The Ohmcoin address to sign the message with</string>
            </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="addressBookButton_ENC">
+          <widget class="QToolButton" name="addressBookButton_ENC">
            <property name="toolTip">
             <string>Choose previously used address</string>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
            </property>
            <property name="text">
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ohmc.qrc">
+            <iconset resource="../ohmcoin.qrc">
              <normaloff>:/icons/address-book</normaloff>:/icons/address-book</iconset>
            </property>
            <property name="shortcut">
             <string>Alt+A</string>
            </property>
-           <property name="autoDefault">
-            <bool>false</bool>
-           </property>
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="pasteButton_ENC">
+          <widget class="QToolButton" name="pasteButton_ENC">
            <property name="toolTip">
             <string>Paste address from clipboard</string>
            </property>
@@ -88,14 +94,11 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ohmc.qrc">
+            <iconset resource="../ohmcoin.qrc">
              <normaloff>:/icons/editpaste</normaloff>:/icons/editpaste</iconset>
            </property>
            <property name="shortcut">
             <string>Alt+P</string>
-           </property>
-           <property name="autoDefault">
-            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -105,8 +108,17 @@
         <layout class="QHBoxLayout" name="horizontalLayout_5">
          <item>
           <widget class="QLabel" name="label_6">
+           <property name="minimumSize">
+            <size>
+             <width>85</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string>Passphrase: </string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
@@ -121,16 +133,22 @@
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_2_ENC">
-         <property name="spacing">
-          <number>0</number>
-         </property>
          <item>
           <widget class="QLabel" name="encryptedKeyLabel_ENC">
+           <property name="minimumSize">
+            <size>
+             <width>85</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string>Encrypted Key:</string>
            </property>
            <property name="textFormat">
             <enum>Qt::PlainText</enum>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
@@ -147,7 +165,7 @@
           </widget>
          </item>
          <item>
-          <widget class="QPushButton" name="copyKeyButton_ENC">
+          <widget class="QToolButton" name="copyKeyButton_ENC">
            <property name="toolTip">
             <string>Copy the current signature to the system clipboard</string>
            </property>
@@ -155,11 +173,8 @@
             <string/>
            </property>
            <property name="icon">
-            <iconset resource="../ohmc.qrc">
+            <iconset resource="../ohmcoin.qrc">
              <normaloff>:/icons/editcopy</normaloff>:/icons/editcopy</iconset>
-           </property>
-           <property name="autoDefault">
-            <bool>false</bool>
            </property>
           </widget>
          </item>
@@ -170,14 +185,10 @@
          <item>
           <widget class="QPushButton" name="encryptKeyButton_ENC">
            <property name="toolTip">
-            <string>Sign the message to prove you own this OHMC address</string>
+            <string>Encrypt the private key for this Ohmcoin address</string>
            </property>
            <property name="text">
             <string>Encrypt &amp;Key</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../ohmc.qrc">
-             <normaloff>:/icons/edit</normaloff>:/icons/edit</iconset>
            </property>
            <property name="autoDefault">
             <bool>false</bool>
@@ -187,14 +198,10 @@
          <item>
           <widget class="QPushButton" name="clearButton_ENC">
            <property name="toolTip">
-            <string>Reset all sign message fields</string>
+            <string>Reset all fields</string>
            </property>
            <property name="text">
             <string>Clear &amp;All</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../ohmc.qrc">
-             <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
            </property>
            <property name="autoDefault">
             <bool>false</bool>
@@ -260,9 +267,6 @@
          <property name="textFormat">
           <enum>Qt::PlainText</enum>
          </property>
-         <property name="alignment">
-          <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignTop</set>
-         </property>
          <property name="wordWrap">
           <bool>true</bool>
          </property>
@@ -272,15 +276,41 @@
         <layout class="QHBoxLayout" name="horizontalLayout_3">
          <item>
           <widget class="QLabel" name="label_2">
+           <property name="minimumSize">
+            <size>
+             <width>85</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string>Encrypted Key:</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
          <item>
           <widget class="QValidatedLineEdit" name="encryptedKeyIn_DEC">
            <property name="toolTip">
-            <string>The OHMC address the message was signed with</string>
+            <string>The encrypted private key</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QToolButton" name="pasteButton_DEC">
+           <property name="toolTip">
+            <string>Paste address from clipboard</string>
+           </property>
+           <property name="text">
+            <string/>
+           </property>
+           <property name="icon">
+            <iconset resource="../ohmcoin.qrc">
+             <normaloff>:/icons/editpaste</normaloff>:/icons/editpaste</iconset>
+           </property>
+           <property name="shortcut">
+            <string>Alt+P</string>
            </property>
           </widget>
          </item>
@@ -290,8 +320,17 @@
         <layout class="QHBoxLayout" name="horizontalLayout">
          <item>
           <widget class="QLabel" name="label">
+           <property name="minimumSize">
+            <size>
+             <width>85</width>
+             <height>0</height>
+            </size>
+           </property>
            <property name="text">
             <string>Passphrase: </string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
            </property>
           </widget>
          </item>
@@ -309,14 +348,10 @@
          <item>
           <widget class="QPushButton" name="decryptKeyButton_DEC">
            <property name="toolTip">
-            <string>Verify the message to ensure it was signed with the specified OHMC address</string>
+            <string>Decrypt the entered key using the passphrase</string>
            </property>
            <property name="text">
             <string>Decrypt &amp;Key</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../ohmc.qrc">
-             <normaloff>:/icons/transaction_0</normaloff>:/icons/transaction_0</iconset>
            </property>
            <property name="autoDefault">
             <bool>false</bool>
@@ -326,14 +361,10 @@
          <item>
           <widget class="QPushButton" name="clearButton_DEC">
            <property name="toolTip">
-            <string>Reset all verify message fields</string>
+            <string>Reset all fields</string>
            </property>
            <property name="text">
             <string>Clear &amp;All</string>
-           </property>
-           <property name="icon">
-            <iconset resource="../ohmc.qrc">
-             <normaloff>:/icons/remove</normaloff>:/icons/remove</iconset>
            </property>
            <property name="autoDefault">
             <bool>false</bool>
@@ -433,7 +464,7 @@
   </customwidget>
  </customwidgets>
  <resources>
-  <include location="../ohmc.qrc"/>
+  <include location="../ohmcoin.qrc"/>
  </resources>
  <connections/>
 </ui>

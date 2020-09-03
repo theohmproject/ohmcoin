@@ -2,7 +2,6 @@
 // Copyright (c) 2009-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
-// Copyright (c) 2017-2019 The OHMC Developers 
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -15,8 +14,10 @@
 #include <set>
 #include <stdint.h>
 
+#include <boost/algorithm/string/case_conv.hpp> // for to_lower()
+#include <univalue.h>
+
 using namespace std;
-using namespace json_spirit;
 
 class CRPCConvertParam
 {
@@ -71,6 +72,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
         {"listunspent", 0},
         {"listunspent", 1},
         {"listunspent", 2},
+        {"listunspent", 3},
         {"getblock", 1},
         {"getblockheader", 1},
         {"gettransaction", 1},
@@ -79,12 +81,17 @@ static const CRPCConvertParam vRPCConvertParams[] =
         {"createrawtransaction", 1},
         {"signrawtransaction", 1},
         {"signrawtransaction", 2},
-        {"sendrawtransaction", 1},
+        { "searchrawtransactions", 1 },
+        { "searchrawtransactions", 2 },
+        { "searchrawtransactions", 3 },
+        { "searchrawtransactions", 4 },
+        {"sendrawtransaction", 2},
         {"gettxout", 1},
         {"gettxout", 2},
         {"lockunspent", 0},
         {"lockunspent", 1},
         {"importprivkey", 2},
+        {"importpubkey", 2},
         {"importaddress", 2},
         {"verifychain", 0},
         {"verifychain", 1},
@@ -94,11 +101,13 @@ static const CRPCConvertParam vRPCConvertParams[] =
         {"estimatepriority", 0},
         {"prioritisetransaction", 1},
         {"prioritisetransaction", 2},
+        {"setban", 2},
+        {"setban", 3},
         {"spork", 1},
-        {"mnbudget", 3},
-        {"mnbudget", 4},
-        {"mnbudget", 6},
-        {"mnbudget", 8},
+        {"knbudget", 3},
+        {"knbudget", 4},
+        {"knbudget", 6},
+        {"knbudget", 8},
         {"preparebudget", 2},
         {"preparebudget", 3},
         {"preparebudget", 5},
@@ -114,7 +123,25 @@ static const CRPCConvertParam vRPCConvertParams[] =
         {"reservebalance", 1},
         {"setstakesplitthreshold", 0},
         {"autocombinerewards", 0},
-        {"autocombinerewards", 1}};
+        {"autocombinerewards", 1},
+        {"getzerocoinbalance", 0},
+        {"listmintedzerocoins", 0},
+        {"listspentzerocoins", 0},
+        {"listzerocoinamounts", 0},
+        {"mintzerocoin", 0},
+        {"mintzerocoin", 1},
+        {"spendzerocoin", 0},
+        {"spendzerocoin", 1},
+        {"spendzerocoin", 2},
+        {"spendzerocoin", 3},
+        {"importzerocoins", 0},
+        {"exportzerocoins", 0},
+        {"exportzerocoins", 1},
+        {"resetmintzerocoin", 0},
+        {"getspentzerocoinamount", 1},
+        {"getfeeinfo", 0},
+        { "addwitnessaddress", 1}
+    };
 
 class CRPCConvertTable
 {
@@ -143,25 +170,32 @@ CRPCConvertTable::CRPCConvertTable()
 
 static CRPCConvertTable rpcCvtTable;
 
-/** Convert strings to command-specific RPC representation */
-Array RPCConvertValues(const std::string& strMethod, const std::vector<std::string>& strParams)
+/** Non-RFC4627 JSON parser, accepts internal values (such as numbers, true, false, null)
+ * as well as objects and arrays.
+ */
+UniValue ParseNonRFCJSONValue(const std::string& strVal)
 {
-    Array params;
+    UniValue jVal;
+    if (!jVal.read(std::string("[")+strVal+std::string("]")) ||
+        !jVal.isArray() || jVal.size()!=1)
+        throw runtime_error(string("Error parsing JSON:")+strVal);
+    return jVal[0];
+}
+
+/** Convert strings to command-specific RPC representation */
+UniValue RPCConvertValues(const std::string &strMethod, const std::vector<std::string> &strParams)
+{
+    UniValue params(UniValue::VARR);
 
     for (unsigned int idx = 0; idx < strParams.size(); idx++) {
         const std::string& strVal = strParams[idx];
 
-        // insert string value directly
         if (!rpcCvtTable.convert(strMethod, idx)) {
+            // insert string value directly
             params.push_back(strVal);
-        }
-
-        // parse string as JSON, insert bool/number/object/etc. value
-        else {
-            Value jVal;
-            if (!read_string(strVal, jVal))
-                throw runtime_error(string("Error parsing JSON:") + strVal);
-            params.push_back(jVal);
+        } else {
+            // parse string as JSON, insert bool/number/object/etc. value
+            params.push_back(ParseNonRFCJSONValue(strVal));
         }
     }
 

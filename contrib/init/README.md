@@ -1,10 +1,10 @@
 Sample configuration files for:
 
-SystemD: ohmcd.service
-Upstart: ohmcd.conf
-OpenRC:  ohmcd.openrc
-         ohmcd.openrcconf
-CentOS:  ohmcd.init
+SystemD: ohmcoind.service
+Upstart: ohmcoind.conf
+OpenRC:  ohmcoind.openrc
+         ohmcoind.openrcconf
+CentOS:  ohmcoind.init
 
 have been made available to assist packagers in creating node packages here.
 

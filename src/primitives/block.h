@@ -1,5 +1,6 @@
 // Copyright (c) 2009-2010 Satoshi Nakamoto
 // Copyright (c) 2009-2013 The Bitcoin developers
+// Copyright (c) 2015-2017 The PIVX developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -25,13 +26,14 @@ class CBlockHeader
 {
 public:
     // header
-    static const int32_t CURRENT_VERSION=5;
+    static const int32_t CURRENT_VERSION = 7; // NOTE: If increment this, make sure to adjust miner.cpp !!!
     int32_t nVersion;
     uint256 hashPrevBlock;
     uint256 hashMerkleRoot;
     uint32_t nTime;
     uint32_t nBits;
     uint32_t nNonce;
+    uint256 nAccumulatorCheckpoint;
 
     CBlockHeader()
     {
@@ -49,6 +51,10 @@ public:
         READWRITE(nTime);
         READWRITE(nBits);
         READWRITE(nNonce);
+
+        //zerocoin active, header changes to include accumulator checksum
+        /*if(nVersion > 5)
+            READWRITE(nAccumulatorCheckpoint);*/
     }
 
     void SetNull()
@@ -127,6 +133,7 @@ public:
         block.nTime          = nTime;
         block.nBits          = nBits;
         block.nNonce         = nNonce;
+        block.nAccumulatorCheckpoint = nAccumulatorCheckpoint;
         return block;
     }
 
@@ -160,7 +167,6 @@ public:
     std::string ToString() const;
     void print() const;
 };
-
 
 /** Describes a place in the block chain to another node such that if the
  * other node doesn't have the same branch, it can find a recent common trunk.
@@ -196,5 +202,8 @@ struct CBlockLocator
         return vHave.empty();
     }
 };
+
+/** Compute the consensus-critical block cost (see BIP 141). */
+int64_t GetBlockCost(const CBlock& tx);
 
 #endif // BITCOIN_PRIMITIVES_BLOCK_H
