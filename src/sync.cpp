@@ -12,7 +12,6 @@
 
 #include <mutex>
 
-#include <boost/foreach.hpp>
 #include <boost/thread.hpp>
 
 #ifdef DEBUG_LOCKCONTENTION

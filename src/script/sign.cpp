@@ -12,8 +12,6 @@
 #include "uint256.h"
 #include "util.h"
 
-#include <boost/foreach.hpp>
-
 using namespace std;
 
 typedef vector<unsigned char> valtype;
@@ -23,7 +21,7 @@ TransactionSignatureCreator::TransactionSignatureCreator(const CKeyStore* keysto
 bool TransactionSignatureCreator::CreateSig(std::vector<unsigned char>& vchSig, const CKeyID& address, const CScript& scriptCode, SigVersion sigversion) const
 {
     CKey key;
-    if (!keystore->GetKey(address, key))    
+    if (!keystore->GetKey(address, key))
         return false;
 
     // Signing with uncompressed keys is disabled in witness scripts
@@ -132,7 +130,7 @@ static bool SignStep(const BaseSignatureCreator& creator, const CScript& scriptP
 static CScript PushAll(const vector<valtype>& values)
 {
     CScript result;
-    BOOST_FOREACH(const valtype& v, values) {
+    for (const valtype& v : values) {
         if (v.size() == 0) {
             result << OP_0;
         } else if (v.size() == 1 && v[0] >= 1 && v[0] <= 16) {
@@ -243,12 +241,12 @@ static vector<valtype> CombineMultisig(const CScript& scriptPubKey, const BaseSi
 {
     // Combine all the signatures we've got:
     set<valtype> allsigs;
-    BOOST_FOREACH(const valtype& v, sigs1)
+    for (const valtype& v : sigs1)
     {
         if (!v.empty())
             allsigs.insert(v);
     }
-    BOOST_FOREACH(const valtype& v, sigs2)
+    for (const valtype& v : sigs2)
     {
         if (!v.empty())
             allsigs.insert(v);
@@ -259,7 +257,7 @@ static vector<valtype> CombineMultisig(const CScript& scriptPubKey, const BaseSi
     unsigned int nSigsRequired = vSolutions.front()[0];
     unsigned int nPubKeys = vSolutions.size()-2;
     map<valtype, valtype> sigs;
-    BOOST_FOREACH(const valtype& sig, allsigs)
+    for (const valtype& sig : allsigs)
     {
         for (unsigned int i = 0; i < nPubKeys; i++)
         {
