@@ -122,7 +122,7 @@ void CKarmanodeConfig::writeToKarmanodeConf()
 
 	std::string karmanodeAliasBase = "";
 
-	BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+	for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
 		// Orders configs in proper strings
 		std::string karmanodeAliasLine  = mne.getAlias() + " " + mne.getIp() + " " + mne.getPrivKey() + " " + mne.getTxHash() + " " + mne.getOutputIndex() + "\n";
 		karmanodeAliasBase = karmanodeAliasBase + karmanodeAliasLine;

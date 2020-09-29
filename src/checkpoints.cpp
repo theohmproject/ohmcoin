@@ -6,14 +6,12 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "checkpoints.h"
-
 #include "chainparams.h"
+#include "reverse_iterator.h"
 #include "main.h"
 #include "uint256.h"
 
 #include <stdint.h>
-
-#include <boost/foreach.hpp>
 
 namespace Checkpoints
 {
@@ -91,7 +89,7 @@ CBlockIndex* GetLastCheckpoint()
 
     const MapCheckpoints& checkpoints = *Params().Checkpoints().mapCheckpoints;
 
-    BOOST_REVERSE_FOREACH (const MapCheckpoints::value_type& i, checkpoints) {
+    for (const MapCheckpoints::value_type& i : reverse_iterate (checkpoints)) {
         const uint256& hash = i.second;
         BlockMap::const_iterator t = mapBlockIndex.find(hash);
         if (t != mapBlockIndex.end())

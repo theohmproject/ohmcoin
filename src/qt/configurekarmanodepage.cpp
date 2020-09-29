@@ -132,7 +132,7 @@ void ConfigureKarmanodePage::accept()
 
 void ConfigureKarmanodePage::updateAlias(std::string Alias, std::string IP, std::string PrivKey, std::string TxHash, std::string OutputIndex, std::string mnAlias)
 {
-	BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+	for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
 		if(mnAlias == mne.getAlias()) {
 			int count = 0;
 			count = getCounters();
@@ -170,10 +170,10 @@ void ConfigureKarmanodePage::on_AutoFillOutputs_clicked()
     // Find possible candidates
     vector<COutput> possibleCoins = activeKarmanode.SelectCoinsKarmanode();
         int test = 0;
-    BOOST_FOREACH (COutput& out, possibleCoins) {
+    for (COutput& out : possibleCoins) {
         std::string TXHash = out.tx->GetHash().ToString();
         std::string OutputID = std::to_string(out.i);
-                BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+                for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
                         if(OutputID == mne.getOutputIndex() && TXHash == mne.getTxHash()) {
                                 test = 1;
 

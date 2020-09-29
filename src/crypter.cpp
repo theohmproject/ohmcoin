@@ -10,7 +10,6 @@
 #include "init.h"
 #include "uint256.h"
 
-#include <boost/foreach.hpp>
 #include <openssl/aes.h>
 #include <openssl/evp.h>
 #include "wallet/wallet.h"
@@ -424,7 +423,7 @@ bool CCryptoKeyStore::EncryptKeys(CKeyingMaterial& vMasterKeyIn)
             return false;
 
         fUseCrypto = true;
-        BOOST_FOREACH (KeyMap::value_type& mKey, mapKeys) {
+        for (KeyMap::value_type& mKey : mapKeys) {
             const CKey& key = mKey.second;
             CPubKey vchPubKey = key.GetPubKey();
             CKeyingMaterial vchSecret(key.begin(), key.end());

@@ -109,7 +109,7 @@ void KarmanodeList::StartAlias(std::string strAlias)
     std::string strStatusHtml;
     strStatusHtml += "<center>Alias: " + strAlias;
 
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
         if (mne.getAlias() == strAlias) {
             std::string strError;
             CKarmanodeBroadcast mnb;
@@ -141,7 +141,7 @@ void KarmanodeList::StartAll(std::string strCommand)
     int nCountFailed = 0;
     std::string strFailedHtml;
 
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
         std::string strError;
         CKarmanodeBroadcast mnb;
 
@@ -230,7 +230,7 @@ void KarmanodeList::updateMyNodeList(bool fForce)
     nTimeMyListUpdated = GetTime();
 
     ui->tableWidgetMyKarmanodes->setSortingEnabled(false);
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
         int nIndex;
         if(!mne.castOutputIndex(nIndex))
             continue;
@@ -292,7 +292,7 @@ void KarmanodeList::on_editConfigureKarmanode_clicked()
     std::string strAlias = ui->tableWidgetMyKarmanodes->item(nSelectedRow, 0)->text().toStdString();
 
 	int count = 0;
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
 		count = count + 1;
 		if(strAlias == mne.getAlias()) {
 			KarmanodeList::openEditConfigureKarmanodePage(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), QString::fromStdString(mne.getPrivKey()), QString::fromStdString(mne.getTxHash()), QString::fromStdString(mne.getOutputIndex()), count);
@@ -364,7 +364,7 @@ void KarmanodeList::deleteAlias()
     int nSelectedRow = index.row();
     std::string strAlias = ui->tableWidgetMyKarmanodes->item(nSelectedRow, 0)->text().toStdString();
 	int count = 0;
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
 		count = count + 1;
 		if(strAlias == mne.getAlias()) {
 			vector<COutPoint> confLockedCoins;
@@ -410,7 +410,7 @@ void KarmanodeList::copyAlias()
     int nSelectedRow = index.row();
     std::string strAlias = ui->tableWidgetMyKarmanodes->item(nSelectedRow, 0)->text().toStdString();
 
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
 
 		if(strAlias == mne.getAlias()) {
 
