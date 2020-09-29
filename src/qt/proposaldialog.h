@@ -9,7 +9,7 @@
 #include <proposallist.h>
 #include <string>
 #include <univalue.h>
-#include <wallet.h>
+#include <wallet/wallet.h>
 
 #include <QAction>
 #include <QDialog>
@@ -27,7 +27,7 @@ QT_BEGIN_NAMESPACE
 class QDataWidgetMapper;
 QT_END_NAMESPACE
 
-/** 
+/**
  * Dialog for creating a proposal.
  */
 class ProposalDialog : public QDialog

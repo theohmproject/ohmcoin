@@ -128,7 +128,7 @@ BITCOIN_CORE_H = \
   denomination_functions.h \
   obfuscation.h \
   obfuscation-relay.h \
-  db.h \
+  wallet/db.h \
   eccryptoverify.h \
   ecwrapper.h \
   hash.h \
@@ -194,9 +194,9 @@ BITCOIN_CORE_H = \
   utiltime.h \
   validationinterface.h \
   version.h \
-  wallet.h \
-  wallet_ismine.h \
-  walletdb.h \
+  wallet/wallet.h \
+  wallet/wallet_ismine.h \
+  wallet/walletdb.h \
   zohmctracker.h \
   zohmcwallet.h \
   zmq/zmqabstractnotifier.h \
@@ -268,7 +268,7 @@ libbitcoin_wallet_a_SOURCES = \
   denomination_functions.cpp \
   obfuscation.cpp \
   obfuscation-relay.cpp \
-  db.cpp \
+  wallet/db.cpp \
   crypter.cpp \
   swifttx.cpp \
   karmanode.cpp \
@@ -278,14 +278,14 @@ libbitcoin_wallet_a_SOURCES = \
   karmanodeconfig.cpp \
   karmanodeman.cpp \
   mintpool.cpp \
-  rpcdump.cpp \
+  wallet/rpcdump.cpp \
+  wallet/rpcwallet.cpp \
+  kernel.cpp \
+  wallet/wallet.cpp \
+  wallet/wallet_ismine.cpp \
+  wallet/walletdb.cpp \
   primitives/deterministicmint.cpp \
   primitives/zerocoin.cpp \
-  rpcwallet.cpp \
-  kernel.cpp \
-  wallet.cpp \
-  wallet_ismine.cpp \
-  walletdb.cpp \
   zohmcwallet.cpp \
   zohmctracker.cpp \
   $(BITCOIN_CORE_H)
