@@ -11,7 +11,7 @@
 #include "karmanode-payments.h"
 #include "karmanodeconfig.h"
 #include "karmanodeman.h"
-#include "rpcserver.h"
+#include "rpc/server.h"
 #include "utilmoneystr.h"
 
 #include <univalue.h>

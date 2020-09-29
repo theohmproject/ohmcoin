@@ -7,7 +7,7 @@
 #include "bip38.h"
 #include "init.h"
 #include "main.h"
-#include "rpcserver.h"
+#include "rpc/server.h"
 #include "script/script.h"
 #include "script/standard.h"
 #include "sync.h"
@@ -135,7 +135,7 @@ UniValue importprivkey(const UniValue& params, bool fHelp)
 
         if (!pwalletMain->AddKeyPubKey(key, pubkey))
             throw JSONRPCError(RPC_WALLET_ERROR, "Error adding key to wallet");
-        
+
         pwalletMain->LearnAllRelatedScripts(pubkey);
 
         // whenever a key is imported, we need to scan the whole chain
