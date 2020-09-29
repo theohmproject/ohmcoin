@@ -27,9 +27,7 @@ SignVerifyMessageDialog::SignVerifyMessageDialog(QWidget* parent) : QDialog(pare
 {
     ui->setupUi(this);
 
-#if QT_VERSION >= 0x040700
     ui->signatureOut_SM->setPlaceholderText(tr("Click \"Sign Message\" to generate signature"));
-#endif
 
     GUIUtil::setupAddressWidget(ui->addressIn_SM, this);
     GUIUtil::setupAddressWidget(ui->addressIn_VM, this);
@@ -51,7 +49,7 @@ SignVerifyMessageDialog::SignVerifyMessageDialog(QWidget* parent) : QDialog(pare
     ui->signatureOut_SM->setFont(GUIUtil::bitcoinAddressFont());
     ui->signatureIn_VM->setFont(GUIUtil::bitcoinAddressFont());
 
-    
+
 }
 
 SignVerifyMessageDialog::~SignVerifyMessageDialog()
