@@ -143,6 +143,7 @@ BITCOIN_CORE_H = \
   leveldbwrapper.h \
   limitedmap.h \
   main.h \
+  memusage.h \
   karmanode.h \
   karmanode-payments.h \
   karmanode-budget.h \
