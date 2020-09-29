@@ -20,7 +20,7 @@
 #include "karmanodeconfig.h"
 #include "karmanodeman.h"
 #include "karmanodelist.h"
-#include "wallet.h"
+#include "wallet/wallet.h"
 
 #include <univalue.h>
 #include <QIcon>
