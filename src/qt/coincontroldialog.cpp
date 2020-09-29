@@ -111,11 +111,8 @@ CoinControlDialog::CoinControlDialog(QWidget* parent, bool fMultisigEnabled) : Q
     connect(ui->treeWidget, SIGNAL(itemChanged(QTreeWidgetItem*, int)), this, SLOT(viewItemChanged(QTreeWidgetItem*, int)));
 
 // click on header
-#if QT_VERSION < 0x050000
-    ui->treeWidget->header()->setClickable(true);
-#else
     ui->treeWidget->header()->setSectionsClickable(true);
-#endif
+
     connect(ui->treeWidget->header(), SIGNAL(sectionClicked(int)), this, SLOT(headerSectionClicked(int)));
 
     // ok button
@@ -126,10 +123,6 @@ CoinControlDialog::CoinControlDialog(QWidget* parent, bool fMultisigEnabled) : Q
 
     // Toggle lock state
     connect(ui->pushButtonToggleLock, SIGNAL(clicked()), this, SLOT(buttonToggleLockClicked()));
-
-    // change coin control first column label due Qt4 bug.
-    // see https://github.com/bitcoin/bitcoin/issues/5716
-    ui->treeWidget->headerItem()->setText(COLUMN_CHECKBOX, QString());
 
     ui->treeWidget->setColumnWidth(COLUMN_CHECKBOX, 84);
     ui->treeWidget->setColumnWidth(COLUMN_AMOUNT, 100);
@@ -449,12 +442,11 @@ void CoinControlDialog::viewItemChanged(QTreeWidgetItem* item, int column)
 //       including all childs are partially selected. But the parent node should be fully selected
 //       as well as the childs. Childs should never be partially selected in the first place.
 //       Please remove this ugly fix, once the bug is solved upstream.
-#if QT_VERSION >= 0x050000
+
     else if (column == COLUMN_CHECKBOX && item->childCount() > 0) {
         if (item->checkState(COLUMN_CHECKBOX) == Qt::PartiallyChecked && item->child(0)->checkState(COLUMN_CHECKBOX) == Qt::PartiallyChecked)
             item->setCheckState(COLUMN_CHECKBOX, Qt::Checked);
     }
-#endif
 }
 
 // return human readable label for priority number

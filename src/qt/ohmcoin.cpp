@@ -55,13 +55,6 @@
 
 #if defined(QT_STATICPLUGIN)
 #include <QtPlugin>
-#if QT_VERSION < 0x050000
-Q_IMPORT_PLUGIN(qcncodecs)
-Q_IMPORT_PLUGIN(qjpcodecs)
-Q_IMPORT_PLUGIN(qtwcodecs)
-Q_IMPORT_PLUGIN(qkrcodecs)
-Q_IMPORT_PLUGIN(qtaccessiblewidgets)
-#else
 #if QT_VERSION < 0x050400
 Q_IMPORT_PLUGIN(AccessibleFactory)
 #endif
@@ -72,11 +65,6 @@ Q_IMPORT_PLUGIN(QWindowsIntegrationPlugin);
 #elif defined(QT_QPA_PLATFORM_COCOA)
 Q_IMPORT_PLUGIN(QCocoaIntegrationPlugin);
 #endif
-#endif
-#endif
-
-#if QT_VERSION < 0x050000
-#include <QTextCodec>
 #endif
 
 // Declare meta types used for QMetaObject::invokeMethod
@@ -517,19 +505,13 @@ int main(int argc, char* argv[])
 {
     SetupEnvironment();
 
-    /// 1. Parse command-line options. These take precedence over anything else.
-    // Command-line options take precedence:
+/// 1. Parse command-line options. These take precedence over anything else.
+// Command-line options take precedence:
     ParseParameters(argc, argv);
 
 // Do not refer to data directory yet, this can be overridden by Intro::pickDataDirectory
 
 /// 2. Basic Qt initialization (not dependent on parameters or configuration)
-#if QT_VERSION < 0x050000
-    // Internal string conversion is all UTF-8
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForTr());
-#endif
-
     Q_INIT_RESOURCE(ohmcoin_locale);
     Q_INIT_RESOURCE(ohmcoin);
 
@@ -634,14 +616,9 @@ int main(int argc, char* argv[])
     /// 9. Main GUI initialization
     // Install global event filter that makes sure that long tooltips can be word-wrapped
     app.installEventFilter(new GUIUtil::ToolTipToRichTextFilter(TOOLTIP_WRAP_THRESHOLD, &app));
-#if QT_VERSION < 0x050000
-    // Install qDebug() message handler to route to debug.log
-    qInstallMsgHandler(DebugMessageHandler);
-#else
 #if defined(Q_OS_WIN)
     // Install global event filter for processing Windows session related Windows messages (WM_QUERYENDSESSION and WM_ENDSESSION)
     qApp->installNativeEventFilter(new WinShutdownMonitor());
-#endif
     // Install qDebug() message handler to route to debug.log
     qInstallMessageHandler(DebugMessageHandler);
 #endif
@@ -657,7 +634,7 @@ int main(int argc, char* argv[])
     try {
         app.createWindow(networkStyle.data());
         app.requestInitialize();
-#if defined(Q_OS_WIN) && QT_VERSION >= 0x050000
+#if defined(Q_OS_WIN)
         WinShutdownMonitor::registerShutdownBlockReason(QObject::tr("Ohmcoin Core didn't yet exit safely..."), (HWND)app.getMainWinId());
 #endif
         app.exec();
