@@ -9,7 +9,7 @@
 #include "karmanode-payments.h"
 #include "karmanodeconfig.h"
 #include "karmanodeman.h"
-#include "rpcserver.h"
+#include "rpc/server.h"
 #include "utilmoneystr.h"
 
 #include <univalue.h>
@@ -209,7 +209,7 @@ UniValue preparebudget(const UniValue& params, bool fHelp)
     if (!IsValidDestinationString(params[4].get_str()))
 
         throw JSONRPCError(RPC_INVALID_ADDRESS_OR_KEY, "Invalid Ohmcoin address");
-    
+
     CTxDestination address = DecodeDestination(params[4].get_str());
 
     // Parse Ohmcoin address

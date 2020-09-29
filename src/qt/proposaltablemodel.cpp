@@ -14,7 +14,7 @@
 #include "karmanode-payments.h"
 #include "karmanodeconfig.h"
 #include "karmanodeman.h"
-#include "rpcserver.h"
+#include "rpc/server.h"
 
 #include "obfuscation.h"
 //#include "governance-vote.h"

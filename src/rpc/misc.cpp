@@ -13,7 +13,7 @@
 #include "karmanode-sync.h"
 #include "net.h"
 #include "netbase.h"
-#include "rpcserver.h"
+#include "rpc/server.h"
 #include "spork.h"
 #include "timedata.h"
 #include "util.h"
@@ -127,7 +127,7 @@ UniValue getinfo(const UniValue& params, bool fHelp)
     }
     zohmcObj.push_back(Pair("total", ValueFromAmount(chainActive.Tip()->GetZerocoinSupply())));
     obj.push_back(Pair("zOHMCsupply", zohmcObj));
-    
+
 #ifdef ENABLE_WALLET
     if (pwalletMain) {
         obj.push_back(Pair("keypoololdest", pwalletMain->GetOldestKeyPoolTime()));
@@ -576,7 +576,7 @@ UniValue verifymessage(const UniValue& params, bool fHelp)
     if (!IsValidDestinationString(strAddress))
 
         throw JSONRPCError(RPC_TYPE_ERROR, "Invalid address");
-    
+
     CTxDestination addr = DecodeDestination(strAddress);
 
     CKeyID *keyID = boost::get<CKeyID>(&addr);
