@@ -69,7 +69,7 @@ void WalletTxToJSON(const CWalletTx& wtx, UniValue& entry)
     entry.push_back(Pair("walletconflicts", conflicts));
     entry.push_back(Pair("time", wtx.GetTxTime()));
     entry.push_back(Pair("timereceived", (int64_t)wtx.nTimeReceived));
-    for (const PAIRTYPE(string, string) & item : wtx.mapValue)
+    for (const std::pair<string, string> & item : wtx.mapValue)
     entry.push_back(Pair(item.first, item.second));
 }
 
@@ -318,7 +318,7 @@ UniValue getaddressesbyaccount(const UniValue& params, bool fHelp)
 
     // Find all addresses that have the given account
     UniValue ret(UniValue::VARR);
-    for (const PAIRTYPE(CTxDestination, CAddressBookData) & item : pwalletMain->mapAddressBook) {
+    for (const std::pair<CTxDestination, CAddressBookData> & item : pwalletMain->mapAddressBook) {
         const CTxDestination& address = item.first;
         const string& strName = item.second.name;
         if (strName == strAccount)
@@ -1184,7 +1184,7 @@ UniValue ListReceived(const UniValue& params, bool fByAccounts)
     // Reply
     UniValue ret(UniValue::VARR);
     map<string, tallyitem> mapAccountTally;
-    for (const PAIRTYPE(CTxDestination, CAddressBookData) & item : pwalletMain->mapAddressBook) {
+    for (const std::pair<CTxDestination, CAddressBookData> & item : pwalletMain->mapAddressBook) {
         const CTxDestination& address = item.first;
         const string& strAccount = item.second.name;
         map<CTxDestination, tallyitem>::iterator it = mapTally.find(address);
@@ -1544,7 +1544,7 @@ UniValue listaccounts(const UniValue& params, bool fHelp)
             includeWatchonly = includeWatchonly | ISMINE_WATCH_ONLY;
 
     map<string, CAmount> mapAccountBalances;
-    for (const PAIRTYPE(CTxDestination, CAddressBookData) & entry : pwalletMain->mapAddressBook) {
+    for (const std::pair<CTxDestination, CAddressBookData> & entry : pwalletMain->mapAddressBook) {
         if (IsMine(*pwalletMain, entry.first) & includeWatchonly) // This address belongs to me
             mapAccountBalances[entry.second.name] = 0;
     }
@@ -1576,7 +1576,7 @@ UniValue listaccounts(const UniValue& params, bool fHelp)
     mapAccountBalances[entry.strAccount] += entry.nCreditDebit;
 
     UniValue ret(UniValue::VOBJ);
-    for (const PAIRTYPE(string, CAmount) & accountBalance : mapAccountBalances) {
+    for (const std::pair<string, CAmount> & accountBalance : mapAccountBalances) {
         ret.push_back(Pair(accountBalance.first, ValueFromAmount(accountBalance.second)));
     }
     return ret;

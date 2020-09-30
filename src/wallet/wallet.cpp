@@ -648,7 +648,7 @@ void CWallet::MarkDirty()
 {
     {
         LOCK(cs_wallet);
-        for (PAIRTYPE(const uint256, CWalletTx) & item : mapWallet)
+        for (std::pair<const uint256, CWalletTx> & item : mapWallet)
         item.second.MarkDirty();
     }
 }
@@ -1539,7 +1539,7 @@ int CWallet::ScanForWalletTransactions(CBlockIndex* pindexStart, bool fUpdate)
 void CWallet::ReacceptWalletTransactions()
 {
     LOCK2(cs_main, cs_wallet);
-    for (PAIRTYPE(const uint256, CWalletTx) & item : mapWallet) {
+    for (std::pair<const uint256, CWalletTx> & item : mapWallet) {
         const uint256& wtxid = item.first;
         CWalletTx& wtx = item.second;
         assert(wtx.GetHash() == wtxid);
@@ -1615,14 +1615,14 @@ void CWallet::ResendWalletTransactions()
         LOCK(cs_wallet);
         // Sort them in chronological order
         multimap<unsigned int, CWalletTx*> mapSorted;
-        for (PAIRTYPE(const uint256, CWalletTx) & item : mapWallet) {
+        for (std::pair<const uint256, CWalletTx> & item : mapWallet) {
             CWalletTx& wtx = item.second;
             // Don't rebroadcast until it's had plenty of time that
             // it should have gotten in already by now.
             if (nTimeBestReceived - (int64_t)wtx.nTimeReceived > 5 * 60)
                 mapSorted.insert(make_pair(wtx.nTimeReceived, &wtx));
         }
-        for (PAIRTYPE(const unsigned int, CWalletTx*) & item : mapSorted) {
+        for (std::pair<const unsigned int, CWalletTx*> & item : mapSorted) {
             CWalletTx& wtx = *item.second;
             wtx.RelayWalletTransaction();
         }
@@ -2742,7 +2742,7 @@ bool CWallet::CreateTransactionHelper(const std::vector<std::pair<CScript, CAmou
 
     CAmount nValue = 0;
 
-    for (const PAIRTYPE(CScript, CAmount) & s : vecSend) {
+    for (const std::pair<CScript, CAmount> & s : vecSend) {
         if (nValue < 0) {
             strFailReason = _("Transaction amounts must be positive");
             return false;
@@ -2776,7 +2776,7 @@ bool CWallet::CreateTransactionHelper(const std::vector<std::pair<CScript, CAmou
 
                 // vouts to the payees
                 if (coinControl && !coinControl->fSplitBlock) {
-                    for (const PAIRTYPE(CScript, CAmount) & s : vecSend) {
+                    for (const std::pair<CScript, CAmount> & s : vecSend) {
                         CTxOut txout(s.second, s.first);
                         if (txout.IsDust(::minRelayTxFee)) {
                             strFailReason = _("Transaction amount too small");
@@ -2793,7 +2793,7 @@ bool CWallet::CreateTransactionHelper(const std::vector<std::pair<CScript, CAmou
                     else
                         nSplitBlock = 1;
 
-                    for (const PAIRTYPE(CScript, CAmount) & s : vecSend) {
+                    for (const std::pair<CScript, CAmount> & s : vecSend) {
                         for (int i = 0; i < nSplitBlock; i++) {
                             if (i == nSplitBlock - 1) {
                                 uint64_t nRemainder = s.second % nSplitBlock;
@@ -2828,7 +2828,7 @@ bool CWallet::CreateTransactionHelper(const std::vector<std::pair<CScript, CAmou
                 }
 
 
-                for (PAIRTYPE(const CWalletTx*, unsigned int) pcoin : setCoins) {
+                for (std::pair<const CWalletTx*, unsigned int> pcoin : setCoins) {
                     CAmount nCredit = pcoin.first->vout[pcoin.second].nValue;
                     //The coin age after the next block (depth+1) is used instead of the current,
                     //reflecting an assumption the user would accept a bit more delay for
@@ -2910,13 +2910,13 @@ bool CWallet::CreateTransactionHelper(const std::vector<std::pair<CScript, CAmou
                     reservekey.ReturnKey();
 
                 // Fill vin
-                for (const PAIRTYPE(const CWalletTx*, unsigned int) & coin : setCoins)
+                for (const std::pair<const CWalletTx*, unsigned int> & coin : setCoins)
                 txNew.vin.push_back(CTxIn(coin.first->GetHash(), coin.second));
 
                 // Sign
                 int nIn = 0;
                 CTransaction txNewConst(txNew);
-                for(const PAIRTYPE(const CWalletTx*,unsigned int)& coin : setCoins)
+                for(const std::pair<const CWalletTx*,unsigned int> & coin : setCoins)
                 {
                     const CScript& scriptPubKey = coin.first->vout[coin.second].scriptPubKey;
                     SignatureData sigdata;
@@ -3035,7 +3035,7 @@ bool CWallet::CreateCoinStake(const CKeyStore& keystore, unsigned int nBits, int
     if (GetAdjustedTime() <= chainActive.Tip()->nTime)
         MilliSleep(10000);
 
-    for (PAIRTYPE(const CWalletTx*, unsigned int) pcoin : setStakeCoins) {
+    for (std::pair<const CWalletTx*, unsigned int> pcoin : setStakeCoins) {
         //make sure that enough time has elapsed between
         CBlockIndex* pindex = NULL;
         BlockMap::iterator it = mapBlockIndex.find(pcoin.first->hashBlock);
@@ -3481,7 +3481,7 @@ bool CWallet::DelAddressBook(const CTxDestination& address)
         if (fFileBacked) {
             // Delete destdata tuples associated with address
             std::string strAddress = EncodeDestination(address);
-            for (const PAIRTYPE(string, string) & item : mapAddressBook[address].destdata) {
+            for (const std::pair<string, string> & item : mapAddressBook[address].destdata) {
                 CWalletDB(strWalletFile).EraseDestData(strAddress, item.first);
             }
         }
@@ -3648,7 +3648,7 @@ std::map<CTxDestination, CAmount> CWallet::GetAddressBalances()
 
     {
         LOCK(cs_wallet);
-        for (PAIRTYPE(uint256, CWalletTx) walletEntry : mapWallet) {
+        for (std::pair<uint256, CWalletTx> walletEntry : mapWallet) {
             CWalletTx* pcoin = &walletEntry.second;
 
             if (!IsFinalTx(*pcoin) || !pcoin->IsTrusted())
@@ -3686,7 +3686,7 @@ set<set<CTxDestination> > CWallet::GetAddressGroupings()
     set<set<CTxDestination> > groupings;
     set<CTxDestination> grouping;
 
-    for (PAIRTYPE(uint256, CWalletTx) walletEntry : mapWallet) {
+    for (std::pair<uint256, CWalletTx> walletEntry : mapWallet) {
         CWalletTx* pcoin = &walletEntry.second;
 
         if (pcoin->vin.size() > 0) {
@@ -3767,7 +3767,7 @@ set<CTxDestination> CWallet::GetAccountAddresses(string strAccount) const
 {
     LOCK(cs_wallet);
     set<CTxDestination> result;
-    for (const PAIRTYPE(CTxDestination, CAddressBookData) & item : mapAddressBook) {
+    for (const std::pair<CTxDestination, CAddressBookData> & item : mapAddressBook) {
         const CTxDestination& address = item.first;
         const string& strName = item.second.name;
         if (strName == strAccount)

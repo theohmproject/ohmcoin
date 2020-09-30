@@ -1973,7 +1973,7 @@ int CObfuscationPool::GetDenominations(const std::vector<CTxOut>& vout, bool fSi
     // look for denominations and update uses to 1
     for (CTxOut out : vout) {
         bool found = false;
-        for (PAIRTYPE(int64_t, int) & s : denomUsed) {
+        for (std::pair<int64_t, int> & s : denomUsed) {
             if (out.nValue == s.first) {
                 s.second = 1;
                 found = true;
@@ -1986,7 +1986,7 @@ int CObfuscationPool::GetDenominations(const std::vector<CTxOut>& vout, bool fSi
     int c = 0;
     // if the denomination is used, shift the bit on.
     // then move to the next
-    for (PAIRTYPE(int64_t, int) & s : denomUsed) {
+    for (std::pair<int64_t, int> & s : denomUsed) {
         int bit = (fSingleRandomDenom ? rand() % 2 : 1) * s.second;
         denom |= bit << c++;
         if (fSingleRandomDenom && bit) break; // use just one random denomination

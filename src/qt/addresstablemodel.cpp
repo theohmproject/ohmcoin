@@ -81,7 +81,7 @@ public:
         cachedAddressTable.clear();
         {
             LOCK(wallet->cs_wallet);
-            for (const PAIRTYPE(CTxDestination, CAddressBookData) & item : wallet->mapAddressBook) {
+            for (const std::pair<CTxDestination, CAddressBookData> & item : wallet->mapAddressBook) {
                 const CTxDestination& address = item.first;
                 const CScript redeemDestination = GetScriptForDestination(address);
                 bool fMine = IsMine(*wallet, redeemDestination);

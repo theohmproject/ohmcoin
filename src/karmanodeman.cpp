@@ -520,7 +520,7 @@ CKarmanode* CKarmanodeMan::GetNextKarmanodeInQueueForPayment(int nBlockHeight, b
     int nTenthNetwork = CountEnabled() / 10;
     int nCountTenth = 0;
     uint256 nHigh = 0;
-    for (PAIRTYPE(int64_t, CTxIn) & s : vecKarmanodeLastPaid) {
+    for (std::pair<int64_t, CTxIn> & s : vecKarmanodeLastPaid) {
         CKarmanode* pmn = Find(s.second);
         if (!pmn) break;
 
@@ -628,7 +628,7 @@ int CKarmanodeMan::GetKarmanodeRank(const CTxIn& vin, int64_t nBlockHeight, int 
     sort(vecKarmanodeScores.rbegin(), vecKarmanodeScores.rend(), CompareScoreTxIn());
 
     int rank = 0;
-    for (PAIRTYPE(int64_t, CTxIn) & s : vecKarmanodeScores) {
+    for (std::pair<int64_t, CTxIn> & s : vecKarmanodeScores) {
         rank++;
         if (s.second.prevout == vin.prevout) {
             return rank;
@@ -667,7 +667,7 @@ std::vector<pair<int, CKarmanode> > CKarmanodeMan::GetKarmanodeRanks(int64_t nBl
     sort(vecKarmanodeScores.rbegin(), vecKarmanodeScores.rend(), CompareScoreMN());
 
     int rank = 0;
-    for (PAIRTYPE(int64_t, CKarmanode) & s : vecKarmanodeScores) {
+    for (std::pair<int64_t, CKarmanode> & s : vecKarmanodeScores) {
         rank++;
         vecKarmanodeRanks.push_back(make_pair(rank, s.second));
     }
@@ -696,7 +696,7 @@ CKarmanode* CKarmanodeMan::GetKarmanodeByRank(int nRank, int64_t nBlockHeight, i
     sort(vecKarmanodeScores.rbegin(), vecKarmanodeScores.rend(), CompareScoreTxIn());
 
     int rank = 0;
-    for (PAIRTYPE(int64_t, CTxIn) & s : vecKarmanodeScores) {
+    for (std::pair<int64_t, CTxIn> & s : vecKarmanodeScores) {
         rank++;
         if (rank == nRank) {
             return Find(s.second);
