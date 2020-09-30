@@ -212,7 +212,7 @@ bool CAlert::ProcessAlert(bool fThread)
         }
 
         // Check if this alert has been cancelled
-        for (PAIRTYPE(const uint256, CAlert) & item : mapAlerts) {
+        for (std::pair<const uint256, CAlert> & item : mapAlerts) {
             const CAlert& alert = item.second;
             if (alert.Cancels(*this)) {
                 LogPrint("alert", "alert already cancelled by %d\n", alert.nID);

@@ -228,7 +228,7 @@ UniValue listkarmanodes(const UniValue& params, bool fHelp)
         nHeight = pindex->nHeight;
     }
     std::vector<pair<int, CKarmanode> > vKarmanodeRanks = mnodeman.GetKarmanodeRanks(nHeight);
-    for (PAIRTYPE(int, CKarmanode) & s : vKarmanodeRanks) {
+    for (std::pair<int, CKarmanode> & s : vKarmanodeRanks) {
         UniValue obj(UniValue::VOBJ);
         std::string strVin = s.second.vin.prevout.ToStringShort();
         std::string strTxHash = s.second.vin.prevout.hash.ToString();
