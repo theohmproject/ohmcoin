@@ -15,7 +15,6 @@
 
 #include <assert.h>
 #include "crypto/scrypt.h"
-//#include "util.h"
 #include <stdlib.h>
 #include <stdint.h>
 #include <string.h>
