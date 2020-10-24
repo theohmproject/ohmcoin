@@ -9,6 +9,7 @@
 #include "configurekarmanodepage.h"
 
 #include "activekarmanode.h"
+#include "askpassphrasedialog.h"
 #include "clientmodel.h"
 #include "guiutil.h"
 #include "init.h"
@@ -268,7 +269,7 @@ void KarmanodeList::on_startButton_clicked()
     WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
 
     if (encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForAnonymizationOnly) {
-        WalletModel::UnlockContext ctx(walletModel->requestUnlock());
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock(AskPassphraseDialog::Context::Unlock_Full));
 
         if (!ctx.isValid()) return; // Unlock wallet was cancelled
 
@@ -435,7 +436,7 @@ void KarmanodeList::on_startAllButton_clicked()
     WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
 
     if (encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForAnonymizationOnly) {
-        WalletModel::UnlockContext ctx(walletModel->requestUnlock());
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock(AskPassphraseDialog::Context::Unlock_Full));
 
         if (!ctx.isValid()) return; // Unlock wallet was cancelled
 
@@ -466,7 +467,7 @@ void KarmanodeList::on_startMissingButton_clicked()
     WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
 
     if (encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForAnonymizationOnly) {
-        WalletModel::UnlockContext ctx(walletModel->requestUnlock());
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock(AskPassphraseDialog::Context::Unlock_Full));
 
         if (!ctx.isValid()) return; // Unlock wallet was cancelled
 
