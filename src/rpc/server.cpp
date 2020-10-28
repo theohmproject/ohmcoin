@@ -6,7 +6,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "rpcserver.h"
+#include "rpc/server.h"
 
 #include "base58.h"
 #include "init.h"
@@ -19,7 +19,6 @@
 
 #include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/foreach.hpp>
 #include <boost/iostreams/concepts.hpp>
 #include <boost/iostreams/stream.hpp>
 #include <boost/shared_ptr.hpp>
@@ -76,7 +75,7 @@ void RPCTypeCheck(const UniValue& params,
                   bool fAllowNull)
 {
     unsigned int i = 0;
-    BOOST_FOREACH(UniValue::VType t, typesExpected) {
+    for(UniValue::VType t : typesExpected) {
         if (params.size() <= i)
             break;
 
@@ -94,7 +93,7 @@ void RPCTypeCheckObj(const UniValue& o,
                      const map<string, UniValue::VType>& typesExpected,
                      bool fAllowNull)
 {
-    BOOST_FOREACH(const PAIRTYPE(string, UniValue::VType)& t, typesExpected) {
+    for (const std::pair<string, UniValue::VType> & t : typesExpected) {
         const UniValue& v = find_value(o, t.first);
         if (!fAllowNull && v.isNull())
             throw JSONRPCError(RPC_TYPE_ERROR, strprintf("Missing %s", t.first));
@@ -197,7 +196,7 @@ string CRPCTable::help(string strCommand) const
         vCommands.push_back(make_pair(mi->second->category + mi->first, mi->second));
     sort(vCommands.begin(), vCommands.end());
 
-    BOOST_FOREACH (const PAIRTYPE(string, const CRPCCommand*) & command, vCommands) {
+    for (const std::pair<string, const CRPCCommand*> & command : vCommands) {
         const CRPCCommand* pcmd = command.second;
         string strMethod = pcmd->name;
         // We already filter duplicates, but these deprecated screw up the sort order
@@ -299,6 +298,7 @@ static const CRPCCommand vRPCCommands[] =
 
                 /* Block chain and UTXO */
                 {"blockchain", "findserial", &findserial, true, false, false},
+                {"blockchain", "getaccumulatorvalues", &getaccumulatorvalues, true, false, false},
                 {"blockchain", "getblockchaininfo", &getblockchaininfo, true, false, false},
                 {"blockchain", "getbestblockhash", &getbestblockhash, true, false, false},
                 {"blockchain", "getblockcount", &getblockcount, true, false, false},

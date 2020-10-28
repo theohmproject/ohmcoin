@@ -7,7 +7,7 @@
 #define BITCOIN_QT_CONFIGUREKARMANODEPAGE_H
 
 #include "karmanodelist.h"
-#include "wallet.h"
+#include "wallet/wallet.h"
 
 #include <QAbstractButton>
 #include <QAction>
@@ -59,17 +59,17 @@ public:
 	{
 		return counters;
 	}
-	
+
 	int setCounters(int counter)
 	{
 		counters = counter;
 	}
-	
+
 	QString getMnAliasCache()
 	{
 		return mnAliasCache;
 	}
-	
+
 	void setMnAliasCache(QString mnAliasCaches)
 	{
 		mnAliasCache = mnAliasCaches;

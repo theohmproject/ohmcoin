@@ -20,11 +20,10 @@
 #include "karmanode-payments.h"
 #include "karmanodeconfig.h"
 #include "karmanodeman.h"
-#include "rpcserver.h"
+#include "rpc/server.h"
 #include "ui_interface.h"
 #include "utilmoneystr.h"
 
-#include "rpcserver.h"
 #include "util.h"
 
 #include <QComboBox>

@@ -5,9 +5,9 @@
 #include "zohmcwallet.h"
 #include "main.h"
 #include "txdb.h"
-#include "walletdb.h"
+#include "wallet/walletdb.h"
 #include "init.h"
-#include "wallet.h"
+#include "wallet/wallet.h"
 #include "primitives/deterministicmint.h"
 
 using namespace libzerocoin;
@@ -327,7 +327,7 @@ bool CzOHMCWallet::SetMintSeen(const CBigNum& bnValue, const int& nHeight, const
 
     // Add to zohmcTracker which also adds to database
     pwalletMain->zohmcTracker->Add(dMint, true);
-    
+
     //Update the count if it is less than the mint's count
     if (nCountLastUsed < pMint.second) {
         CWalletDB walletdb(strWalletFile);

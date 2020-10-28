@@ -9,12 +9,13 @@
 #include "ui_signverifymessagedialog.h"
 
 #include "addressbookpage.h"
+#include "askpassphrasedialog.h"
 #include "guiutil.h"
 #include "walletmodel.h"
 
 #include "base58.h"
 #include "init.h"
-#include "wallet.h"
+#include "wallet/wallet.h"
 
 #include <string>
 #include <vector>
@@ -27,9 +28,7 @@ SignVerifyMessageDialog::SignVerifyMessageDialog(QWidget* parent) : QDialog(pare
 {
     ui->setupUi(this);
 
-#if QT_VERSION >= 0x040700
     ui->signatureOut_SM->setPlaceholderText(tr("Click \"Sign Message\" to generate signature"));
-#endif
 
     GUIUtil::setupAddressWidget(ui->addressIn_SM, this);
     GUIUtil::setupAddressWidget(ui->addressIn_VM, this);
@@ -51,7 +50,7 @@ SignVerifyMessageDialog::SignVerifyMessageDialog(QWidget* parent) : QDialog(pare
     ui->signatureOut_SM->setFont(GUIUtil::bitcoinAddressFont());
     ui->signatureIn_VM->setFont(GUIUtil::bitcoinAddressFont());
 
-    
+
 }
 
 SignVerifyMessageDialog::~SignVerifyMessageDialog()
@@ -131,7 +130,7 @@ void SignVerifyMessageDialog::on_signMessageButton_SM_clicked()
         return;
     }
 
-    WalletModel::UnlockContext ctx(model->requestUnlock(true));
+    WalletModel::UnlockContext ctx(model->requestUnlock(AskPassphraseDialog::Context::Sign_Message, true));
     if (!ctx.isValid()) {
         ui->statusLabel_SM->setStyleSheet("QLabel { color: red; }");
         ui->statusLabel_SM->setText(tr("Wallet unlock was cancelled."));
