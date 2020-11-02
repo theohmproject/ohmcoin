@@ -235,7 +235,7 @@ void CKarmanodeMan::Check()
 {
     LOCK(cs);
 
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         mn.Check();
     }
 }
@@ -355,7 +355,7 @@ int CKarmanodeMan::stable_size ()
     int64_t nKarmanode_Min_Age = MN_WINNER_MINIMUM_AGE;
     int64_t nKarmanode_Age = 0;
 
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         if (mn.protocolVersion < nMinProtocol) {
             continue; // Skip obsolete versions
         }
@@ -380,7 +380,7 @@ int CKarmanodeMan::CountEnabled(int protocolVersion)
     int i = 0;
     protocolVersion = protocolVersion == -1 ? karmanodePayments.GetMinKarmanodePaymentsProto() : protocolVersion;
 
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         mn.Check();
         if (mn.protocolVersion < protocolVersion || !mn.IsEnabled()) continue;
         i++;
@@ -393,7 +393,7 @@ void CKarmanodeMan::CountNetworks(int protocolVersion, int& ipv4, int& ipv6, int
 {
     protocolVersion = protocolVersion == -1 ? karmanodePayments.GetMinKarmanodePaymentsProto() : protocolVersion;
 
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         mn.Check();
         std::string strHost;
         int port;
@@ -440,7 +440,7 @@ CKarmanode* CKarmanodeMan::Find(const CScript& payee)
     LOCK(cs);
     CScript payee2;
 
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         payee2 = GetScriptForDestination(mn.pubKeyCollateralAddress.GetID());
         if (payee2 == payee)
             return &mn;
@@ -452,7 +452,7 @@ CKarmanode* CKarmanodeMan::Find(const CTxIn& vin)
 {
     LOCK(cs);
 
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         if (mn.vin.prevout == vin.prevout)
             return &mn;
     }
@@ -464,7 +464,7 @@ CKarmanode* CKarmanodeMan::Find(const CPubKey& pubKeyKarmanode)
 {
     LOCK(cs);
 
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         if (mn.pubKeyKarmanode == pubKeyKarmanode)
             return &mn;
     }
@@ -486,7 +486,7 @@ CKarmanode* CKarmanodeMan::GetNextKarmanodeInQueueForPayment(int nBlockHeight, b
     */
 
     int nMnCount = CountEnabled();
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         mn.Check();
         if (!mn.IsEnabled()) continue;
 
@@ -520,7 +520,7 @@ CKarmanode* CKarmanodeMan::GetNextKarmanodeInQueueForPayment(int nBlockHeight, b
     int nTenthNetwork = CountEnabled() / 10;
     int nCountTenth = 0;
     uint256 nHigh = 0;
-    BOOST_FOREACH (PAIRTYPE(int64_t, CTxIn) & s, vecKarmanodeLastPaid) {
+    for (std::pair<int64_t, CTxIn> & s : vecKarmanodeLastPaid) {
         CKarmanode* pmn = Find(s.second);
         if (!pmn) break;
 
@@ -549,10 +549,10 @@ CKarmanode* CKarmanodeMan::FindRandomNotInVec(std::vector<CTxIn>& vecToExclude, 
     LogPrint("karmanode", "CKarmanodeMan::FindRandomNotInVec - rand %d\n", rand);
     bool found;
 
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         if (mn.protocolVersion < protocolVersion || !mn.IsEnabled()) continue;
         found = false;
-        BOOST_FOREACH (CTxIn& usedVin, vecToExclude) {
+        for (CTxIn& usedVin : vecToExclude) {
             if (mn.vin.prevout == usedVin.prevout) {
                 found = true;
                 break;
@@ -573,7 +573,7 @@ CKarmanode* CKarmanodeMan::GetCurrentMasterNode(int mod, int64_t nBlockHeight, i
     CKarmanode* winner = NULL;
 
     // scan for winner
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         mn.Check();
         if (mn.protocolVersion < minProtocol || !mn.IsEnabled()) continue;
 
@@ -602,7 +602,7 @@ int CKarmanodeMan::GetKarmanodeRank(const CTxIn& vin, int64_t nBlockHeight, int 
     if (!GetBlockHash(hash, nBlockHeight)) return -1;
 
     // scan for winner
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         if (mn.protocolVersion < minProtocol) {
             LogPrint("karmanode","Skipping Karmanode with obsolete version %d\n", mn.protocolVersion);
             continue;                                                       // Skip obsolete versions
@@ -628,7 +628,7 @@ int CKarmanodeMan::GetKarmanodeRank(const CTxIn& vin, int64_t nBlockHeight, int 
     sort(vecKarmanodeScores.rbegin(), vecKarmanodeScores.rend(), CompareScoreTxIn());
 
     int rank = 0;
-    BOOST_FOREACH (PAIRTYPE(int64_t, CTxIn) & s, vecKarmanodeScores) {
+    for (std::pair<int64_t, CTxIn> & s : vecKarmanodeScores) {
         rank++;
         if (s.second.prevout == vin.prevout) {
             return rank;
@@ -648,7 +648,7 @@ std::vector<pair<int, CKarmanode> > CKarmanodeMan::GetKarmanodeRanks(int64_t nBl
     if (!GetBlockHash(hash, nBlockHeight)) return vecKarmanodeRanks;
 
     // scan for winner
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         mn.Check();
 
         if (mn.protocolVersion < minProtocol) continue;
@@ -667,7 +667,7 @@ std::vector<pair<int, CKarmanode> > CKarmanodeMan::GetKarmanodeRanks(int64_t nBl
     sort(vecKarmanodeScores.rbegin(), vecKarmanodeScores.rend(), CompareScoreMN());
 
     int rank = 0;
-    BOOST_FOREACH (PAIRTYPE(int64_t, CKarmanode) & s, vecKarmanodeScores) {
+    for (std::pair<int64_t, CKarmanode> & s : vecKarmanodeScores) {
         rank++;
         vecKarmanodeRanks.push_back(make_pair(rank, s.second));
     }
@@ -680,7 +680,7 @@ CKarmanode* CKarmanodeMan::GetKarmanodeByRank(int nRank, int64_t nBlockHeight, i
     std::vector<pair<int64_t, CTxIn> > vecKarmanodeScores;
 
     // scan for winner
-    BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+    for (CKarmanode& mn : vKarmanodes) {
         if (mn.protocolVersion < minProtocol) continue;
         if (fOnlyActive) {
             mn.Check();
@@ -696,7 +696,7 @@ CKarmanode* CKarmanodeMan::GetKarmanodeByRank(int nRank, int64_t nBlockHeight, i
     sort(vecKarmanodeScores.rbegin(), vecKarmanodeScores.rend(), CompareScoreTxIn());
 
     int rank = 0;
-    BOOST_FOREACH (PAIRTYPE(int64_t, CTxIn) & s, vecKarmanodeScores) {
+    for (std::pair<int64_t, CTxIn> & s : vecKarmanodeScores) {
         rank++;
         if (rank == nRank) {
             return Find(s.second);
@@ -712,7 +712,7 @@ void CKarmanodeMan::ProcessKarmanodeConnections()
     if (Params().NetworkID() == CBaseChainParams::REGTEST) return;
 
     LOCK(cs_vNodes);
-    BOOST_FOREACH (CNode* pnode, vNodes) {
+    for (CNode* pnode : vNodes) {
         if (pnode->fObfuScationMaster) {
             if (obfuScationPool.pSubmittedToKarmanode != NULL && pnode->addr == obfuScationPool.pSubmittedToKarmanode->addr) continue;
             LogPrint("karmanode","Closing Karmanode connection peer=%i \n", pnode->GetId());
@@ -823,7 +823,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
 
         int nInvCount = 0;
 
-        BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+        for (CKarmanode& mn : vKarmanodes) {
             if (mn.addr.IsRFC1918()) continue; //local network
 
             if (mn.IsEnabled()) {
@@ -956,7 +956,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
                     if (pmn->IsEnabled()) {
                         TRY_LOCK(cs_vNodes, lockNodes);
                         if (!lockNodes) return;
-                        BOOST_FOREACH (CNode* pnode, vNodes)
+                        for (CNode* pnode : vNodes)
                             if (pnode->nVersion >= karmanodePayments.GetMinKarmanodePaymentsProto())
                                 pnode->PushMessage(NetMsgType::DSEE, vin, addr, vchSig, sigTime, pubkey, pubkey2, count, current, lastUpdated, protocolVersion, donationAddress, donationPercentage);
                     }
@@ -1045,7 +1045,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
             if (mn.IsEnabled()) {
                 TRY_LOCK(cs_vNodes, lockNodes);
                 if (!lockNodes) return;
-                BOOST_FOREACH (CNode* pnode, vNodes)
+                for (CNode* pnode : vNodes)
                     if (pnode->nVersion >= karmanodePayments.GetMinKarmanodePaymentsProto())
                         pnode->PushMessage(NetMsgType::DSEE, vin, addr, vchSig, sigTime, pubkey, pubkey2, count, current, lastUpdated, protocolVersion, donationAddress, donationPercentage);
             }
@@ -1115,7 +1115,7 @@ void CKarmanodeMan::ProcessMessage(CNode* pfrom, std::string& strCommand, CDataS
                     TRY_LOCK(cs_vNodes, lockNodes);
                     if (!lockNodes) return;
                     LogPrint("karmanode", "dseep - relaying %s \n", vin.prevout.hash.ToString());
-                    BOOST_FOREACH (CNode* pnode, vNodes)
+                    for (CNode* pnode : vNodes)
                         if (pnode->nVersion >= karmanodePayments.GetMinKarmanodePaymentsProto())
                             pnode->PushMessage(NetMsgType::DSEEP, vin, vchSig, sigTime, stop);
                 }

@@ -222,7 +222,7 @@ void CKarmanodeSync::ClearFulfilledRequest()
     TRY_LOCK(cs_vNodes, lockRecv);
     if (!lockRecv) return;
 
-    BOOST_FOREACH (CNode* pnode, vNodes) {
+    for (CNode* pnode : vNodes) {
         pnode->ClearFulfilledRequest(NetMsgType::GETSPORK);
         pnode->ClearFulfilledRequest("knsync");
         pnode->ClearFulfilledRequest("knwsync");
@@ -237,7 +237,7 @@ void CKarmanodeSync::Process()
     if (tick++ % KARMANODE_SYNC_TIMEOUT != 0) return;
 
     if (IsSynced()) {
-        /* 
+        /*
             Resync if we lose all karmanodes from sleep/wake or failure to sync originally
         */
         if (mnodeman.CountEnabled() == 0) {
@@ -264,7 +264,7 @@ void CKarmanodeSync::Process()
     TRY_LOCK(cs_vNodes, lockRecv);
     if (!lockRecv) return;
 
-    BOOST_FOREACH (CNode* pnode, vNodes) {
+    for (CNode* pnode : vNodes) {
         if (Params().NetworkID() == CBaseChainParams::REGTEST) {
             if (RequestedKarmanodeAttempt <= 2) {
                 pnode->PushMessage(NetMsgType::GETSPORKS); //get current network sporks
@@ -290,7 +290,7 @@ void CKarmanodeSync::Process()
             pnode->PushMessage("getsporks"); //get current network sporks
             if (RequestedKarmanodeAttempt >= 2) GetNextAsset();
             RequestedKarmanodeAttempt++;
- 
+
             return;
          }
 
@@ -367,10 +367,10 @@ void CKarmanodeSync::Process()
 
         if (pnode->nVersion >= ActiveProtocol()) {
             if (RequestedKarmanodeAssets == KARMANODE_SYNC_BUDGET) {
-                
+
                 // We'll start rejecting votes if we accidentally get set as synced too soon
                 if (lastBudgetItem > 0 && lastBudgetItem < GetTime() - KARMANODE_SYNC_TIMEOUT * 2 && RequestedKarmanodeAttempt >= KARMANODE_SYNC_THRESHOLD) {
-                    
+
                     // Hasn't received a new item in the last five seconds, so we'll move to the
                     GetNextAsset();
 

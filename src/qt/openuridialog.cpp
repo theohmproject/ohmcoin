@@ -18,9 +18,7 @@ OpenURIDialog::OpenURIDialog(QWidget* parent) : QDialog(parent),
 {
     ui->setupUi(this);
     ui->uriEdit->setAttribute(Qt::WA_MacShowFocusRect, 0);
-#if QT_VERSION >= 0x040700
     ui->uriEdit->setPlaceholderText("ohmcoin:");
-#endif
 }
 
 OpenURIDialog::~OpenURIDialog()

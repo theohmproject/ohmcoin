@@ -9,6 +9,7 @@
 #include "configurekarmanodepage.h"
 
 #include "activekarmanode.h"
+#include "askpassphrasedialog.h"
 #include "clientmodel.h"
 #include "guiutil.h"
 #include "init.h"
@@ -16,7 +17,7 @@
 #include "karmanodeconfig.h"
 #include "karmanodeman.h"
 #include "sync.h"
-#include "wallet.h"
+#include "wallet/wallet.h"
 #include "walletmodel.h"
 #include "util.h"
 
@@ -59,21 +60,21 @@ KarmanodeList::KarmanodeList(QWidget* parent) : QWidget(parent),
     QAction* startAliasAction = new QAction(tr("Start alias"), this);
     QAction* copyAliasAction = new QAction(tr("Copy alias"), this);
     QAction* editAliasAction = new QAction(tr("Edit alias"), this);
-    QAction* deleteAliasAction = new QAction(tr("Delete"), this);	
+    QAction* deleteAliasAction = new QAction(tr("Delete"), this);
 
     contextMenu = new QMenu();
     contextMenu->addAction(startAliasAction);
     contextMenu->addAction(copyAliasAction);
     contextMenu->addAction(editAliasAction);
-    contextMenu->addAction(deleteAliasAction);	
-	
+    contextMenu->addAction(deleteAliasAction);
+
     connect(ui->tableWidgetMyKarmanodes, SIGNAL(customContextMenuRequested(const QPoint&)), this, SLOT(showContextMenu(const QPoint&)));
-    connect(startAliasAction, SIGNAL(triggered()), this, SLOT(on_startButton_clicked()));	
-    connect(copyAliasAction, SIGNAL(triggered()), this, SLOT(copyAlias()));	
+    connect(startAliasAction, SIGNAL(triggered()), this, SLOT(on_startButton_clicked()));
+    connect(copyAliasAction, SIGNAL(triggered()), this, SLOT(copyAlias()));
     connect(editAliasAction, SIGNAL(triggered()), this, SLOT(on_editConfigureKarmanode_clicked()));
-    connect(deleteAliasAction, SIGNAL(triggered()), this, SLOT(deleteAlias()));	
-	
-	
+    connect(deleteAliasAction, SIGNAL(triggered()), this, SLOT(deleteAlias()));
+
+
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(updateMyNodeList()));
     timer->start(1000);
@@ -109,7 +110,7 @@ void KarmanodeList::StartAlias(std::string strAlias)
     std::string strStatusHtml;
     strStatusHtml += "<center>Alias: " + strAlias;
 
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
         if (mne.getAlias() == strAlias) {
             std::string strError;
             CKarmanodeBroadcast mnb;
@@ -141,7 +142,7 @@ void KarmanodeList::StartAll(std::string strCommand)
     int nCountFailed = 0;
     std::string strFailedHtml;
 
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
         std::string strError;
         CKarmanodeBroadcast mnb;
 
@@ -186,7 +187,7 @@ void KarmanodeList::updateMyKarmanodeInfo(QString strAlias, QString strAddr, CKa
 
     bool fOldRowFound = false;
     int nNewRow = 0;
-	
+
     for (int i = 0; i < ui->tableWidgetMyKarmanodes->rowCount(); i++) {
         if (ui->tableWidgetMyKarmanodes->item(i, 0)->text() == strAlias) {
             fOldRowFound = true;
@@ -230,7 +231,7 @@ void KarmanodeList::updateMyNodeList(bool fForce)
     nTimeMyListUpdated = GetTime();
 
     ui->tableWidgetMyKarmanodes->setSortingEnabled(false);
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
         int nIndex;
         if(!mne.castOutputIndex(nIndex))
             continue;
@@ -268,7 +269,7 @@ void KarmanodeList::on_startButton_clicked()
     WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
 
     if (encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForAnonymizationOnly) {
-        WalletModel::UnlockContext ctx(walletModel->requestUnlock());
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock(AskPassphraseDialog::Context::Unlock_Full));
 
         if (!ctx.isValid()) return; // Unlock wallet was cancelled
 
@@ -292,34 +293,34 @@ void KarmanodeList::on_editConfigureKarmanode_clicked()
     std::string strAlias = ui->tableWidgetMyKarmanodes->item(nSelectedRow, 0)->text().toStdString();
 
 	int count = 0;
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
 		count = count + 1;
 		if(strAlias == mne.getAlias()) {
 			KarmanodeList::openEditConfigureKarmanodePage(QString::fromStdString(mne.getAlias()), QString::fromStdString(mne.getIp()), QString::fromStdString(mne.getPrivKey()), QString::fromStdString(mne.getTxHash()), QString::fromStdString(mne.getOutputIndex()), count);
 			break;
-			
+
 		}
     }
 }
 
 void KarmanodeList::on_configureKarmanodeButton_clicked()
 {
-	
+
     ConfigureKarmanodePage dlg(ConfigureKarmanodePage::NewConfigureKarmanode, this);
     if ( QDialog::Accepted == dlg.exec() )
     {
 while (ui->tableWidgetMyKarmanodes->rowCount() > 0)
 	{
 		ui->tableWidgetMyKarmanodes->removeRow(0);
-	}		
-	
+	}
+
 	// clear cache
 	karmanodeConfig.clear();
     // parse karmanode.conf
     std::string strErr;
     if (!karmanodeConfig.read(strErr)) {
         LogPrintf("Error reading karmanode configuration file: \n");
-    }	
+    }
       updateMyNodeList(true);
     }
 }
@@ -339,15 +340,15 @@ void KarmanodeList::openEditConfigureKarmanodePage(QString strAlias, QString str
 while (ui->tableWidgetMyKarmanodes->rowCount() > 0)
 	{
 		ui->tableWidgetMyKarmanodes->removeRow(0);
-	}		
-	
+	}
+
 	// clear cache
 	karmanodeConfig.clear();
     // parse karmanode.conf
     std::string strErr;
     if (!karmanodeConfig.read(strErr)) {
         LogPrintf("Error reading karmanode configuration file: \n");
-    }	
+    }
       updateMyNodeList(true);
     }
 }
@@ -364,7 +365,7 @@ void KarmanodeList::deleteAlias()
     int nSelectedRow = index.row();
     std::string strAlias = ui->tableWidgetMyKarmanodes->item(nSelectedRow, 0)->text().toStdString();
 	int count = 0;
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
 		count = count + 1;
 		if(strAlias == mne.getAlias()) {
 			vector<COutPoint> confLockedCoins;
@@ -382,18 +383,18 @@ void KarmanodeList::deleteAlias()
 while (ui->tableWidgetMyKarmanodes->rowCount() > 0)
 	{
 		ui->tableWidgetMyKarmanodes->removeRow(0);
-	}		
-	
+	}
+
 	// clear cache
 	karmanodeConfig.clear();
     // parse karmanode.conf
     std::string strErr;
     if (!karmanodeConfig.read(strErr)) {
         LogPrintf("Error reading karmanode configuration file: \n");
-    }			
+    }
 			updateMyNodeList(true);
 			break;
-			
+
 		}
     }
 }
@@ -410,14 +411,14 @@ void KarmanodeList::copyAlias()
     int nSelectedRow = index.row();
     std::string strAlias = ui->tableWidgetMyKarmanodes->item(nSelectedRow, 0)->text().toStdString();
 
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
-		
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
+
 		if(strAlias == mne.getAlias()) {
-			
+
 			std::string fullAliasCopy = mne.getAlias() + " " + mne.getIp() + " " + mne.getPrivKey() + " " + mne.getTxHash() + " " + mne.getOutputIndex();
 			GUIUtil::setClipboard(QString::fromStdString(fullAliasCopy));
 			break;
-			
+
 		}
     }
 }
@@ -435,7 +436,7 @@ void KarmanodeList::on_startAllButton_clicked()
     WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
 
     if (encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForAnonymizationOnly) {
-        WalletModel::UnlockContext ctx(walletModel->requestUnlock());
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock(AskPassphraseDialog::Context::Unlock_Full));
 
         if (!ctx.isValid()) return; // Unlock wallet was cancelled
 
@@ -466,7 +467,7 @@ void KarmanodeList::on_startMissingButton_clicked()
     WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
 
     if (encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForAnonymizationOnly) {
-        WalletModel::UnlockContext ctx(walletModel->requestUnlock());
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock(AskPassphraseDialog::Context::Unlock_Full));
 
         if (!ctx.isValid()) return; // Unlock wallet was cancelled
 

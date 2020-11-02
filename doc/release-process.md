@@ -115,7 +115,7 @@ The gbuild invocations below <b>DO NOT DO THIS</b> by default.
     mv build/out/ohmcoin-*.tar.gz build/out/ohmcoin-*.dmg ../
 
     ./bin/gbuild --memory 3000 --commit ohmcoin=v${VERSION} ../ohmcoin/contrib/gitian-descriptors/gitian-aarch64.yml
-    ./bin/gsign --signer $SIGNER --release ${VERSION}-linux --destination ../gitian.sigs/ ../ohmcoin/contrib/gitian-descriptors/gitian-aarch64.yml
+    ./bin/gsign --signer $SIGNER --release ${VERSION}-aarch64 --destination ../gitian.sigs/ ../ohmcoin/contrib/gitian-descriptors/gitian-aarch64.yml
     mv build/out/ohmcoin-*.tar.gz build/out/src/ohmcoin-*.tar.gz ../
     popd
 

@@ -10,7 +10,7 @@
 
 #include "amount.h"
 #include "primitives/transaction.h"
-#include "db.h"
+#include "wallet/db.h"
 #include "key.h"
 #include "keystore.h"
 #include "primitives/zerocoin.h"

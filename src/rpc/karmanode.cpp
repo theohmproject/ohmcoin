@@ -11,7 +11,7 @@
 #include "karmanode-payments.h"
 #include "karmanodeconfig.h"
 #include "karmanodeman.h"
-#include "rpcserver.h"
+#include "rpc/server.h"
 #include "utilmoneystr.h"
 
 #include <univalue.h>
@@ -228,7 +228,7 @@ UniValue listkarmanodes(const UniValue& params, bool fHelp)
         nHeight = pindex->nHeight;
     }
     std::vector<pair<int, CKarmanode> > vKarmanodeRanks = mnodeman.GetKarmanodeRanks(nHeight);
-    BOOST_FOREACH (PAIRTYPE(int, CKarmanode) & s, vKarmanodeRanks) {
+    for (std::pair<int, CKarmanode> & s : vKarmanodeRanks) {
         UniValue obj(UniValue::VOBJ);
         std::string strVin = s.second.vin.prevout.ToStringShort();
         std::string strTxHash = s.second.vin.prevout.hash.ToString();
@@ -464,7 +464,7 @@ UniValue startkarmanode (const UniValue& params, bool fHelp)
 
         UniValue resultsObj(UniValue::VARR);
 
-        BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+        for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
             std::string errorMessage;
             int nIndex;
             if(!mne.castOutputIndex(nIndex))
@@ -515,7 +515,7 @@ UniValue startkarmanode (const UniValue& params, bool fHelp)
         UniValue statusObj(UniValue::VOBJ);
         statusObj.push_back(Pair("alias", alias));
 
-        BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+        for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
             if (mne.getAlias() == alias) {
                 found = true;
                 std::string errorMessage;
@@ -598,7 +598,7 @@ UniValue getkarmanodeoutputs (const UniValue& params, bool fHelp)
     vector<COutput> possibleCoins = activeKarmanode.SelectCoinsKarmanode();
 
     UniValue ret(UniValue::VARR);
-    BOOST_FOREACH (COutput& out, possibleCoins) {
+    for (COutput& out : possibleCoins) {
         UniValue obj(UniValue::VOBJ);
         obj.push_back(Pair("txhash", out.tx->GetHash().ToString()));
         obj.push_back(Pair("outputidx", out.i));
@@ -643,7 +643,7 @@ UniValue listkarmanodeconf (const UniValue& params, bool fHelp)
 
     UniValue ret(UniValue::VARR);
 
-    BOOST_FOREACH (CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+    for (CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
         int nIndex;
         if(!mne.castOutputIndex(nIndex))
             continue;
@@ -778,7 +778,7 @@ UniValue getkarmanodewinners (const UniValue& params, bool fHelp)
             UniValue winner(UniValue::VARR);
             boost::char_separator<char> sep(",");
             boost::tokenizer< boost::char_separator<char> > tokens(strPayment, sep);
-            BOOST_FOREACH (const string& t, tokens) {
+            for (const string& t : tokens) {
                 UniValue addr(UniValue::VOBJ);
                 std::size_t pos = t.find(":");
                 std::string strAddress = t.substr(0,pos);
@@ -842,7 +842,7 @@ UniValue getkarmanodescores (const UniValue& params, bool fHelp)
     for (int nHeight = chainActive.Tip()->nHeight - nLast; nHeight < chainActive.Tip()->nHeight + 20; nHeight++) {
         uint256 nHigh = 0;
         CKarmanode* pBestKarmanode = NULL;
-        BOOST_FOREACH (CKarmanode& mn, vKarmanodes) {
+        for (CKarmanode& mn : vKarmanodes) {
             uint256 n = mn.CalculateScore(1, nHeight - 100);
             if (n > nHigh) {
                 nHigh = n;
@@ -927,7 +927,7 @@ UniValue createkarmanodebroadcast(const UniValue& params, bool fHelp)
         UniValue statusObj(UniValue::VOBJ);
         statusObj.push_back(Pair("alias", alias));
 
-        BOOST_FOREACH(CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+        for(CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
             if(mne.getAlias() == alias) {
                 found = true;
                 std::string errorMessage;
@@ -970,7 +970,7 @@ UniValue createkarmanodebroadcast(const UniValue& params, bool fHelp)
 
         UniValue resultsObj(UniValue::VARR);
 
-        BOOST_FOREACH(CKarmanodeConfig::CKarmanodeEntry mne, karmanodeConfig.getEntries()) {
+        for(CKarmanodeConfig::CKarmanodeEntry mne : karmanodeConfig.getEntries()) {
             std::string errorMessage;
 
             CTxIn vin = CTxIn(uint256S(mne.getTxHash()), uint32_t(atoi(mne.getOutputIndex().c_str())));

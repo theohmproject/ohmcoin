@@ -16,7 +16,7 @@
 #include "coins.h"
 #include "keystore.h"
 #include "init.h"
-#include "wallet.h"
+#include "wallet/wallet.h"
 #include "script/sign.h"
 #include "script/interpreter.h"
 #include "utilmoneystr.h"
@@ -527,7 +527,7 @@ void MultisigDialog::on_signButton_clicked()
             CCoinsViewMemPool viewMempool(&viewChain, mempool);
             view.SetBackend(viewMempool); // temporarily switch cache backend to db+mempool view
 
-            BOOST_FOREACH (const CTxIn& txin, tx.vin) {
+            for (const CTxIn& txin : tx.vin) {
                 const uint256& prevHash = txin.prevout.hash;
                 CCoins coins;
                 view.AccessCoins(prevHash); // this is certainly allowed to fail
@@ -668,7 +668,7 @@ bool MultisigDialog::signMultisigTx(CMutableTransaction& tx, string& errorOut, Q
             }
         }else{
             if (model->getEncryptionStatus() == model->Locked) {
-                if (!model->requestUnlock(true).isValid()) {
+                if (!model->requestUnlock(AskPassphraseDialog::Context::Multi_Sig, true).isValid()) {
                     // Unlock wallet was cancelled
                     throw runtime_error("Error: Your wallet is locked. Please enter the wallet passphrase first.");
                 }
