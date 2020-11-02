@@ -325,14 +325,17 @@ static Checkpoints::MapCheckpoints mapCheckpoints =
             (462146, uint256("0xb0ffff92a2933dd8bafba722d7c6ea6413840a863ba0ef22794561e4f944ff6f"))
             (618641, uint256("0x247f41f60b4fd8de2727d6745c544f6b399d6712c1cdc7f00a8a909b830bf015"))
             (831256, uint256("0x3913ccd8359e7d7f81df2fc2b5f68848b6aa3663f84c87899691eb0e43454eec"))
-            (2848716, uint256("0x19dfab7fbb6dd6ff84fed0bda251632376d70054376da4469f5498dc3e575fb6"));
+            (2848716, uint256("0x19dfab7fbb6dd6ff84fed0bda251632376d70054376da4469f5498dc3e575fb6"))
+            (2967145, uint256("0x389fc6e4ee47eee73ffdc77727d3235be1095c23c071933fb7e343f7b6e544e2"))
+            (2977932, uint256("0x9d17db9fd8034fd02cf24f85cd1e68b2a09553b422ac14f8ef83c5ec171af4d3"))
+            (2991900, uint256("0xa13a332af480005d03bb4e72c32a84637d2b47e6de9689c52db1a03112ca5858"));
 
 static const Checkpoints::CCheckpointData data = {
     &mapCheckpoints,
-    1597086644, // * UNIX timestamp of last checkpoint block
-    5749439,     // * total number of transactions between genesis and last checkpoint
+    1604285153, // * UNIX timestamp of last checkpoint block
+    6047912,     // * total number of transactions between genesis and last checkpoint
                 //   (the tx=... number in the SetBestChain debug.log lines)
-    2880        // * estimated number of transactions per day after checkpoint
+    500        // * estimated number of transactions per day after checkpoint
 };
 
 static Checkpoints::MapCheckpoints mapCheckpointsTestnet =
@@ -491,17 +494,25 @@ public:
 
         // Network upgrades
         consensus.vUpgrades[Consensus::BASE_NETWORK].nActivationHeight =
-                Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
+            Consensus::NetworkUpgrade::ALWAYS_ACTIVE;
         consensus.vUpgrades[Consensus::UPGRADE_TESTDUMMY].nActivationHeight =
-                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+            Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+        // Version 3.0.2 upgrade
         consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nActivationHeight = 2977924;
         consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].nProtocolVersion = 71020;
         consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nActivationHeight = 2977924;
         consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].nProtocolVersion = 71020;
+        // Next version dummy
         consensus.vUpgrades[Consensus::UPGRADE_V3_1_DUMMY].nActivationHeight =
-                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+            Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
         consensus.vUpgrades[Consensus::UPGRADE_V3_2_DUMMY].nActivationHeight =
-                Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+            Consensus::NetworkUpgrade::NO_ACTIVATION_HEIGHT;
+
+        // Version 3.0.2 block activated at
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKTIME].hashActivationBlock =
+            uint256S("0xce02f419dcac41e3a94c4284eee1d6525b1f5c0129a4242be8f01699df965157");
+        consensus.vUpgrades[Consensus::UPGRADE_V3_0_BLOCKREWARD].hashActivationBlock =
+            uint256S("0xce02f419dcac41e3a94c4284eee1d6525b1f5c0129a4242be8f01699df965157");
 
     }
 
