@@ -5,9 +5,9 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "rpcclient.h"
+#include "rpc/client.h"
 
-#include "rpcprotocol.h"
+#include "rpc/protocol.h"
 #include "ui_interface.h"
 #include "util.h"
 
@@ -139,6 +139,7 @@ static const CRPCConvertParam vRPCConvertParams[] =
         {"exportzerocoins", 1},
         {"resetmintzerocoin", 0},
         {"getspentzerocoinamount", 1},
+        {"getaccumulatorvalues", 0},
         {"getfeeinfo", 0},
         { "addwitnessaddress", 1}
     };
