@@ -106,24 +106,11 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
         return NULL;
     CBlock* pblock = &pblocktemplate->block; // pointer for convenience
 
-    // Tip
-    CBlockIndex* pindexPrev;
-    {   // Don't keep cs_main locked
-        LOCK(cs_main);
-        pindexPrev = chainActive.Tip();
-        if (!pindexPrev)
-            return nullptr;
-        // Do not pass in the chain tip, because it can change.
-        // Instead pass the blockindex directly from mapblockindex, which is const
-        pindexPrev = mapBlockIndex.at(pindexPrev->GetBlockHash());
-    }
-
-    const int nHeight = pindexPrev->nHeight + 1;
-
+    CBlockIndex* pindexPrev = chainActive.Tip();
 
     // Make sure to create the correct block version after zerocoin is enabled
-    bool fZerocoinActive = nHeight >= Params().Zerocoin_StartHeight();
-    if(Params().IsStakeModifierV2(nHeight)) {
+    bool fZerocoinActive = chainActive.Height() >= Params().Zerocoin_StartHeight();
+    if(Params().IsStakeModifierV2(pindexPrev->nHeight + 1)) {
         pblock->nVersion = 5;       //!> Supports V2 Stake Modifiers.
     } else if (fZerocoinActive) {
         pblock->nVersion = 4;
@@ -501,11 +488,11 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
         LogPrintf("CreateNewBlock(): total size %u\n", nBlockSize);
 
         // Compute final coinbase transaction.
-        pblock->vtx[0].vin[0].scriptSig = CScript() << nHeight << OP_0;
         if (!fProofOfStake) {
             pblock->vtx[0] = txNew;
             pblocktemplate->vTxFees[0] = -nFees;
         }
+        pblock->vtx[0].vin[0].scriptSig = CScript() << nHeight << OP_0;
         pblocktemplate->vchCoinbaseCommitment = GenerateCoinbaseCommitment(*pblock, pindexPrev);
 
         // Fill in header
