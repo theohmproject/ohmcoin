@@ -330,6 +330,7 @@ void CKarmanodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFee
             txNew.vout[i].nValue = karmanodePayment;
 
             //subtract mn payment from the stake reward
+            if (!txNew.vout[1].IsZerocoinMint()) {
                 if (i == 2) {
                     // Majority of cases; do it quick and move on
                     txNew.vout[i - 1].nValue -= karmanodePayment;
