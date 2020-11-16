@@ -1,11 +1,11 @@
-Mac OS X Build Instructions and Notes
+macOS Build Instructions and Notes
 ====================================
 This guide will show you how to build ohmcoind (headless client) for OSX.
 
 Notes
 -----
 
-* Tested on OS X 10.7 through 10.10 on 64-bit Intel processors only. Please read carefully if you are building on High Sierra (10.13), there are special instructions.
+* Tested on macOS 10.13 through 11 on 64-bit Intel processors only. Please read carefully if you are building on High Sierra (10.13), there are special instructions.
 
 * All of the commands should be executed in a Terminal application. The
 built-in one is located in `/Applications/Utilities`.
@@ -97,9 +97,9 @@ as follows for maximum compatibility:
 
 All dependencies should be compiled with these flags:
 
- -mmacosx-version-min=10.7
+ -mmacosx-version-min=10.13
  -arch x86_64
- -isysroot $(xcode-select --print-path)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.7.sdk
+ -isysroot $(xcode-select --print-path)/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.14.sdk
 
 Once dependencies are compiled, see release-process.md for how the Ohmcoin-Qt.app
 bundle is packaged and signed to create the .dmg disk image that is distributed.
@@ -154,9 +154,9 @@ Troubleshooting:<a name="trouble"></a>
         export LDFLAGS=-L/usr/local/opt/openssl/lib
         export CPPFLAGS=-I/usr/local/opt/openssl/include
 
-### Building Qt wallet for OSX High Sierra
+### Building Qt wallet for macOS High Sierra
 
-Currently the gitian build is not supported for Mac OSX High Sierra, but a Qt wallet can be built natively on a OSX High Sierra machine. These instructions provide the steps to perform that build from source code.
+Currently the gitian build is not supported for macOS High Sierra, but a Qt wallet can be built natively on a macOS High Sierra machine. These instructions provide the steps to perform that build from source code.
 
 If you do not have XCode instlled, go to the Mac App Store and install it.
 
@@ -168,11 +168,7 @@ Otherwise, open Terminal and type in the command to install homebrew:
 
 The use homebrew to install a number of unix programs and libraries needed to build the Ohmcoin wallet:
 
-```brew install autoconf automake berkeley-db@4 boost@1.57 git libevent libtool miniupnpc openssl pkg-config protobuf qt zeromq```
-
-To have the build process use the proper version of boost, link that version as follows:
-
-```brew link boost@1.57 --force```
+```brew install autoconf automake berkeley-db@4 boost git libevent libtool librsvg miniupnpc openssl pkg-config protobuf qt zeromq```
 
 Next, switch into your Downloads folder:
 
@@ -193,7 +189,7 @@ Then we begin the build process:
 ```./configure```
 ```make```
 
-You have the choice to build the GUI Ohmcoin wallet as a Mac OSX app, described in “How to build the Ohmcoin-Qt App”. If, for whatever reason, you prefer to use the command line tools, continue with “Command line tools”.
+You have the choice to build the GUI Ohmcoin wallet as a macOSapp, described in “How to build the Ohmcoin-Qt App”. If, for whatever reason, you prefer to use the command line tools, continue with “Command line tools”.
 
 ### How to build the Ohmcoin-Qt App:
 

@@ -67,7 +67,7 @@ Unixy OSes by entering the following in a terminal:
     echo "896cc42998edf65f1db4eba83581941fb2a584f2214976432b841af96b17ccda  debian-8.10.0-amd64-netinst.iso" | sha256sum -c
     # (must return OK)
 
-Replace `sha256sum` with `shasum` on OSX.
+Replace `sha256sum` with `shasum` on macOS.
 
 Then start the VM. On the first launch you will be asked for a CD or DVD image. Choose the downloaded ISO.
 
@@ -115,7 +115,7 @@ To select a different button, press `Tab`.
 ![](figs/debian_install_9_user_password.png)
 
 - The installer will set up the clock using a time server; this process should be automatic
-- Set up the clock: choose a time zone (depends on the locale settings that you picked earlier; specifics don't matter)  
+- Set up the clock: choose a time zone (depends on the locale settings that you picked earlier; specifics don't matter)
 
 ![](figs/debian_install_10_configure_clock.png)
 

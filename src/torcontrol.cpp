@@ -16,7 +16,7 @@
 #include <stdlib.h>
 
 #include <boost/function.hpp>
-#include <boost/bind.hpp>
+#include <boost/bind/bind.hpp>
 #include <boost/signals2/signal.hpp>
 #include <boost/algorithm/string/predicate.hpp>
 #include <boost/algorithm/string/split.hpp>
@@ -460,7 +460,7 @@ TorController::TorController(struct event_base* _base, const std::string& _targe
     if (!reconnect_ev)
         LogPrintf("tor: Failed to create event for reconnection: out of memory?\n");
     // Start connection attempts immediately
-    if (!conn.Connect(_target, boost::bind(&TorController::connected_cb, this, _1),
+        if (!conn.Connect(_target, boost::bind(&TorController::connected_cb, this, boost::placeholders::_1),
          boost::bind(&TorController::disconnected_cb, this, _1) )) {
         LogPrintf("tor: Initiating connection to Tor control port %s failed\n", _target);
     }
@@ -540,8 +540,8 @@ void TorController::auth_cb(TorControlConnection& _conn, const TorControlReply& 
         // Note that the 'virtual' port doesn't have to be the same as our internal port, but this is just a convenient
         // choice.  TODO; refactor the shutdown sequence some day.
         _conn.Command(strprintf("ADD_ONION %s Port=%i,127.0.0.1:%i", private_key, GetListenPort(), GetListenPort()),
-            boost::bind(&TorController::add_onion_cb, this, _1, _2));
-    } else {
+            boost::bind(&TorController::add_onion_cb, this, boost::placeholders::_1, boost::placeholders::_2));
+            } else {
         LogPrintf("tor: Authentication failed\n");
     }
 }
