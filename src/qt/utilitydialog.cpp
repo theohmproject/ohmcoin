@@ -1,6 +1,7 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2017-2020 The OHMCOIN developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -150,7 +151,8 @@ void HelpMessageDialog::on_okButton_accepted()
 
 
 /** "Shutdown" window */
-ShutdownWindow::ShutdownWindow(QWidget* parent, Qt::WindowFlags f) : QWidget(parent, f)
+ShutdownWindow::ShutdownWindow(QWidget *parent, Qt::WindowFlags f):
+    QWidget(parent, f)
 {
     QVBoxLayout* layout = new QVBoxLayout();
     layout->addWidget(new QLabel(
@@ -159,7 +161,7 @@ ShutdownWindow::ShutdownWindow(QWidget* parent, Qt::WindowFlags f) : QWidget(par
     setLayout(layout);
 }
 
-void ShutdownWindow::showShutdownWindow(BitcoinGUI* window)
+void ShutdownWindow::showShutdownWindow(QMainWindow* window)
 {
     if (!window)
         return;

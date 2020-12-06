@@ -1,6 +1,7 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
 // Copyright (c) 2014-2015 The Dash developers
 // Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2017-2020 The OHMCOIN developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
@@ -22,7 +23,8 @@
 #include <QDesktopWidget>
 #include <QPainter>
 
-SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle* networkStyle) : QWidget(0, f), curAlignment(0)
+Splash::Splash(const NetworkStyle* networkStyle)
+    : QWidget(), curAlignment(0)
 {
     // set reference point, paddings
     int paddingLeft = 14;
@@ -102,18 +104,18 @@ SplashScreen::SplashScreen(Qt::WindowFlags f, const NetworkStyle* networkStyle) 
     subscribeToCoreSignals();
 }
 
-SplashScreen::~SplashScreen()
+Splash::~Splash()
 {
     unsubscribeFromCoreSignals();
 }
 
-void SplashScreen::slotFinish(QWidget* mainWin)
+void Splash::slotFinish(QWidget* mainWin)
 {
     Q_UNUSED(mainWin);
     hide();
 }
 
-static void InitMessage(SplashScreen* splash, const std::string& message)
+static void InitMessage(Splash* splash, const std::string& message)
 {
     QMetaObject::invokeMethod(splash, "showMessage",
         Qt::QueuedConnection,
@@ -122,19 +124,19 @@ static void InitMessage(SplashScreen* splash, const std::string& message)
         Q_ARG(QColor, QColor(73, 84, 94)));
 }
 
-static void ShowProgress(SplashScreen* splash, const std::string& title, int nProgress)
+static void ShowProgress(Splash* splash, const std::string& title, int nProgress)
 {
     InitMessage(splash, title + strprintf("%d", nProgress) + "%");
 }
 
 #ifdef ENABLE_WALLET
-static void ConnectWallet(SplashScreen* splash, CWallet* wallet)
+static void ConnectWallet(Splash* splash, CWallet* wallet)
 {
     wallet->ShowProgress.connect(boost::bind(ShowProgress, splash, boost::placeholders::_1, boost::placeholders::_2));
 }
 #endif
 
-void SplashScreen::subscribeToCoreSignals()
+void Splash::subscribeToCoreSignals()
 {
     // Connect signals to client
     uiInterface.InitMessage.connect(boost::bind(InitMessage, this, boost::placeholders::_1));
@@ -144,7 +146,7 @@ void SplashScreen::subscribeToCoreSignals()
 #endif
 }
 
-void SplashScreen::unsubscribeFromCoreSignals()
+void Splash::unsubscribeFromCoreSignals()
 {
     // Disconnect signals from client
     uiInterface.InitMessage.disconnect(boost::bind(InitMessage, this, boost::placeholders::_1));
@@ -155,7 +157,7 @@ void SplashScreen::unsubscribeFromCoreSignals()
 #endif
 }
 
-void SplashScreen::showMessage(const QString& message, int alignment, const QColor& color)
+void Splash::showMessage(const QString& message, int alignment, const QColor& color)
 {
     curMessage = message;
     curAlignment = alignment;
@@ -163,7 +165,7 @@ void SplashScreen::showMessage(const QString& message, int alignment, const QCol
     update();
 }
 
-void SplashScreen::paintEvent(QPaintEvent* event)
+void Splash::paintEvent(QPaintEvent* event)
 {
     QPainter painter(this);
     painter.drawPixmap(0, 0, pixmap);
@@ -172,7 +174,7 @@ void SplashScreen::paintEvent(QPaintEvent* event)
     painter.drawText(r, curAlignment, curMessage);
 }
 
-void SplashScreen::closeEvent(QCloseEvent* event)
+void Splash::closeEvent(QCloseEvent* event)
 {
     StartShutdown(); // allows an "emergency" shutdown during startup
     event->ignore();
