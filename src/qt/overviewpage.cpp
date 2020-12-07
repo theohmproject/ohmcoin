@@ -212,8 +212,8 @@ void OverviewPage::setBalance(const CAmount& balance, const CAmount& unconfirmed
         nWatchOnlyLockedBalance = pwalletMain->GetLockedWatchOnlyBalance();
     }
     // OHMC Balance
-    CAmount nTotalBalance = balance + unconfirmedBalance;
-    CAmount ohmcAvailableBalance = balance - immatureBalance + nLockedBalance;
+    CAmount nTotalBalance = balance + unconfirmedBalance + nLockedBalance;
+    CAmount ohmcAvailableBalance = balance - immatureBalance - nLockedBalance;
     CAmount nTotalWatchBalance = watchOnlyBalance + watchUnconfBalance + watchImmatureBalance;
     CAmount nUnlockedBalance = nTotalBalance - nLockedBalance;
     // zOHMC Balance

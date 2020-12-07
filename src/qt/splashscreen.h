@@ -1,11 +1,14 @@
 // Copyright (c) 2011-2014 The Bitcoin developers
+// Copyright (c) 2014-2015 The Dash developers
+// Copyright (c) 2015-2017 The PIVX developers
+// Copyright (c) 2017-2020 The OHMCOIN developers
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#ifndef BITCOIN_QT_SPLASHSCREEN_H
-#define BITCOIN_QT_SPLASHSCREEN_H
+#ifndef OHMCOIN_QT_SPLASHSCREEN_H
+#define OHMCOIN_QT_SPLASHSCREEN_H
 
-#include <QSplashScreen>
+#include <QWidget>
 
 class NetworkStyle;
 
@@ -15,13 +18,13 @@ class NetworkStyle;
  * can take a long time, and in that case a progress window that cannot be
  * moved around and minimized has turned out to be frustrating to the user.
  */
-class SplashScreen : public QWidget
+class Splash : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SplashScreen(Qt::WindowFlags f, const NetworkStyle* networkStyle);
-    ~SplashScreen();
+    explicit Splash(const NetworkStyle *networkStyle);
+    ~Splash();
 
 protected:
     void paintEvent(QPaintEvent* event);
@@ -46,4 +49,5 @@ private:
     int curAlignment;
 };
 
-#endif // BITCOIN_QT_SPLASHSCREEN_H
+#endif // OHMCOIN_QT_SPLASHSCREEN_H
+
