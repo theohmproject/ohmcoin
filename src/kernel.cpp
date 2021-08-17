@@ -14,6 +14,7 @@
 #include "timedata.h"
 #include "util.h"
 #include "stakeinput.h"
+#include "spork.h"
 
 using namespace std;
 
@@ -413,6 +414,42 @@ bool initStakeInput(const CBlock block, std::unique_ptr<CStakeInput>& stake, int
     return true;
 }
 
+bool CheckKernelExtraInputs(const CTransaction & tx, const CScript& scriptKernel)
+{
+    if (!tx.IsCoinStake()) {
+        return true;
+    }
+
+    const auto& vin = tx.vin;
+    for (size_t i = 0; i < vin.size(); ++i) {
+        const auto& in = vin[i];
+        uint256 hashBlock;
+        CTransaction txPrev;
+
+        if (!GetTransaction(in.prevout.hash, txPrev, hashBlock, true)) {
+            return error("CheckKernelExtraInputs() : INFO: read txPrev failed");
+        }
+
+        const auto& prevOut = txPrev.vout[in.prevout.n];
+        if (scriptKernel != prevOut.scriptPubKey) {
+            return error("CheckKernelExtraInputs() : invalid input at position %d for coinstake %s", i, tx.GetHash().ToString().c_str());
+        }
+    }
+    
+    if (tx.vin.size() > 1) {
+        return error("CheckKernelExtraInputs() : invalid multi-inputs coinstake");
+    }
+
+    // Prevent multi-empty-outputs
+    for (size_t i = 1; i < tx.vout.size(); i++ ) {
+        if (tx.vout[i].IsEmpty()) {
+            return error("CheckKernelExtraInputs() : bad-txns-vout-empty");
+        }
+    }
+
+    return true;
+}
+
 // Check kernel hash target and coinstake signature
 bool CheckProofOfStake(const CBlock block, uint256& hashProofOfStake, std::unique_ptr<CStakeInput>& stake, int nPreviousBlockHeight)
 {
@@ -425,6 +462,19 @@ bool CheckProofOfStake(const CBlock block, uint256& hashProofOfStake, std::uniqu
     CBlockIndex* pindexfrom = stake->GetIndexFrom();
     if (!pindexfrom)
         return error("%s: Failed to find the block index for stake origin", __func__);
+
+    if(GetSporkValue(SPORK_20_KERNAL_EXTRA_STAKING_CHECK) >= pindexfrom->nHeight) {
+        const CTxIn& txin = tx.vin[0];
+        uint256 hashBlock;
+        CTransaction txPrev;
+        if (!GetTransaction(txin.prevout.hash, txPrev, hashBlock, true))
+            return error("CheckProofOfStake() : INFO: read txPrev failed");
+        CTxOut prevTxOut = txPrev.vout[txin.prevout.n];        
+        // any coinstake transaction has to have scripts only from kernel.
+        if (!CheckKernelExtraInputs(tx, prevTxOut.scriptPubKey)) {
+            return error("CheckProofOfStake() : extra inputs check failed");
+        }
+    }
 
     unsigned int nBlockFromTime = pindexfrom->nTime;
     unsigned int nTxTime = block.nTime;
