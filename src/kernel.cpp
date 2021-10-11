@@ -463,7 +463,7 @@ bool CheckProofOfStake(const CBlock block, uint256& hashProofOfStake, std::uniqu
     if (!pindexfrom)
         return error("%s: Failed to find the block index for stake origin", __func__);
 
-    if(GetSporkValue(SPORK_24_KERNAL_EXTRA_STAKING_CHECK) >= pindexfrom->nHeight) {
+    if(GetSporkValue(SPORK_24_KERNEL_EXTRA_STAKING_CHECK) >= pindexfrom->nHeight) {
         const CTxIn& txin = tx.vin[0];
         uint256 hashBlock;
         CTransaction txPrev;
