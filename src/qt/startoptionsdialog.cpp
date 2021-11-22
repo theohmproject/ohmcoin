@@ -1,5 +1,5 @@
 #if defined(HAVE_CONFIG_H)
-#include <config/phore-config.h>
+#include <config/ohmcoin-config.h>
 #endif
 
 #include <startoptionsdialog.h>
