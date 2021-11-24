@@ -20,9 +20,9 @@
 #include "consensus/validation.h"
 #include "init.h"
 #include "kernel.h"
-#include "masternode-budget.h"
-#include "masternode-payments.h"
-#include "masternodeman.h"
+#include "karmanode-budget.h"
+#include "karmanode-payments.h"
+#include "karmanodeman.h"
 #include "merkleblock.h"
 #include "net.h"
 #include "obfuscation.h"
@@ -1517,10 +1517,10 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState& state, const CTransa
         *pfMissingInputs = false;
 
     //Temporarily disable zerocoin for maintenance
-    if (GetAdjustedTime() > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE) && tx.ContainsZerocoins())
+    if (GetAdjustedTime() > GetSporkValue(SPORK_22_ZEROCOIN_MAINTENANCE_MODE) && tx.ContainsZerocoins())
         return state.DoS(10, error("AcceptToMemoryPool : Zerocoin transactions are temporarily disabled for maintenance"), REJECT_INVALID, "bad-tx");
 
-    if (!CheckTransaction(tx, chainActive.Height() >= Params().Zerocoin_StartHeight(), true, state, GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) < chainActive.Tip()->nTime)) {
+    if (!CheckTransaction(tx, chainActive.Height() >= Params().Zerocoin_StartHeight(), true, state, GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) < chainActive.Tip()->nTime)) {
         return state.DoS(100, error("AcceptToMemoryPool: : CheckTransaction failed"), REJECT_INVALID, "bad-tx");
     }
 
@@ -1566,7 +1566,7 @@ bool AcceptToMemoryPool(CTxMemPool& pool, CValidationState& state, const CTransa
     }
 
     // Don't accept witness transactions before the final threshold passes
-    if (!GetBoolArg("-prematurewitness", false) && !tx.wit.IsNull() && !IsSporkActive(SPORK_17_SEGWIT_ACTIVATION)) {
+    if (!GetBoolArg("-prematurewitness", false) && !tx.wit.IsNull() && !IsSporkActive(SPORK_20_SEGWIT_ACTIVATION)) {
         return state.DoS(0, false, REJECT_NONSTANDARD, "no-witness-yet", true);
     }
 
@@ -1815,7 +1815,7 @@ bool AcceptableInputs(CTxMemPool& pool, CValidationState& state, const CTransact
     if (pfMissingInputs)
         *pfMissingInputs = false;
 
-    if (!CheckTransaction(tx, chainActive.Height() >= Params().Zerocoin_StartHeight(), true, state, GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) < chainActive.Tip()->nTime))
+    if (!CheckTransaction(tx, chainActive.Height() >= Params().Zerocoin_StartHeight(), true, state, GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) < chainActive.Tip()->nTime))
         return error("AcceptableInputs: : CheckTransaction failed");
 
     // Coinbase is only valid in a block, not as a loose transaction
@@ -2180,7 +2180,7 @@ int64_t GetBlockValue(int nHeight)
     }
 }
 
-int64_t GetMasternodePayment(int nHeight, int64_t blockValue, int nMasternodeCount)
+int64_t GetKarmanodePayment(int nHeight, int64_t blockValue, int nKarmanodeCount)
 {
     int64_t ret = blockValue / 5 * 3;
     return ret;
@@ -2621,7 +2621,7 @@ void ThreadScriptCheck()
     scriptcheckqueue.Thread();
 }
 
-void RecalculateZPHRMinted()
+void RecalculateZOHMCMinted()
 {
     CBlockIndex *pindex = chainActive[Params().Zerocoin_StartHeight()];
     int nHeightEnd = chainActive.Height();
@@ -2648,7 +2648,7 @@ void RecalculateZPHRMinted()
     }
 }
 
-void RecalculateZPHRSpent()
+void RecalculateZOHMCSpent()
 {
     CBlockIndex* pindex = chainActive[Params().Zerocoin_StartHeight()];
     while (true) {
@@ -2684,7 +2684,7 @@ void RecalculateZPHRSpent()
     }
 }
 
-bool RecalculatePHRSupply(int nHeightStart)
+bool RecalculateOHMCSupply(int nHeightStart)
 {
     if (nHeightStart > chainActive.Height())
         return false;
@@ -2964,7 +2964,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
 
     unsigned int flags = SCRIPT_VERIFY_P2SH | SCRIPT_VERIFY_DERSIG;
 
-    if (GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) < block.nTime) {
+    if (GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) < block.nTime) {
         flags |= SCRIPT_VERIFY_WITNESS | SCRIPT_VERIFY_CHECKLOCKTIMEVERIFY | SCRIPT_VERIFY_CHECKSEQUENCEVERIFY;
     }
 
@@ -2974,7 +2974,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         nInputs += tx.vin.size();
 
         //Temporarily disable zerocoin transactions for maintenance
-        if (block.nTime > GetSporkValue(SPORK_16_ZEROCOIN_MAINTENANCE_MODE) && !IsInitialBlockDownload() && tx.ContainsZerocoins()) {
+        if (block.nTime > GetSporkValue(SPORK_22_ZEROCOIN_MAINTENANCE_MODE) && !IsInitialBlockDownload() && tx.ContainsZerocoins()) {
             return state.DoS(100, error("ConnectBlock() : zerocoin transactions are currently in maintenance mode"));
         }
         if (tx.IsZerocoinSpend()) {
@@ -4104,7 +4104,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
     if (block.IsProofOfStake()) {
         int commitpos = GetWitnessCommitmentIndex(block);
         if (commitpos >= 0) {
-            if (IsSporkActive(SPORK_19_SEGWIT_ON_COINBASE)) {
+            if (IsSporkActive(SPORK_21_SEGWIT_ON_COINBASE)) {
                 if (block.vtx[0].vout.size() != 2)
                     return state.DoS(100, error("CheckBlock() : coinbase output has wrong size for proof-of-stake block"));
                 if (!block.vtx[0].vout[1].scriptPubKey.IsUnspendable())
@@ -4151,7 +4151,7 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
         LogPrintf("CheckBlock() : skipping transaction locking checks\n");
     }
 
-    // masternode payments / budgets
+    // karmanode payments / budgets
     CBlockIndex* pindexPrev = chainActive.Tip();
     int nHeight = 0;
     if (pindexPrev != NULL) {
@@ -4172,12 +4172,12 @@ bool CheckBlock(const CBlock& block, CValidationState& state, bool fCheckPOW, bo
         if (nHeight != 0 && !IsInitialBlockDownload()) {
             if (!IsBlockPayeeValid(block, nHeight)) {
                 mapRejectedBlocks.insert(make_pair(block.GetHash(), GetTime()));
-                return state.DoS(0, error("CheckBlock() : Couldn't find masternode/budget payment"),
+                return state.DoS(0, error("CheckBlock() : Couldn't find karmanode/budget payment"),
                         REJECT_INVALID, "bad-cb-payee");
             }
         } else {
             if (fDebug)
-                LogPrintf("CheckBlock(): Masternode payment check skipped on sync - skipping IsBlockPayeeValid()\n");
+                LogPrintf("CheckBlock(): Karmanode payment check skipped on sync - skipping IsBlockPayeeValid()\n");
         }
     }
 
@@ -4290,7 +4290,7 @@ void UpdateUncommittedBlockStructures(CBlock& block, const CBlockIndex* pindexPr
 {
     int commitpos = GetWitnessCommitmentIndex(block);
     static const std::vector<unsigned char> nonce(32, 0x00);
-    if (commitpos != -1 && GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) < pindexPrev->nTime && block.vtx[0].wit.IsEmpty()) {
+    if (commitpos != -1 && GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) < pindexPrev->nTime && block.vtx[0].wit.IsEmpty()) {
         block.vtx[0].wit.vtxinwit.resize(1);
         block.vtx[0].wit.vtxinwit[0].scriptWitness.stack.resize(1);
         block.vtx[0].wit.vtxinwit[0].scriptWitness.stack[0] = nonce;
@@ -4309,7 +4309,7 @@ std::vector<unsigned char> GenerateCoinbaseCommitment(CBlock& block, const CBloc
         }
     }
     std::vector<unsigned char> ret(32, 0x00);
-    if (fHaveWitness && GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) < pindexPrev->nTime) {
+    if (fHaveWitness && GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) < pindexPrev->nTime) {
         if (commitpos == -1) {
             uint256 witnessroot = BlockWitnessMerkleRoot(block, NULL);
             CHash256().Write(witnessroot.begin(), 32).Write(&ret[0], 32).Finalize(witnessroot.begin());
@@ -4368,7 +4368,7 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
 
         vector<CBigNum> vBlockSerials;
         for (const CTransaction& tx : block.vtx) {
-            if (!CheckTransaction(tx, true, chainActive.Height() + 1 >= Params().Zerocoin_StartHeight(), state, GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) < block.nTime))
+            if (!CheckTransaction(tx, true, chainActive.Height() + 1 >= Params().Zerocoin_StartHeight(), state, GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) < block.nTime))
                 return error("CheckBlock() : CheckTransaction failed");
 
             // double check that there are no double spent zPHR spends in this block
@@ -4416,10 +4416,10 @@ bool ContextualCheckBlock(const CBlock& block, CValidationState& state, CBlockIn
     //   {0xaa, 0x21, 0xa9, 0xed}, and the following 32 bytes are SHA256(witness root, witness nonce). In case there are
     //   multiple, the last one is used.
     bool fHaveWitness = false;
-    if (pindexPrev != nullptr && GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) < pindexPrev->nTime) {
+    if (pindexPrev != nullptr && GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) < pindexPrev->nTime) {
         int commitpos = GetWitnessCommitmentIndex(block);
         if (commitpos != -1) {
-            if (!IsSporkActive(SPORK_19_SEGWIT_ON_COINBASE)) {
+            if (!IsSporkActive(SPORK_21_SEGWIT_ON_COINBASE)) {
                 if (fDebug) {
                     LogPrintf("CheckBlock() : staking-on-segwit is not enabled.\n");
                 }
@@ -4771,10 +4771,10 @@ bool ProcessNewBlock(CValidationState& state, CNode* pfrom, CBlock* pblock, CDis
         return error("%s : ActivateBestChain failed", __func__);
 
     if (!fLiteMode) {
-        if (masternodeSync.RequestedMasternodeAssets > MASTERNODE_SYNC_LIST
+        if (karmanodeSync.RequestedKarmanodeAssets > KARMANODE_SYNC_LIST
             || Params().NetworkID() == CBaseChainParams::REGTEST) {
             obfuScationPool.NewBlock();
-            masternodePayments.ProcessBlock(GetHeight() + 10);
+            karmanodePayments.ProcessBlock(GetHeight() + 10);
             budget.NewBlock();
         }
     }
@@ -5107,7 +5107,7 @@ bool RewindBlockIndex(const CChainParams& params)
 
     int nHeight = 1;
     while (nHeight <= chainActive.Height()) {
-        if (GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) < chainActive[nHeight - 1]->nTime && !(chainActive[nHeight]->nStatus & BLOCK_OPT_WITNESS)) {
+        if (GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) < chainActive[nHeight - 1]->nTime && !(chainActive[nHeight]->nStatus & BLOCK_OPT_WITNESS)) {
             break;
         }
         nHeight++;
@@ -5130,7 +5130,7 @@ bool RewindBlockIndex(const CChainParams& params)
     // to disk before writing the chainstate, resulting in a failure to continue if interrupted.
     for (BlockMap::iterator it = mapBlockIndex.begin(); it != mapBlockIndex.end(); it++) {
         CBlockIndex* pindexIter = it->second;
-        if (GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) < pindexIter->nTime && !(pindexIter->nStatus & BLOCK_OPT_WITNESS)) {
+        if (GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) < pindexIter->nTime && !(pindexIter->nStatus & BLOCK_OPT_WITNESS)) {
             // Reduce validity
             pindexIter->nStatus = std::min<unsigned int>(pindexIter->nStatus & BLOCK_VALID_MASK, BLOCK_VALID_TREE) | (pindexIter->nStatus & ~BLOCK_VALID_MASK);
             // Remove have-data flags.
@@ -5551,44 +5551,44 @@ bool static AlreadyHave(const CInv& inv)
         return mapTxLockVote.count(inv.hash);
     case MSG_SPORK:
         return mapSporks.count(inv.hash);
-    case MSG_MASTERNODE_WINNER:
-        if (masternodePayments.mapMasternodePayeeVotes.count(inv.hash)) {
-            masternodeSync.AddedMasternodeWinner(inv.hash);
+    case MSG_KARMANODE_WINNER:
+        if (karmanodePayments.mapKarmanodePayeeVotes.count(inv.hash)) {
+            karmanodeSync.AddedKarmanodeWinner(inv.hash);
             return true;
         }
         return false;
     case MSG_BUDGET_VOTE:
-        if (budget.mapSeenMasternodeBudgetVotes.count(inv.hash)) {
-            masternodeSync.AddedBudgetItem(inv.hash);
+        if (budget.mapSeenKarmanodeBudgetVotes.count(inv.hash)) {
+            karmanodeSync.AddedBudgetItem(inv.hash);
             return true;
         }
         return false;
     case MSG_BUDGET_PROPOSAL:
-        if (budget.mapSeenMasternodeBudgetProposals.count(inv.hash)) {
-            masternodeSync.AddedBudgetItem(inv.hash);
+        if (budget.mapSeenKarmanodeBudgetProposals.count(inv.hash)) {
+            karmanodeSync.AddedBudgetItem(inv.hash);
             return true;
         }
         return false;
     case MSG_BUDGET_FINALIZED_VOTE:
         if (budget.mapSeenFinalizedBudgetVotes.count(inv.hash)) {
-            masternodeSync.AddedBudgetItem(inv.hash);
+            karmanodeSync.AddedBudgetItem(inv.hash);
             return true;
         }
         return false;
     case MSG_BUDGET_FINALIZED:
         if (budget.mapSeenFinalizedBudgets.count(inv.hash)) {
-            masternodeSync.AddedBudgetItem(inv.hash);
+            karmanodeSync.AddedBudgetItem(inv.hash);
             return true;
         }
         return false;
-    case MSG_MASTERNODE_ANNOUNCE:
-        if (mnodeman.mapSeenMasternodeBroadcast.count(inv.hash)) {
-            masternodeSync.AddedMasternodeList(inv.hash);
+    case MSG_KARMANODE_ANNOUNCE:
+        if (mnodeman.mapSeenKarmanodeBroadcast.count(inv.hash)) {
+            karmanodeSync.AddedKarmanodeList(inv.hash);
             return true;
         }
         return false;
-    case MSG_MASTERNODE_PING:
-        return mnodeman.mapSeenMasternodePing.count(inv.hash);
+    case MSG_KARMANODE_PING:
+        return mnodeman.mapSeenKarmanodePing.count(inv.hash);
     }
     // Don't know what it is, just say we already got one
     return true;
@@ -5719,30 +5719,30 @@ void static ProcessGetData(CNode* pfrom)
                         pushed = true;
                     }
                 }
-                if (!pushed && inv.type == MSG_MASTERNODE_WINNER) {
-                    if (masternodePayments.mapMasternodePayeeVotes.count(inv.hash)) {
+                if (!pushed && inv.type == MSG_KARMANODE_WINNER) {
+                    if (karmanodePayments.mapKarmanodePayeeVotes.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << masternodePayments.mapMasternodePayeeVotes[inv.hash];
+                        ss << karmanodePayments.mapKarmanodePayeeVotes[inv.hash];
                         pfrom->PushMessage(NetMsgType::MNW, ss);
                         pushed = true;
                     }
                 }
                 if (!pushed && inv.type == MSG_BUDGET_VOTE) {
-                    if (budget.mapSeenMasternodeBudgetVotes.count(inv.hash)) {
+                    if (budget.mapSeenKarmanodeBudgetVotes.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << budget.mapSeenMasternodeBudgetVotes[inv.hash];
+                        ss << budget.mapSeenKarmanodeBudgetVotes[inv.hash];
                         pfrom->PushMessage(NetMsgType::MVOTE, ss);
                         pushed = true;
                     }
                 }
 
                 if (!pushed && inv.type == MSG_BUDGET_PROPOSAL) {
-                    if (budget.mapSeenMasternodeBudgetProposals.count(inv.hash)) {
+                    if (budget.mapSeenKarmanodeBudgetProposals.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << budget.mapSeenMasternodeBudgetProposals[inv.hash];
+                        ss << budget.mapSeenKarmanodeBudgetProposals[inv.hash];
                         pfrom->PushMessage(NetMsgType::MPROP, ss);
                         pushed = true;
                     }
@@ -5768,21 +5768,21 @@ void static ProcessGetData(CNode* pfrom)
                     }
                 }
 
-                if (!pushed && inv.type == MSG_MASTERNODE_ANNOUNCE) {
-                    if (mnodeman.mapSeenMasternodeBroadcast.count(inv.hash)) {
+                if (!pushed && inv.type == MSG_KARMANODE_ANNOUNCE) {
+                    if (mnodeman.mapSeenKarmanodeBroadcast.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << mnodeman.mapSeenMasternodeBroadcast[inv.hash];
+                        ss << mnodeman.mapSeenKarmanodeBroadcast[inv.hash];
                         pfrom->PushMessage(NetMsgType::MNB, ss);
                         pushed = true;
                     }
                 }
 
-                if (!pushed && inv.type == MSG_MASTERNODE_PING) {
-                    if (mnodeman.mapSeenMasternodePing.count(inv.hash)) {
+                if (!pushed && inv.type == MSG_KARMANODE_PING) {
+                    if (mnodeman.mapSeenKarmanodePing.count(inv.hash)) {
                         CDataStream ss(SER_NETWORK, PROTOCOL_VERSION);
                         ss.reserve(1000);
-                        ss << mnodeman.mapSeenMasternodePing[inv.hash];
+                        ss << mnodeman.mapSeenKarmanodePing[inv.hash];
                         pfrom->PushMessage(NetMsgType::MNP, ss);
                         pushed = true;
                     }
@@ -5920,7 +5920,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
 
         // Phore: We use certain sporks during IBD, so check to see if they are
         // available. If not, ask the first peer connected for them.
-        bool fMissingSporks = !pSporkDB->SporkExists(SPORK_16_ZEROCOIN_MAINTENANCE_MODE);
+        bool fMissingSporks = !pSporkDB->SporkExists(SPORK_22_ZEROCOIN_MAINTENANCE_MODE);
 
         if (fMissingSporks || !fRequestedSporksIDB){
             LogPrintf("asking peer for sporks\n");
@@ -6106,7 +6106,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
                     // doing this will result in the received block being rejected as an orphan in case it is
                     // not a direct successor.
                     if (State(pfrom->GetId())->fHaveWitness &&
-                       (GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) > chainActive.Tip()->nTime || State(pfrom->GetId())->fHaveWitness)) {
+                       (GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) > chainActive.Tip()->nTime || State(pfrom->GetId())->fHaveWitness)) {
                         inv.type = MSG_WITNESS_BLOCK;
                     }
                     vToFetch.push_back(inv);
@@ -6223,7 +6223,7 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         vector<uint256> vEraseQueue;
         CTransaction tx;
 
-        //masternode signed transaction
+        //karmanode signed transaction
         bool ignoreFees = false;
         CTxIn vin;
         vector<unsigned char> vchSig;
@@ -6232,27 +6232,27 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         if (strCommand == NetMsgType::TX) {
             vRecv >> tx;
         } else if (strCommand == NetMsgType::DSTX) {
-            //these allow masternodes to publish a limited amount of free transactions
+            //these allow karmanodes to publish a limited amount of free transactions
             vRecv >> tx >> vin >> vchSig >> sigTime;
 
-            CMasternode* pmn = mnodeman.Find(vin);
+            CKarmanode* pmn = mnodeman.Find(vin);
             if (pmn != NULL) {
                 if (!pmn->allowFreeTx) {
-                    //multiple peers can send us a valid masternode transaction
-                    if (fDebug) LogPrintf("dstx: Masternode sending too many transactions %s\n", tx.GetHash().ToString());
+                    //multiple peers can send us a valid karmanode transaction
+                    if (fDebug) LogPrintf("dstx: Karmanode sending too many transactions %s\n", tx.GetHash().ToString());
                     return true;
                 }
 
                 std::string strMessage = tx.GetHash().ToString() + std::to_string(sigTime);
 
                 std::string errorMessage = "";
-                if (!obfuScationSigner.VerifyMessage(pmn->pubKeyMasternode, vchSig, strMessage, errorMessage)) {
-                    LogPrintf("dstx: Got bad masternode address signature %s \n", vin.ToString());
+                if (!obfuScationSigner.VerifyMessage(pmn->pubKeyKarmanode, vchSig, strMessage, errorMessage)) {
+                    LogPrintf("dstx: Got bad karmanode address signature %s \n", vin.ToString());
                     //pfrom->Misbehaving(20);
                     return false;
                 }
 
-                LogPrintf("dstx: Got Masternode transaction %s\n", tx.GetHash().ToString());
+                LogPrintf("dstx: Got Karmanode transaction %s\n", tx.GetHash().ToString());
 
                 ignoreFees = true;
                 pmn->allowFreeTx = false;
@@ -6717,10 +6717,10 @@ bool static ProcessMessage(CNode* pfrom, string strCommand, CDataStream& vRecv, 
         obfuScationPool.ProcessMessageObfuscation(pfrom, strCommand, vRecv);
         mnodeman.ProcessMessage(pfrom, strCommand, vRecv);
         budget.ProcessMessage(pfrom, strCommand, vRecv);
-        masternodePayments.ProcessMessageMasternodePayments(pfrom, strCommand, vRecv);
+        karmanodePayments.ProcessMessageKarmanodePayments(pfrom, strCommand, vRecv);
         ProcessMessageSwiftTX(pfrom, strCommand, vRecv);
         ProcessSpork(pfrom, strCommand, vRecv);
-        masternodeSync.ProcessMessage(pfrom, strCommand, vRecv);
+        karmanodeSync.ProcessMessage(pfrom, strCommand, vRecv);
     }
 
 
@@ -7039,7 +7039,7 @@ bool SendMessages(CNode* pto, bool fSendTrickle)
             NodeId staller = -1;
             FindNextBlocksToDownload(pto->GetId(), MAX_BLOCKS_IN_TRANSIT_PER_PEER - state.nBlocksInFlight, vToDownload, staller);
             BOOST_FOREACH(CBlockIndex *pindex, vToDownload) {
-                if (State(pto->GetId())->fHaveWitness || GetSporkValue(SPORK_17_SEGWIT_ACTIVATION) > pindex->pprev->nTime) {
+                if (State(pto->GetId())->fHaveWitness || GetSporkValue(SPORK_20_SEGWIT_ACTIVATION) > pindex->pprev->nTime) {
                     vGetData.push_back(CInv(State(staller)->fHaveWitness ? MSG_WITNESS_BLOCK : MSG_BLOCK, pindex->GetBlockHash()));
                     MarkBlockAsInFlight(pto->GetId(), pindex->GetBlockHash(), pindex);
                     LogPrint("net", "Requesting block %s (%d) peer=%d\n", pindex->GetBlockHash().ToString(),
