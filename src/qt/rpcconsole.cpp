@@ -656,7 +656,7 @@ void RPCConsole::walletUpgradeToHd()
         pwalletMain->SetMinVersion(FEATURE_HD);
 
         if (walletModel->getEncryptionStatus() == WalletModel::Locked || walletModel->getEncryptionStatus() == WalletModel::UnlockedForAnonymizationOnly) {
-            AskPassphraseDialog dlg(AskPassphraseDialog::Unlock, this, walletModel);
+            AskPassphraseDialog dlg(AskPassphraseDialog::Mode::Unlock, this, walletModel);
             dlg.exec();
             strWalletPass = dlg.getPassword();
         } else {

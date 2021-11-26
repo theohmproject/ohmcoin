@@ -193,7 +193,7 @@ StartOptionsSort::StartOptionsSort(std::vector<std::string> Words, int rows, QWi
 
 std::list<QString> StartOptionsSort::getOrderedStrings(){
     std::list<QString> list;
-    foreach(QGraphicsItem *item, scene->items())
+    for(QGraphicsItem *item : scene->items())
     if(CustomRectItem *rItem = qgraphicsitem_cast<CustomRectItem*> (item)) {
         list.push_back(rItem->text());
     }

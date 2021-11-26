@@ -20,7 +20,6 @@
 
 #include <algorithm>
 #include <boost/assign/list_of.hpp>
-#include <boost/foreach.hpp>
 #include <openssl/rand.h>
 
 using namespace std;
