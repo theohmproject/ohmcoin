@@ -77,12 +77,6 @@ struct CompareValueOnly {
     }
 };
 
-enum class CWallet::CoinSelectStrategy
-{
-	random,
-	descentByAmount,
-};
-
 std::string COutput::ToString() const
 {
     return strprintf("COutput(%s, %d, %d) [%s]", tx->GetHash().ToString(), i, nDepth, FormatMoney(tx->vout[i].nValue));

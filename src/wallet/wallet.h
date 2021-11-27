@@ -211,10 +211,16 @@ public:
  */
 class CWallet : public CCryptoKeyStore, public CValidationInterface
 {
+public:
+	enum class CoinSelectStrategy
+	{
+		random,
+		descentByAmount,
+	};
+
 private:
 // ParamForCreateTransaction is introduced to control how CreateTransaction works.
     struct ParamForCreateTransaction;
-	enum class CoinSelectStrategy;
     bool CreateTransactionHelper(const std::vector<std::pair<CScript, CAmount> >& vecSend,
         CWalletTx& wtxNew,
         CReserveKey& reservekey,

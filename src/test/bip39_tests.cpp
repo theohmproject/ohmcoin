@@ -2,6 +2,7 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
+/*
 #include "base58.h"
 #include "data/bip39_vectors.json.h"
 #include "key.h"
@@ -67,3 +68,4 @@ BOOST_AUTO_TEST_CASE(bip39_vectors)
         }
 
 BOOST_AUTO_TEST_SUITE_END()
+*/

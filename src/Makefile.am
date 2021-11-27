@@ -255,7 +255,6 @@ libbitcoin_server_a_SOURCES = \
   torcontrol.cpp \
   txdb.cpp \
   txmempool.cpp \
-  ui_interface.cpp \
   validationinterface.cpp \
   $(BITCOIN_CORE_H)
 
@@ -298,6 +297,7 @@ libbitcoin_wallet_a_SOURCES = \
   wallet/rpcwallet.cpp \
   wallet/wallet.cpp \
   wallet/walletdb.cpp \
+  ui_interface.cpp \
   $(BITCOIN_CORE_H)
 
 # crypto primitives library
