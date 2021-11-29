@@ -386,7 +386,7 @@ CBlockTemplate* CreateNewBlock(const CScript& scriptPubKeyIn, CWallet* pwallet, 
             if (!view.HaveInputs(tx))
                 continue;
 
-            // double check that there are no double spent zPhr spends in this block or tx
+            // double check that there are no double spent zOHMC spends in this block or tx
             if (tx.IsZerocoinSpend()) {
                 int nHeightTx = 0;
                 if (IsTransactionInChain(tx.GetHash(), nHeightTx))
@@ -788,12 +788,12 @@ void static ThreadBitcoinMiner(void* parg)
         BitcoinMiner(pwallet, false);
         boost::this_thread::interruption_point();
     } catch (std::exception& e) {
-        LogPrintf("PhoreMiner() exception");
+        LogPrintf("OhmcoinMiner() exception");
     } catch (...) {
-        LogPrintf("PhoreMiner() exception");
+        LogPrintf("OhmcoinMiner() exception");
     }
 
-    LogPrintf("PhoreMiner exiting\n");
+    LogPrintf("OhmcoinMiner exiting\n");
 }
 
 void GenerateBitcoins(bool fGenerate, CWallet* pwallet, int nThreads)
