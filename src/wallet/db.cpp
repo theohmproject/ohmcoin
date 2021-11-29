@@ -3,7 +3,7 @@
 // Distributed under the MIT/X11 software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include "db.h"
+#include "wallet/db.h"
 
 #include "addrman.h"
 #include "hash.h"
@@ -20,8 +20,6 @@
 #include <boost/filesystem.hpp>
 #include <boost/thread.hpp>
 #include <boost/version.hpp>
-
-#include <openssl/rand.h>
 
 using namespace std;
 using namespace boost;

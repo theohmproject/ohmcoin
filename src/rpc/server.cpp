@@ -17,7 +17,11 @@
 #include "util.h"
 #include "utilstrencodings.h"
 
-#include <boost/bind/bind.hpp>
+#ifdef ENABLE_WALLET
+#include "wallet/wallet.h"
+#endif
+
+#include <boost/bind.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/iostreams/concepts.hpp>
 #include <boost/iostreams/stream.hpp>
@@ -62,12 +66,12 @@ void RPCServer::OnStopped(boost::function<void ()> slot)
 
 void RPCServer::OnPreCommand(boost::function<void (const CRPCCommand&)> slot)
 {
-    g_rpcSignals.PreCommand.connect(boost::bind(slot, boost::placeholders::_1));
+    g_rpcSignals.PreCommand.connect(boost::bind(slot, boost::arg<1>()));
 }
 
 void RPCServer::OnPostCommand(boost::function<void (const CRPCCommand&)> slot)
 {
-    g_rpcSignals.PostCommand.connect(boost::bind(slot, boost::placeholders::_1));
+    g_rpcSignals.PostCommand.connect(boost::bind(slot, boost::arg<1>()));
 }
 
 void RPCTypeCheck(const UniValue& params,
@@ -391,6 +395,7 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "autocombinerewards", &autocombinerewards, false, false, true},
         {"wallet", "backupwallet", &backupwallet, true, false, true},
         {"wallet", "dumpprivkey", &dumpprivkey, true, false, true},
+        {"wallet", "dumphdinfo", &dumphdinfo, true, false, true},
         {"wallet", "dumpwallet", &dumpwallet, true, false, true},
         {"wallet", "dumpallprivatekeys", &dumpallprivatekeys, true, false, true},
         {"wallet", "bip38encrypt", &bip38encrypt, true, false, true},
@@ -434,8 +439,10 @@ static const CRPCCommand vRPCCommands[] =
         {"wallet", "settxfee", &settxfee, true, false, true},
         {"wallet", "signmessage", &signmessage, true, false, true},
         {"wallet", "walletlock", &walletlock, true, false, true},
+        {"wallet", "upgradetohd", &upgradetohd, true, false, true},
         {"wallet", "walletpassphrasechange", &walletpassphrasechange, true, false, true},
         {"wallet", "walletpassphrase", &walletpassphrase, true, false, true},
+
 
         {"zerocoin", "getzerocoinbalance", &getzerocoinbalance, false, false, true},
         {"zerocoin", "listmintedzerocoins", &listmintedzerocoins, false, false, true},
@@ -591,6 +598,7 @@ UniValue CRPCTable::execute(const std::string &strMethod, const UniValue &params
         if (fRPCInWarmup)
             throw JSONRPCError(RPC_IN_WARMUP, rpcWarmupStatus);
     }
+
     // Find method
     const CRPCCommand* pcmd = tableRPC[strMethod];
     if (!pcmd)
@@ -615,7 +623,7 @@ std::vector<std::string> CRPCTable::listCommands() const
 
     std::transform( mapCommands.begin(), mapCommands.end(),
                     std::back_inserter(commandList),
-                    boost::bind(&commandMap::value_type::first,boost::placeholders::_1) );
+                    boost::bind(&commandMap::value_type::first,boost::arg<1>()) );
     return commandList;
 }
 

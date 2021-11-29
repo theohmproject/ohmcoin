@@ -7,6 +7,7 @@
 #define BITCOIN_INIT_H
 
 #include <string>
+#include <vector>
 
 class CScheduler;
 class CWallet;
@@ -23,16 +24,10 @@ extern CzOHMCWallet* zwalletMain;
 void StartShutdown();
 bool ShutdownRequested();
 /** Interrupt threads */
-void Interrupt();
+void Interrupt(boost::thread_group& threadGroup);
 void Shutdown();
 void PrepareShutdown();
-bool AppInit2();
-
-/** Initialize Ohmcoin core: Basic context setup.
- *  @note This can be done before daemonization. Do not call Shutdown() if this function fails.
- *  @pre Parameters should be parsed and config file should be read.
- */
-bool AppInitBasicSetup();
+bool AppInit2(boost::thread_group& threadGroup, CScheduler& scheduler, const std::vector<std::string>& words);
 
 /** The help message mode determines what help message to show */
 enum HelpMessageMode {

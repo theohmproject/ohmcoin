@@ -7,13 +7,12 @@
 # Test the SegWit changeover logic
 #
 
-from test_framework.test_framework import BitcoinTestFramework
-from test_framework.util import *
-from test_framework.mininode import sha256, ripemd160, CTransaction, CTxIn, COutPoint, CTxOut
-from test_framework.address import script_to_p2sh, key_to_p2pkh
-from test_framework.script import CScript, OP_HASH160, OP_CHECKSIG, OP_0, hash160, OP_EQUAL, OP_DUP, OP_EQUALVERIFY, OP_1, OP_2, OP_CHECKMULTISIG
+from test.functional.test_framework import BitcoinTestFramework
+from test.functional.test_framework.mininode import sha256, ripemd160, CTransaction, CTxIn, COutPoint, CTxOut
+from test.functional.test_framework.address import key_to_p2pkh
+from test.functional.test_framework import CScript, OP_HASH160, OP_CHECKSIG, OP_0, hash160, OP_EQUAL
 from io import BytesIO
-from test_framework.mininode import FromHex
+from test.functional.test_framework.mininode import FromHex
 import time
 
 NODE_0 = 0

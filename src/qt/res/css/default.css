@@ -992,7 +992,7 @@ QWidget .QFrame#frame > .QLabel {
     min-height: 30px;
 }
 QWidget .QFrame#frame .QLabel#label_5 {
-    /* PHR Balances Label */
+    /* OHMC Balances Label */
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     min-width: 160px;
     background-color: transparent;
@@ -1129,7 +1129,7 @@ QWidget .QFrame#frame_4 .QLabel#label_5z_3 {
     padding-right: 5px;
 }
 QWidget .QFrame#frame_4 .QLabel#labelzBalanceText {
-    /* Available zPHR Label */
+    /* Available zOHMC Label */
     qproperty-alignment: 'AlignVCenter | AlignRight';
     min-width: 160px;
     background-color: #00CD8D;
@@ -1141,7 +1141,7 @@ QWidget .QFrame#frame_4 .QLabel#labelzBalanceText {
     /* min-height:35px; */
 }
 QWidget .QFrame#frame_4 .QLabel#labelzBalance {
-    /* Available zPHR Balance */
+    /* Available zOHMC Balance */
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     font-size: 12px;
     font-weight: bold;
@@ -1149,7 +1149,7 @@ QWidget .QFrame#frame_4 .QLabel#labelzBalance {
     margin-left: 0px;
 }
 QWidget .QFrame#frame_4 .QLabel#labelzBalanceUnconfirmedText {
-    /* Unconfirmed zPHR Label */
+    /* Unconfirmed zOHMC Label */
     qproperty-alignment: 'AlignVCenter | AlignRight';
     min-width: 160px;
     background-color: #00CD8D;
@@ -1161,7 +1161,7 @@ QWidget .QFrame#frame_4 .QLabel#labelzBalanceUnconfirmedText {
     /* min-height:35px; */
 }
 QWidget .QFrame#frame_4 .QLabel#labelzBalanceUnconfirmed {
-    /* Unconfirmed zPHR Balance */
+    /* Unconfirmed zOHMC Balance */
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     font-size: 12px;
     font-weight: bold;
@@ -1169,7 +1169,7 @@ QWidget .QFrame#frame_4 .QLabel#labelzBalanceUnconfirmed {
     margin-left: 0px;
 }
 QWidget .QFrame#frame_4 .QLabel#labelzBalanceMatureText {
-    /* Mature zPHR Label */
+    /* Mature zOHMC Label */
     qproperty-alignment: 'AlignVCenter | AlignRight';
     min-width: 160px;
     background-color: #00CD8D;
@@ -1181,7 +1181,7 @@ QWidget .QFrame#frame_4 .QLabel#labelzBalanceMatureText {
     /* min-height:35px; */
 }
 QWidget .QFrame#frame_4 .QLabel#labelzBalanceMature {
-    /* Mature zPHR Balance */
+    /* Mature zOHMC Balance */
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     font-size: 12px;
     font-weight: bold;
@@ -1189,7 +1189,7 @@ QWidget .QFrame#frame_4 .QLabel#labelzBalanceMature {
     margin-left: 0px;
 }
 QWidget .QFrame#frame_4 .QLabel#labelzBalanceImmatureText {
-    /* Immature zPHR Label */
+    /* Immature zOHMC Label */
     qproperty-alignment: 'AlignVCenter | AlignRight';
     min-width: 160px;
     background-color: #00CD8D;
@@ -1201,7 +1201,7 @@ QWidget .QFrame#frame_4 .QLabel#labelzBalanceImmatureText {
     /* min-height:35px; */
 }
 QWidget .QFrame#frame_4 .QLabel#labelzBalanceImmature {
-    /* Immature zPHR Balance */
+    /* Immature zOHMC Balance */
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     font-size: 12px;
     font-weight: bold;
@@ -1220,7 +1220,7 @@ QWidget .QFrame#frame_3 .QLabel#label_5z {
     padding-right: 5px;
 }
 QWidget .QFrame#frame_3 .QLabel#labelBalanceTextz {
-    /* Available PHR Label */
+    /* Available OHMC Label */
     qproperty-alignment: 'AlignVCenter | AlignRight';
     min-width: 160px;
     background-color: #00CD8D;
@@ -1233,7 +1233,7 @@ QWidget .QFrame#frame_3 .QLabel#labelBalanceTextz {
     /* min-height:35px; */
 }
 QWidget .QFrame#frame_3 .QLabel#labelBalancez {
-    /* Available PHR Balance */
+    /* Available OHMC Balance */
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     font-size: 12px;
     font-weight: bold;
@@ -1241,7 +1241,7 @@ QWidget .QFrame#frame_3 .QLabel#labelBalancez {
     margin-left: 0px;
 }
 QWidget .QFrame#frame_3 .QLabel#labelzBalanceTextz {
-    /* Available zPHR Label */
+    /* Available zOHMC Label */
     qproperty-alignment: 'AlignVCenter | AlignRight';
     min-width: 160px;
     background-color: #00CD8D;
@@ -1253,7 +1253,7 @@ QWidget .QFrame#frame_3 .QLabel#labelzBalanceTextz {
     /* min-height:35px; */
 }
 QWidget .QFrame#frame_3 .QLabel#labelzBalancez {
-    /* Available zPHR Balance */
+    /* Available zOHMC Balance */
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     font-size: 12px;
     font-weight: bold;
@@ -1261,7 +1261,7 @@ QWidget .QFrame#frame_3 .QLabel#labelzBalancez {
     margin-left: 0px;
 }
 QWidget .QFrame#frame_3 .QLabel#labelLockedBalanceText {
-    /* Available zPHR Label */
+    /* Available zOHMC Label */
     qproperty-alignment: 'AlignVCenter | AlignRight';
     min-width: 160px;
     background-color: #00CD8D;
@@ -1273,7 +1273,7 @@ QWidget .QFrame#frame_3 .QLabel#labelLockedBalanceText {
     /* min-height:35px; */
 }
 QWidget .QFrame#frame_3 .QLabel#labelLockedBalance {
-    /* Available zPHR Balance */
+    /* Available zOHMC Balance */
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     font-size: 12px;
     font-weight: normal;
@@ -1281,7 +1281,7 @@ QWidget .QFrame#frame_3 .QLabel#labelLockedBalance {
     margin-left: 0px;
 }
 QWidget .QFrame#frame_3 .QLabel#labelUnLockedBalanceText {
-    /* Available zPHR Label */
+    /* Available zOHMC Label */
     qproperty-alignment: 'AlignVCenter | AlignRight';
     min-width: 160px;
     background-color: #00CD8D;
@@ -1293,7 +1293,7 @@ QWidget .QFrame#frame_3 .QLabel#labelUnLockedBalanceText {
     /* min-height:35px; */
 }
 QWidget .QFrame#frame_3 .QLabel#labelUnLockedBalance {
-    /* Available zPHR Balance */
+    /* Available zOHMC Balance */
     qproperty-alignment: 'AlignVCenter | AlignLeft';
     font-size: 12px;
     font-weight: normal;
@@ -2037,5 +2037,72 @@ QAbstractScrollArea::corner {
 }
 
 #addressBookButton_SM {
-    background:none;
+	background:none;
+}
+
+
+/*Seed Words Generator*/
+QListView {
+	background-color: #132232;
+	border: 2px solid #132232;
+}
+
+QListView::item {
+	color: white;
+	height: 36px;
+}
+
+QGraphicsView {
+	background-color: #132232;
+	border: 2px solid #132232;
+}
+
+QRadioButton {
+	height: 40px;
+	text-align: center;
+	font-size: 20px;
+	padding: 20px;
+	border-radius: 8px;
+}
+QRadioButton:focus {
+	background-color: #000;
+}
+QRadioButton::indicator {
+	display: none;
+	opacity: 0;
+	width: 0px;
+	height: 0px;
+}
+QRadioButton:checked {
+	background-color: transparent;
+	border: 2px solid #2388ed;
+}
+QRadioButton:unchecked {
+	background-color: transparent;
+	border-width: 2px;
+	border-color:  #777;
+}
+QRadioButton::unchecked: hover {
+	background-color:  #1f1f1f;
+}
+
+QListWidget {
+	border-color: #132232;
+}
+QListWidget::item {
+	border-radius: 8px;
+	border: none;
+	color: #fff;
+}
+QListWidget::item:selected {
+	border: 2px solid #2388ed;
+	border-radius: 8px;
+	padding-left: 4px;
+	background: transparent;
+}
+QListWidget::item:focus {
+	border: 1px solid #1f1f1f;
+	background:  #1f1f1f; ;
+	border-radius: 8px;
+	padding-left: 4px;
 }

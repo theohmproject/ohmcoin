@@ -410,8 +410,19 @@ dnl Outputs: All necessary QT_* variables are set.
 dnl Outputs: have_qt_test and have_qt_dbus are set (if applicable) to yes|no.
 AC_DEFUN([_BITCOIN_QT_FIND_LIBS_WITH_PKGCONFIG],[
   m4_ifdef([PKG_CHECK_MODULES],[
-    QT_LIB_PREFIX=Qt5
-    qt5_modules="Qt5Core Qt5Gui Qt5Network Qt5Widgets Qt5Svg"
+  auto_priority_version=$1
+  if test "x$auto_priority_version" = x; then
+    auto_priority_version=qt5
+  fi
+    if test "x$bitcoin_qt_want_version" = xqt5 ||  ( test "x$bitcoin_qt_want_version" = xauto && test "x$auto_priority_version" = xqt5 ); then
+      QT_LIB_PREFIX=Qt5
+      bitcoin_qt_got_major_vers=5
+    else
+      QT_LIB_PREFIX=Qt
+      bitcoin_qt_got_major_vers=4
+    fi
+    qt5_modules="Qt5Core Qt5Gui Qt5Network Qt5Widgets Qt5Concurrent"
+    qt4_modules="QtCore QtGui QtNetwork"
     BITCOIN_QT_CHECK([
       PKG_CHECK_MODULES([QT5], [$qt5_modules], [QT_INCLUDES="$QT5_CFLAGS"; QT_LIBS="$QT5_LIBS" have_qt=yes],[have_qt=no])
       if test "x$have_qt" != xyes; then
