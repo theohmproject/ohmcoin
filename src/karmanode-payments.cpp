@@ -345,6 +345,7 @@ void CKarmanodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFee
                     // in case it's not an even division, take the last bit of dust from the last one
                     txNew.vout[outputs].nValue -= knPaymentRemainder;
                 }
+			}
         } else {
             txNew.vout.resize(2);
             txNew.vout[1].scriptPubKey = payee;
