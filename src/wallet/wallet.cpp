@@ -2505,7 +2505,7 @@ bool CWallet::SelectStakeCoins(std::list<std::unique_ptr<CStakeInput> >& listInp
 
         //add to our stake set
         nAmountSelected += out.tx->vout[out.i].nValue;
-        std::unique_ptr<CPhoreStake> input(new CPhoreStake());
+        std::unique_ptr<COhmStake> input(new COhmStake());
         input->SetInput((CTransaction) *out.tx, out.i);
         listInputs.emplace_back(std::move(input));
     }
@@ -4543,7 +4543,7 @@ void CWallet::AutoZeromint()
 
     // Check if minting is actually needed
     if(dPercentage >= nZeromintPercentage){
-        LogPrint("zero", "CWallet::AutoZeromint() @block %ld: percentage of existing zPHR (%lf%%) already >= configured percentage (%d%%). No minting needed...\n",
+        LogPrint("zero", "CWallet::AutoZeromint() @block %ld: percentage of existing zOHMC (%lf%%) already >= configured percentage (%d%%). No minting needed...\n",
                  chainActive.Tip()->nHeight, dPercentage, nZeromintPercentage);
         return;
     }

@@ -2857,7 +2857,7 @@ bool ReindexAccumulators(list<uint256>& listMissingCheckpoints, string& strError
     return true;
 }
 
-bool UpdateZPHRSupply(const CBlock& block, CBlockIndex* pindex)
+bool UpdateZOHMCSupply(const CBlock& block, CBlockIndex* pindex)
 {
     std::list<CZerocoinMint> listMints;
     BlockToZerocoinMintList(block, listMints);
@@ -3154,7 +3154,7 @@ bool ConnectBlock(const CBlock& block, CValidationState& state, CBlockIndex* pin
         pos.nTxOffset += ::GetSerializeSize(tx, SER_DISK, CLIENT_VERSION);
     }
 
-    UpdateZPHRSupply(block, pindex);
+    UpdateZOHMCSupply(block, pindex);
 
     // track money supply and mint amount info
     CAmount nMoneySupplyPrev = pindex->pprev ? pindex->pprev->nMoneySupply : 0;

@@ -29,7 +29,7 @@ public:
     }
 };
 
-class CPhoreStake : public CStakeInput
+class COhmStake : public CStakeInput
 {
 private:
     CTransaction txFrom;
@@ -40,7 +40,7 @@ private:
     int nStakeModifierHeight = 0;
     int64_t nStakeModifierTime = 0;
 public:
-    CPhoreStake(){}
+    COhmStake(){}
 
     bool SetInput(CTransaction txPrev, unsigned int n);
 

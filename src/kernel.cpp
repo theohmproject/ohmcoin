@@ -407,9 +407,9 @@ bool initStakeInput(const CBlock block, std::unique_ptr<CStakeInput>& stake, int
     if (!VerifyScript(txin.scriptSig, txPrev.vout[txin.prevout.n].scriptPubKey, NULL, STANDARD_SCRIPT_VERIFY_FLAGS, TransactionSignatureChecker(&tx, 0, txPrev.vout[txin.prevout.n].nValue)))
         return error("initStakeInput() : VerifySignature failed on coinstake %s", tx.GetHash().ToString().c_str());
 
-    CPhoreStake* phrInput = new CPhoreStake();
-    phrInput->SetInput(txPrev, txin.prevout.n);
-    stake = std::unique_ptr<CStakeInput>(phrInput);
+    COhmStake* ohmInput = new COhmStake();
+    ohmInput->SetInput(txPrev, txin.prevout.n);
+    stake = std::unique_ptr<CStakeInput>(ohmInput);
 
     return true;
 }
