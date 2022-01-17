@@ -27,7 +27,7 @@ using namespace boost;
     Sporks 11,12, and 16 to be removed with 1st zerocoin release
 */
 #define SPORK_START 10001
-#define SPORK_END 10022
+#define SPORK_END 10023
 
 #define SPORK_2_SWIFTTX 10001
 #define SPORK_3_SWIFTTX_BLOCK_FILTERING 10002
@@ -49,6 +49,7 @@ using namespace boost;
 #define SPORK_21_SEGWIT_ON_COINBASE 10020
 #define SPORK_22_ZEROCOIN_MAINTENANCE_MODE 10021
 #define SPORK_23_NEW_BLOCKTIME_ENFORCEMENT 10022
+#define SPORK_24_KERNEL_EXTRA_STAKING_CHECK 10023
 
 #define SPORK_2_SWIFTTX_DEFAULT 978307200                         //2001-1-1
 #define SPORK_3_SWIFTTX_BLOCK_FILTERING_DEFAULT 1424217600        //2015-2-18
@@ -72,6 +73,7 @@ using namespace boost;
 #define SPORK_22_ZEROCOIN_MAINTENANCE_MODE_DEFAULT 4070908800     //OFF
 // Sporks that forces new blocktime upgrade and protocol 71020
 #define SPORK_23_NEW_BLOCKTIME_ENFORCEMENT_DEFAULT 4070908800     //OFF DEFAULT
+#define SPORK_24_KERNEL_EXTRA_STAKING_CHECK_DEFAULT 9999999999            //OFF
 
 class CSporkMessage;
 class CSporkManager;

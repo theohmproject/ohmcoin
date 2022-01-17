@@ -41,7 +41,6 @@ public:
         SECRET_KEY,     // BIP16
         EXT_PUBLIC_KEY, // BIP32
         EXT_SECRET_KEY, // BIP32
-        EXT_COIN_TYPE,  // BIP44
 
         MAX_BASE58_TYPES
     };
@@ -83,6 +82,15 @@ public:
     int64_t Interval() const { return nTargetTimespan / nTargetSpacing; }
     /** Majurity Checks */
     int COINBASE_MATURITY() const { return nMaturity; }
+
+    /** returns the coinstake maturity (min depth required) **/
+    int COINSTAKE_MIN_DEPTH() const { return nStakeMinDepth; }
+    bool HasStakeMinAgeOrDepth(const int contextHeight, const uint32_t contextTime, const int utxoFromBlockHeight, const uint32_t utxoFromBlockTime) const;
+
+    /** returns the max future time (and drift in seconds) allowed for a block in the future **/
+    int FutureBlockTimeDrift(const bool isPoS) const { return isPoS ? nFutureTimeDriftPoS : nFutureTimeDriftPoW; }
+    uint32_t MaxFutureBlockTime(uint32_t time, const bool isPoS) const { return time + FutureBlockTimeDrift(isPoS); }
+
     unsigned int StakeMaturity() const { return nStakeMaturity; }
     /** Max Money Checks */
     CAmount MaxMoneyOut() const { return nMaxMoneyOut; }
@@ -97,6 +105,7 @@ public:
     const std::string& Bech32HRP() const { return bech32_hrp; }
     const std::vector<CDNSSeedData>& DNSSeeds() const { return vSeeds; }
     const std::vector<unsigned char>& Base58Prefix(Base58Type type) const { return base58Prefixes[type]; }
+    int ExtCoinType() const { return nExtCoinType; }
     const std::vector<CAddress>& FixedSeeds() const { return vFixedSeeds; }
     virtual const Checkpoints::CCheckpointData& Checkpoints() const = 0;
     int PoolMaxTransactions() const { return nPoolMaxTransactions; }
@@ -122,6 +131,7 @@ public:
     int LAST_POW_BLOCK() const { return nLastPOWBlock; }
     int Zerocoin_StartHeight() const { return nZerocoinStartHeight; }
     int Zerocoin_LastOldParams() const { return nZerocoinLastOldParams; }
+    bool IsStakeModifierV2(const int nHeight) const { return nHeight >= nBlockStakeModifierlV2; }
 
 protected:
     CChainParams() {}
@@ -143,6 +153,10 @@ protected:
     int nLastPOWBlock;
     int nKarmanodeCountDrift;
     int nMaturity;
+    int nStakeMinDepth;
+    int nFutureTimeDriftPoW;
+    int nFutureTimeDriftPoS;
+
     unsigned int nStakeMaturity;
     int nModifierUpdateBlock;
     CAmount nMaxMoneyOut;
@@ -150,6 +164,7 @@ protected:
     std::vector<CDNSSeedData> vSeeds;
     std::string bech32_hrp;
     std::vector<unsigned char> base58Prefixes[MAX_BASE58_TYPES];
+    int nExtCoinType;
     CBaseChainParams::Network networkID;
     std::string strNetworkID;
     CBlock genesis;
@@ -177,6 +192,7 @@ protected:
     int64_t nBudgetFeeConfirmations;
     int nZerocoinStartHeight;
     int nZerocoinLastOldParams;
+    int nBlockStakeModifierlV2;
 };
 
 /**

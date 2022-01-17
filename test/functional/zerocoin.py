@@ -18,7 +18,6 @@
 #   j) check balances - node0 should have 0, node2 should have 100
 #
 
-from test_framework.util import *
 from test_case_base import TestCaseBase
 
 class ZerocoinTest(TestCaseBase):

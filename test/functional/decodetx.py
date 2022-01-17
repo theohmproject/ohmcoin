@@ -3,7 +3,6 @@ import struct
 
 WITNESS = 1
 
-from test_framework.script import *
 
 class RawTransaction:
     def __init__(self, tx_data):

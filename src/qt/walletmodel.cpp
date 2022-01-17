@@ -12,7 +12,7 @@
 #include "transactiontablemodel.h"
 
 #include "base58.h"
-#include "db.h"
+#include "wallet/db.h"
 #include "keystore.h"
 #include "main.h"
 #include "spork.h"
@@ -598,31 +598,31 @@ static void NotifyWalletBacked(WalletModel* model, const bool& fSuccess, const s
 void WalletModel::subscribeToCoreSignals()
 {
     // Connect signals to wallet
-    wallet->NotifyStatusChanged.connect(boost::bind(&NotifyKeyStoreStatusChanged, this, boost::placeholders::_1));
-    wallet->NotifyAddressBookChanged.connect(boost::bind(NotifyAddressBookChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6));
-    wallet->NotifyTransactionChanged.connect(boost::bind(NotifyTransactionChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
-    wallet->ShowProgress.connect(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2));
-    wallet->NotifyWatchonlyChanged.connect(boost::bind(NotifyWatchonlyChanged, this, boost::placeholders::_1));
-    wallet->NotifyMultiSigChanged.connect(boost::bind(NotifyMultiSigChanged, this, boost::placeholders::_1));
-    wallet->NotifyZerocoinChanged.connect(boost::bind(NotifyZerocoinChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4));
-    wallet->NotifyWalletBacked.connect(boost::bind(NotifyWalletBacked, this, boost::placeholders::_1, boost::placeholders::_2));
+    wallet->NotifyStatusChanged.connect(boost::bind(&NotifyKeyStoreStatusChanged, this, boost::arg<1>()));
+    wallet->NotifyAddressBookChanged.connect(boost::bind(NotifyAddressBookChanged, this, boost::arg<1>(), boost::arg<2>(), boost::arg<3>(), boost::arg<4>(), boost::arg<5>(), boost::arg<6>()));
+    wallet->NotifyTransactionChanged.connect(boost::bind(NotifyTransactionChanged, this, boost::arg<1>(), boost::arg<2>(), boost::arg<3>()));
+    wallet->ShowProgress.connect(boost::bind(ShowProgress, this, boost::arg<1>(), boost::arg<2>()));
+    wallet->NotifyWatchonlyChanged.connect(boost::bind(NotifyWatchonlyChanged, this, boost::arg<1>()));
+    wallet->NotifyMultiSigChanged.connect(boost::bind(NotifyMultiSigChanged, this, boost::arg<1>()));
+    wallet->NotifyZerocoinChanged.connect(boost::bind(NotifyZerocoinChanged, this, boost::arg<1>(), boost::arg<2>(), boost::arg<3>(), boost::arg<4>()));
+    wallet->NotifyWalletBacked.connect(boost::bind(NotifyWalletBacked, this, boost::arg<1>(), boost::arg<2>()));
 }
 
 void WalletModel::unsubscribeFromCoreSignals()
 {
     // Disconnect signals from wallet
-    wallet->NotifyStatusChanged.disconnect(boost::bind(&NotifyKeyStoreStatusChanged, this, boost::placeholders::_1));
-    wallet->NotifyAddressBookChanged.disconnect(boost::bind(NotifyAddressBookChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4, boost::placeholders::_5, boost::placeholders::_6));
-    wallet->NotifyTransactionChanged.disconnect(boost::bind(NotifyTransactionChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3));
-    wallet->ShowProgress.disconnect(boost::bind(ShowProgress, this, boost::placeholders::_1, boost::placeholders::_2));
-    wallet->NotifyWatchonlyChanged.disconnect(boost::bind(NotifyWatchonlyChanged, this, boost::placeholders::_1));
-    wallet->NotifyMultiSigChanged.disconnect(boost::bind(NotifyMultiSigChanged, this, boost::placeholders::_1));
-    wallet->NotifyZerocoinChanged.disconnect(boost::bind(NotifyZerocoinChanged, this, boost::placeholders::_1, boost::placeholders::_2, boost::placeholders::_3, boost::placeholders::_4));
-    wallet->NotifyWalletBacked.disconnect(boost::bind(NotifyWalletBacked, this, boost::placeholders::_1, boost::placeholders::_2));
+    wallet->NotifyStatusChanged.disconnect(boost::bind(&NotifyKeyStoreStatusChanged, this, boost::arg<1>()));
+    wallet->NotifyAddressBookChanged.disconnect(boost::bind(NotifyAddressBookChanged, this, boost::arg<1>(), boost::arg<2>(), boost::arg<3>(), boost::arg<4>(), boost::arg<5>(), boost::arg<6>()));
+    wallet->NotifyTransactionChanged.disconnect(boost::bind(NotifyTransactionChanged, this, boost::arg<1>(), boost::arg<2>(), boost::arg<3>()));
+    wallet->ShowProgress.disconnect(boost::bind(ShowProgress, this, boost::arg<1>(), boost::arg<2>()));
+    wallet->NotifyWatchonlyChanged.disconnect(boost::bind(NotifyWatchonlyChanged, this, boost::arg<1>()));
+    wallet->NotifyMultiSigChanged.disconnect(boost::bind(NotifyMultiSigChanged, this, boost::arg<1>()));
+    wallet->NotifyZerocoinChanged.disconnect(boost::bind(NotifyZerocoinChanged, this, boost::arg<1>(), boost::arg<2>(), boost::arg<3>(), boost::arg<4>()));
+    wallet->NotifyWalletBacked.disconnect(boost::bind(NotifyWalletBacked, this, boost::arg<1>(), boost::arg<2>()));
 }
 
 // WalletModel::UnlockContext implementation
-WalletModel::UnlockContext WalletModel::requestUnlock(AskPassphraseDialog::Context context, bool relock)
+WalletModel::UnlockContext WalletModel::requestUnlock(bool relock)
 {
     bool was_locked = getEncryptionStatus() == Locked;
 
@@ -634,7 +634,7 @@ WalletModel::UnlockContext WalletModel::requestUnlock(AskPassphraseDialog::Conte
 
     if (was_locked) {
         // Request UI to unlock wallet
-        emit requireUnlock(context);
+        emit requireUnlock();
     }
     // If wallet is still locked, unlock was failed or cancelled, mark context as invalid
     bool valid = getEncryptionStatus() != Locked;
@@ -780,6 +780,11 @@ bool WalletModel::saveReceiveRequest(const std::string& sAddress, const int64_t 
 bool WalletModel::isMine(CTxDestination address)
 {
     return IsMine(*wallet, address);
+}
+
+bool WalletModel::hdEnabled() const
+{
+    return wallet->IsHDEnabled();
 }
 
 OutputType WalletModel::getDefaultAddressType() const
