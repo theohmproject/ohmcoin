@@ -17,13 +17,13 @@ const unsigned int WALLET_CRYPTO_SALT_SIZE = 8;
 /**
  * Private key encryption is done based on a CMasterKey,
  * which holds a salt and random encryption key.
- * 
+ *
  * CMasterKeys are encrypted using AES-256-CBC using a key
  * derived using derivation method nDerivationMethod
  * (0 == EVP_sha512()) and derivation iterations nDeriveIterations.
  * vchOtherDerivationParameters is provided for alternative algorithms
  * which may require more parameters (such as scrypt).
- * 
+ *
  * Wallet Private Keys are then encrypted using AES-256-CBC
  * with the double-sha256 of the public key as the IV, and the
  * master key's key as the encryption key (see keystore.[ch]).
@@ -83,8 +83,8 @@ public:
 
     void CleanKey()
     {
-        OPENSSL_cleanse(chKey, sizeof(chKey));
-        OPENSSL_cleanse(chIV, sizeof(chIV));
+        memory_cleanse(chKey, sizeof(chKey));
+        memory_cleanse(chIV, sizeof(chIV));
         fKeySet = false;
     }
 
@@ -122,6 +122,7 @@ class CCryptoKeyStore : public CBasicKeyStore
 {
 private:
     CryptedKeyMap mapCryptedKeys;
+    CHDChain cryptedHDChain;
 
     CKeyingMaterial vMasterKey;
 
@@ -137,6 +138,12 @@ protected:
 
     //! will encrypt previously unencrypted keys
     bool EncryptKeys(CKeyingMaterial& vMasterKeyIn);
+
+    bool EncryptHDChain(const CKeyingMaterial& vMasterKeyIn);
+    bool EncryptHDChainUpgrade(const CKeyingMaterial& vMasterKeyIn, const CHDChain& chain);
+    bool DecryptHDChain(CHDChain& hdChainRet) const;
+    bool SetHDChain(const CHDChain& chain);
+    bool SetCryptedHDChain(const CHDChain& chain);
 
     bool Unlock(const CKeyingMaterial& vMasterKeyIn);
 
@@ -194,7 +201,7 @@ public:
 
     bool GetDeterministicSeed(const uint256& hashSeed, uint256& seed);
     bool AddDeterministicSeed(const uint256& seed);
-
+    bool GetHDChain(CHDChain& hdChainRet) const;
     /**
      * Wallet status (encrypted, locked) changed.
      * Note: Called without locks held.

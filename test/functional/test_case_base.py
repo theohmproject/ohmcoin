@@ -1,4 +1,4 @@
-from test_framework.test_framework import BitcoinTestFramework
+from test.functional.test_framework import BitcoinTestFramework
 
 class TestCaseBase(BitcoinTestFramework) :
     def set_test_params(self) :

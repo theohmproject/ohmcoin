@@ -174,3 +174,5 @@ src/ohmcoin-tx
 src/ohmcoind
 doc/Doxyfile
 doc/Doxyfile
+src/test/test_ohmcoin
+src/qt/test/test_ohmcoin-qt

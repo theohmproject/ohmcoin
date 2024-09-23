@@ -5,9 +5,6 @@
 
 # Exercise the listtransactions API
 
-from test_framework.test_framework import BitcoinTestFramework
-from test_framework.authproxy import AuthServiceProxy, JSONRPCException
-from test_framework.util import *
 from test_case_base import TestCaseBase
 
 

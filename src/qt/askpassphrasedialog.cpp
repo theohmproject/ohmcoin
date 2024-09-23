@@ -19,11 +19,10 @@
 
 #include <QWidget>
 
-AskPassphraseDialog::AskPassphraseDialog(Mode mode, QWidget* parent, WalletModel* model, Context context) : QDialog(parent),
+AskPassphraseDialog::AskPassphraseDialog(Mode mode, QWidget* parent, WalletModel* model) : QDialog(parent),
                                                                                                             ui(new Ui::AskPassphraseDialog),
                                                                                                             mode(mode),
                                                                                                             model(model),
-                                                                                                            context(context),
                                                                                                             fCapsLock(false)
 {
     ui->setupUi(this);
@@ -79,18 +78,7 @@ AskPassphraseDialog::AskPassphraseDialog(Mode mode, QWidget* parent, WalletModel
         break;
     }
 
-    // Set checkbox "For anonymization, automint, and staking only" depending on from where we were called
-    if (context == Context::Unlock_Menu || context == Context::Mint_zOHMC || context == Context::BIP_38) {
-        ui->anonymizationCheckBox->setChecked(true);
-    }
-    else {
-        ui->anonymizationCheckBox->setChecked(false);
-    }
-
-    // It doesn't make sense to show the checkbox for sending Ohmcoin because you wouldn't check it anyway.
-    if (context == Context::Send_OHMC || context == Context::Send_zOHMC) {
-        ui->anonymizationCheckBox->hide();
-    }
+    ui->anonymizationCheckBox->setChecked(model->isAnonymizeOnlyUnlocked());
 
     textChanged();
     connect(ui->passEdit1, SIGNAL(textChanged(QString)), this, SLOT(textChanged()));
@@ -109,7 +97,6 @@ AskPassphraseDialog::~AskPassphraseDialog()
 
 void AskPassphraseDialog::accept()
 {
-    SecureString oldpass, newpass1, newpass2;
     if (!model)
         return;
     oldpass.reserve(MAX_PASSPHRASE_SIZE);

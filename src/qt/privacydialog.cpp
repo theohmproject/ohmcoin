@@ -14,7 +14,7 @@
 #include "optionsmodel.h"
 #include "sendcoinsentry.h"
 #include "walletmodel.h"
-#include "coincontrol.h"
+#include "wallet/coincontrol.h"
 #include "zohmccontroldialog.h"
 #include "spork.h"
 
@@ -176,7 +176,7 @@ void PrivacyDialog::on_pushButtonMintzOHMC_clicked()
     // Request unlock if wallet was locked or unlocked for mixing:
     WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
     if (encStatus == walletModel->Locked) {
-        WalletModel::UnlockContext ctx(walletModel->requestUnlock(AskPassphraseDialog::Context::Mint_zOHMC, true));
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock(true));
         if (!ctx.isValid()) {
             // Unlock wallet was cancelled
             ui->TEMintStatus->setPlainText(tr("Error: Your wallet is locked. Please enter the wallet passphrase first."));
@@ -282,7 +282,7 @@ void PrivacyDialog::on_pushButtonSpendzOHMC_clicked()
     // Request unlock if wallet was locked or unlocked for mixing:
     WalletModel::EncryptionStatus encStatus = walletModel->getEncryptionStatus();
     if (encStatus == walletModel->Locked || encStatus == walletModel->UnlockedForAnonymizationOnly) {
-        WalletModel::UnlockContext ctx(walletModel->requestUnlock(AskPassphraseDialog::Context::Send_zOHMC, true));
+        WalletModel::UnlockContext ctx(walletModel->requestUnlock(true));
         if (!ctx.isValid()) {
             // Unlock wallet was cancelled
             return;
