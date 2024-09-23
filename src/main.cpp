@@ -2190,18 +2190,47 @@ double ConvertBitsToDouble(unsigned int nBits)
 
 int64_t GetBlockValue(int nHeight)
 {
+    if (nHeight < 1001 && nHeight > 0) {
+        return 30000 * COIN;
+    }
+
+    const Consensus::Params& consensus = Params().GetConsensus();
+    bool fUpgradeActiveV3 = consensus.NetworkUpgradeActive(nHeight, Consensus::UPGRADE_V3_0_BLOCKREWARD);
+
+    if (Params().NetworkID() == CBaseChainParams::TESTNET) {
+        if (nHeight <= 3000 && nHeight >= 1001) {
+            return 1 * COIN;
+        } else if (nHeight <= 33001 && nHeight >= 3001) {
+            return 3.14159 * COIN;
+        } else if (nHeight >= 33002) {
+            if (fUpgradeActiveV3) {
+                return 6 * COIN;
+            }
+            return 3 * COIN;
+        } else {
+            return 1 * COIN;
+        }
+    }
+
     if (nHeight == 0) {
-        return 17500000 * COIN;
-    } else if (nHeight > 0 && nHeight <= 200) {
-        return 2500 * COIN;
-    } else if (nHeight > 200 && nHeight <= 775600) {
-        return 7 * COIN;
-    } else if (nHeight > 775600 && nHeight <= 1043999) {
-        return 4.5 * COIN;
-    } else if (nHeight > 1043999 && nHeight <= 1562398) {
-        return 3.6 * COIN;
+        return 1 * COIN;
+    } else if (nHeight <= 904320 && nHeight >= 1000) {
+        return 1 * COIN;
+    } else if (nHeight <= 1336320 && nHeight >= 904321) {
+        return 0.5 * COIN;
+    } else if (nHeight <= 1941121 && nHeight >= 1336321) {
+        return 0.25 * COIN;
+    } else if (nHeight <= 2373122 && nHeight >= 1941122) {
+        return 0.125 * COIN;
+    } else if (nHeight <= 2977923 && nHeight >= 2373123) {
+        return 0.0625 * COIN;
+    } else if (nHeight >= 2977924) {
+        if (fUpgradeActiveV3) {
+            return 6 * COIN;
+        }
+        return 3 * COIN;
     } else {
-        return 2.7 * COIN;
+        return 1 * COIN;
     }
 }
 
