@@ -330,20 +330,20 @@ void CKarmanodePayments::FillBlockPayee(CMutableTransaction& txNew, int64_t nFee
             txNew.vout[i].nValue = karmanodePayment;
 
             //subtract mn payment from the stake reward
-                if (i == 2) {
-                    // Majority of cases; do it quick and move on
-                    txNew.vout[i - 1].nValue -= karmanodePayment;
-                } else if (i > 2) {
-                    // special case, stake is split between (i-1) outputs
-                    unsigned int outputs = i-1;
-                    CAmount knPaymentSplit = karmanodePayment / outputs;
-                    CAmount knPaymentRemainder = karmanodePayment - (knPaymentSplit * outputs);
-                    for (unsigned int j=1; j<=outputs; j++) {
-                        txNew.vout[j].nValue -= knPaymentSplit;
-                    }
-                    // in case it's not an even division, take the last bit of dust from the last one
-                    txNew.vout[outputs].nValue -= knPaymentRemainder;
-                }
+			if (i == 2) {
+				// Majority of cases; do it quick and move on
+				txNew.vout[i - 1].nValue -= karmanodePayment;
+			} else if (i > 2) {
+				// special case, stake is split between (i-1) outputs
+				unsigned int outputs = i-1;
+				CAmount knPaymentSplit = karmanodePayment / outputs;
+				CAmount knPaymentRemainder = karmanodePayment - (knPaymentSplit * outputs);
+				for (unsigned int j=1; j<=outputs; j++) {
+					txNew.vout[j].nValue -= knPaymentSplit;
+				}
+				// in case it's not an even division, take the last bit of dust from the last one
+				txNew.vout[outputs].nValue -= knPaymentRemainder;
+			}
         } else {
             txNew.vout.resize(2);
             txNew.vout[1].scriptPubKey = payee;

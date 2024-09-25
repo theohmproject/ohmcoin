@@ -27,9 +27,12 @@
 #include "walletmodel.h"
 #endif
 
+#include <startoptionsmain.h>
+
 #include "init.h"
 #include "main.h"
 #include "rpc/server.h"
+#include "scheduler.h"
 #include "ui_interface.h"
 #include "util.h"
 
@@ -52,6 +55,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QTranslator>
+#include <vector>
 
 #if defined(QT_STATICPLUGIN)
 #include <QtPlugin>
@@ -160,7 +164,7 @@ class BitcoinCore : public QObject
 {
     Q_OBJECT
 public:
-    explicit BitcoinCore();
+    explicit BitcoinCore(std::vector<std::string>& wordlist);
 
 public slots:
     void initialize();
@@ -169,15 +173,19 @@ public slots:
 
 signals:
     void initializeResult(bool success);
-    void shutdownResult();
+    void shutdownResult(int retval);
     void runawayException(const QString& message);
 
 private:
+    boost::thread_group threadGroup;
+    CScheduler scheduler;
+
     /// Flag indicating a restart
     bool execute_restart;
 
     /// Pass fatal exception message to UI thread
     void handleRunawayException(std::exception* e);
+    std::vector<std::string> words;
 };
 
 /** Main Ohmcoin application object */
@@ -195,9 +203,12 @@ public:
     /// Create options model
     void createOptionsModel();
     /// Create main window
-    void createWindow(const NetworkStyle* networkStyle);
+    bool createWindow(const NetworkStyle* networkStyle);
     /// Create splash screen
     void createSplashScreen(const NetworkStyle* networkStyle);
+
+    /// Get mnemonic words on first startup
+    bool setupMnemonicWords(std::vector<std::string>& wordlist);
 
     /// Request core initialization
     void requestInitialize();
@@ -212,7 +223,7 @@ public:
 
 public slots:
     void initializeResult(bool success);
-    void shutdownResult();
+    void shutdownResult(int retval);
     /// Handle runaway exceptions. Shows a message box with the problem and quits the program.
     void handleRunawayException(const QString& message);
 
@@ -233,6 +244,7 @@ private:
     PaymentServer* paymentServer;
     WalletModel* walletModel;
 #endif
+    std::vector<std::string> wordlist;
     int returnValue;
 
     void startThread();
@@ -240,7 +252,7 @@ private:
 
 #include "ohmcoin.moc"
 
-BitcoinCore::BitcoinCore() : QObject()
+BitcoinCore::BitcoinCore(std::vector<std::string>& wordlist) : QObject(), words(wordlist)
 {
 }
 
@@ -256,7 +268,7 @@ void BitcoinCore::initialize()
 
     try {
         qDebug() << __func__ << ": Running AppInit2 in thread";
-        bool rv = AppInit2();
+        int rv = AppInit2(threadGroup, scheduler, words);
         emit initializeResult(rv);
     } catch (std::exception& e) {
         handleRunawayException(&e);
@@ -271,10 +283,11 @@ void BitcoinCore::restart(QStringList args)
         execute_restart = false;
         try {
             qDebug() << __func__ << ": Running Restart in thread";
-            Interrupt();
+            Interrupt(threadGroup);
+            threadGroup.join_all();
             PrepareShutdown();
             qDebug() << __func__ << ": Shutdown finished";
-            Q_EMIT shutdownResult();
+            emit shutdownResult(1);
             CExplicitNetCleanup::callCleanup();
             QProcess::startDetached(QApplication::applicationFilePath(), args);
             qDebug() << __func__ << ": Restart initiated...";
@@ -291,10 +304,11 @@ void BitcoinCore::shutdown()
 {
     try {
         qDebug() << __func__ << ": Running Shutdown in thread";
-        Interrupt();
+        Interrupt(threadGroup);
+        threadGroup.join_all();
         Shutdown();
         qDebug() << __func__ << ": Shutdown finished";
-        Q_EMIT shutdownResult();
+        emit shutdownResult(1);
     } catch (std::exception& e) {
         handleRunawayException(&e);
     } catch (...) {
@@ -354,13 +368,39 @@ void BitcoinApplication::createOptionsModel()
     optionsModel = new OptionsModel();
 }
 
-void BitcoinApplication::createWindow(const NetworkStyle* networkStyle)
+// this will be used to get mnemonic words
+bool BitcoinApplication::setupMnemonicWords(std::vector<std::string>& wordlist) {
+    namespace fs = boost::filesystem;
+    if (GetBoolArg("-disablewallet", DEFAULT_DISABLE_WALLET)) {
+        LogPrintf("Wallet disabled!\n");
+    }
+
+    if (GetBoolArg("-skipmnemonicstartupui", false)) {
+        return true;
+    }
+
+    std::string walletFile = GetArg("-wallet", "wallet.dat");
+    if (fs::exists(walletFile)) return true;
+
+    if (CheckIfWalletDatExists()) return true;
+
+    StartOptionsMain dlg(nullptr);
+    dlg.exec();
+    wordlist = dlg.getWords();
+    return false;
+}
+
+bool BitcoinApplication::createWindow(const NetworkStyle* networkStyle)
 {
+    /// doesn't check if wallet is enabled, It will be assumbed if the user is using the gui wallet is enabled
+    if (!setupMnemonicWords(wordlist)) {
+        if (wordlist.empty()) return false;
+    }
     window = new BitcoinGUI(networkStyle, 0);
 
     pollShutdownTimer = new QTimer(window);
     connect(pollShutdownTimer, SIGNAL(timeout()), window, SLOT(detectShutdown()));
-    pollShutdownTimer->start(200);
+    return true;
 }
 
 void BitcoinApplication::createSplashScreen(const NetworkStyle* networkStyle)
@@ -379,12 +419,12 @@ void BitcoinApplication::startThread()
     if (coreThread)
         return;
     coreThread = new QThread(this);
-    BitcoinCore* executor = new BitcoinCore();
+    BitcoinCore* executor = new BitcoinCore(wordlist);
     executor->moveToThread(coreThread);
 
     /*  communication to and from thread */
     connect(executor, SIGNAL(initializeResult(bool)), this, SLOT(initializeResult(bool)));
-    connect(executor, SIGNAL(shutdownResult()), this, SLOT(shutdownResult()));
+    connect(executor, SIGNAL(shutdownResult(int)), this, SLOT(shutdownResult(int)));
     connect(executor, SIGNAL(runawayException(QString)), this, SLOT(handleRunawayException(QString)));
     connect(this, SIGNAL(requestedInitialize()), executor, SLOT(initialize()));
     connect(this, SIGNAL(requestedShutdown()), executor, SLOT(shutdown()));
@@ -477,8 +517,9 @@ void BitcoinApplication::initializeResult(bool success)
     }
 }
 
-void BitcoinApplication::shutdownResult()
+void BitcoinApplication::shutdownResult(int retval)
 {
+    qDebug() << __func__ << ": Shutdown result: " << retval;
     quit(); // Exit main loop after shutdown finished
 }
 
@@ -628,7 +669,9 @@ int main(int argc, char* argv[])
         app.createSplashScreen(networkStyle.data());
 
     try {
-        app.createWindow(networkStyle.data());
+        if (!app.createWindow(networkStyle.data())) {
+            return EXIT_FAILURE;
+        }
         app.requestInitialize();
 #if defined(Q_OS_WIN)
         WinShutdownMonitor::registerShutdownBlockReason(QObject::tr("Ohmcoin Core didn't yet exit safely..."), (HWND)app.getMainWinId());
