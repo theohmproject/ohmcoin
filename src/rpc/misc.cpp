@@ -404,6 +404,13 @@ UniValue validateaddress(const UniValue& params, bool fHelp)
         ret.pushKVs(detail);
         if (pwalletMain && pwalletMain->mapAddressBook.count(dest))
             ret.push_back(Pair("account", pwalletMain->mapAddressBook[dest].name));
+                CKeyID keyID;
+        CHDChain hdChainCurrent;
+        if (pwalletMain && pwalletMain->mapHdPubKeys.count(keyID))
+        {
+            ret.push_back(Pair("hdkeypath", pwalletMain->mapHdPubKeys[keyID].GetKeyPath()));
+            ret.push_back(Pair("hdmasterkeyid", hdChainCurrent.GetID().GetHex()));
+        }
 #endif
     }
     return ret;

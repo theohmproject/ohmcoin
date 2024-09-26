@@ -14,7 +14,7 @@
 #include "optionsmodel.h"
 #include "walletmodel.h"
 
-#include "coincontrol.h"
+#include "wallet/coincontrol.h"
 #include "main.h"
 #include "obfuscation.h"
 #include "wallet/wallet.h"

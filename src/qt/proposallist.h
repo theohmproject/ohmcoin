@@ -17,6 +17,7 @@
 
 class ProposalFilterProxy;
 class CKarmanode;
+class WalletModel;
 
 QT_BEGIN_NAMESPACE
 class QComboBox;
@@ -39,7 +40,7 @@ class ProposalList : public QWidget
 public:
     explicit ProposalList(QWidget *parent = 0);
 
-    void setModel();
+    void setModel(WalletModel* model);
 
     enum DateEnum
     {
@@ -67,8 +68,9 @@ public:
     };
 
 private:
-    ProposalTableModel *proposalTableModel;
+    WalletModel* model;
     ProposalFilterProxy *proposalProxyModel;
+    ProposalTableModel *proposalTableModel;
     QTableView *proposalList;
     int64_t nLastUpdate = 0;
 

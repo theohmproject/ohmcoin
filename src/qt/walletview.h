@@ -70,10 +70,9 @@ private:
     SendCoinsDialog* sendCoinsPage;
     BlockExplorer* explorerWindow;
     KarmanodeList* karmanodeListPage;
-    QWidget* proposalListPage;
 
     TransactionView* transactionView;
-    ProposalList* proposalList;
+    ProposalList *proposalList;
 
     QProgressDialog* progressDialog;
     QLabel* transactionSum;
@@ -118,7 +117,7 @@ public slots:
     /** Change encrypted wallet passphrase */
     void changePassphrase();
     /** Ask for passphrase to unlock wallet temporarily */
-    void unlockWallet(AskPassphraseDialog::Context context);
+    void unlockWallet();
     /** Lock wallet */
     void lockWallet();
     /** Toggle wallet lock state */
@@ -145,6 +144,8 @@ public slots:
     void message(const QString& title, const QString& message, unsigned int style);
     /** Encryption status of wallet changed */
     void encryptionStatusChanged(int status);
+    /** HD-Enabled status of wallet changed (only possible during startup) */
+    void hdEnabledStatusChanged(int hdEnabled);
     /** Notify that a new transaction appeared */
     void incomingTransaction(const QString& date, int unit, const CAmount& amount, const QString& type, const QString& address);
 };

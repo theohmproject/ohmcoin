@@ -5,7 +5,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include "activekarmanode.h"
-#include "db.h"
+#include "wallet/db.h"
 #include "guiutil.h"
 #include "init.h"
 #include "main.h"
@@ -20,6 +20,7 @@
 #include "karmanode-payments.h"
 #include "karmanodeconfig.h"
 #include "karmanodeman.h"
+#include "walletmodel.h"
 #include "rpc/server.h"
 #include "ui_interface.h"
 #include "utilmoneystr.h"
@@ -48,7 +49,6 @@ ProposalList::ProposalList(QWidget *parent) :
         QWidget(parent), proposalTableModel(0), proposalProxyModel(0),
         proposalList(0), columnResizingFixer(0)
 {
-    proposalTableModel = new ProposalTableModel(this);
     QSettings settings;
 
     setContentsMargins(20,0,20,0);
@@ -233,14 +233,14 @@ ProposalList::ProposalList(QWidget *parent) :
     QAction *voteYesAction = new QAction(tr("Vote Yes"), this);
     QAction *voteAbstainAction = new QAction(tr("Vote Abstain"), this);
     QAction *voteNoAction = new QAction(tr("Vote No"), this);
-    QAction *copyUrlAction = new QAction(tr("Copy proposal URL"), this);
+    QAction *openUrlAction = new QAction(tr("Visit proposal website"), this);
 
     contextMenu = new QMenu(this);
     contextMenu->addAction(voteYesAction);
     contextMenu->addAction(voteAbstainAction);
     contextMenu->addAction(voteNoAction);
     contextMenu->addSeparator();
-    contextMenu->addAction(copyUrlAction);
+    contextMenu->addAction(openUrlAction);
 
     connect(view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
 
@@ -254,8 +254,6 @@ ProposalList::ProposalList(QWidget *parent) :
     connect(voteYesAction, SIGNAL(triggered()), this, SLOT(voteYes()));
     connect(voteNoAction, SIGNAL(triggered()), this, SLOT(voteNo()));
     connect(voteAbstainAction, SIGNAL(triggered()), this, SLOT(voteAbstain()));
-    connect(copyUrlAction, SIGNAL(triggered()), this, SLOT(copyProposalUrl()));
-
     connect(proposalWidget, SIGNAL(textChanged(QString)), this, SLOT(changedProposal(QString)));
     connect(startDateWidget, SIGNAL(textChanged(QString)), this, SLOT(chooseStartDate(QString)));
     connect(endDateWidget, SIGNAL(textChanged(QString)), this, SLOT(chooseEndDate(QString)));
@@ -267,45 +265,73 @@ ProposalList::ProposalList(QWidget *parent) :
     connect(amountWidget, SIGNAL(textChanged(QString)), this, SLOT(changedAmount(QString)));
     connect(votesNeededWidget, SIGNAL(textChanged(QString)), this, SLOT(changedVotesNeeded(QString)));
 
-    proposalProxyModel = new ProposalFilterProxy(this);
-    proposalProxyModel->setDynamicSortFilter(true);
-    proposalProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    proposalProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    proposalProxyModel->setSortRole(Qt::EditRole);
-    proposalProxyModel->setSourceModel(proposalTableModel);
-
-    proposalList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
-    proposalList->setModel(proposalProxyModel);
-    proposalList->setAlternatingRowColors(true);
-    proposalList->setSelectionBehavior(QAbstractItemView::SelectRows);
-    proposalList->setSortingEnabled(true);
-    proposalList->sortByColumn(ProposalTableModel::StartDate, Qt::DescendingOrder);
-    proposalList->verticalHeader()->hide();
-
-    proposalList->setColumnWidth(ProposalTableModel::Proposal, PROPOSAL_COLUMN_WIDTH);
-    proposalList->setColumnWidth(ProposalTableModel::Amount, AMOUNT_COLUMN_WIDTH);
-    proposalList->setColumnWidth(ProposalTableModel::StartDate, START_DATE_COLUMN_WIDTH);
-    proposalList->setColumnWidth(ProposalTableModel::EndDate, END_DATE_COLUMN_WIDTH);
-    proposalList->setColumnWidth(ProposalTableModel::TotalPaymentCount, TOTAL_PAYMENT_COLUMN_WIDTH);
-    proposalList->setColumnWidth(ProposalTableModel::RemainingPaymentCount, REMAINING_PAYMENT_COLUMN_WIDTH);
-    proposalList->setColumnWidth(ProposalTableModel::YesVotes, YES_VOTES_COLUMN_WIDTH);
-    proposalList->setColumnWidth(ProposalTableModel::NoVotes, NO_VOTES_COLUMN_WIDTH);
-    proposalList->setColumnWidth(ProposalTableModel::AbstainVotes, ABSTAIN_COLUMN_WIDTH);
-    proposalList->setColumnWidth(ProposalTableModel::VotesNeeded, VOTES_NEEDED_COLUMN_WIDTH);
-
-    columnResizingFixer = new GUIUtil::TableViewLastColumnResizingFixer(proposalList, VOTES_NEEDED_COLUMN_WIDTH, MINIMUM_COLUMN_WIDTH);
+    connect(view, SIGNAL(doubleClicked(QModelIndex)), this, SLOT(openProposalUrl()));
+    connect(view, SIGNAL(customContextMenuRequested(QPoint)), this, SLOT(contextualMenu(QPoint)));
+    connect(openUrlAction, SIGNAL(triggered()), this, SLOT(openProposalUrl()));
 
     nLastUpdate = GetTime();
 
     timer = new QTimer(this);
     connect(timer, SIGNAL(timeout()), this, SLOT(refreshProposals()));
     timer->start(1000);
+}
 
-    setLayout(vlayout);
+void ProposalList::setModel(WalletModel* model)
+{
+
+    QSettings settings;
+    proposalTableModel = new ProposalTableModel(this);
+    this->model = model;
+
+    if (model) {
+        proposalProxyModel = new ProposalFilterProxy(this);
+        proposalProxyModel->setDynamicSortFilter(true);
+        proposalProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+        proposalProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+        proposalProxyModel->setSortRole(Qt::EditRole);
+        proposalProxyModel->setSourceModel(proposalTableModel);
+
+        proposalList->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+        proposalList->setModel(proposalProxyModel);
+        proposalList->setAlternatingRowColors(true);
+        proposalList->setSelectionBehavior(QAbstractItemView::SelectRows);
+        proposalList->setSortingEnabled(true);
+        proposalList->sortByColumn(ProposalTableModel::StartDate, Qt::DescendingOrder);
+        proposalList->verticalHeader()->hide();
+
+        proposalList->setColumnWidth(ProposalTableModel::Proposal, PROPOSAL_COLUMN_WIDTH);
+        proposalList->setColumnWidth(ProposalTableModel::Amount, AMOUNT_COLUMN_WIDTH);
+        proposalList->setColumnWidth(ProposalTableModel::StartDate, START_DATE_COLUMN_WIDTH);
+        proposalList->setColumnWidth(ProposalTableModel::EndDate, END_DATE_COLUMN_WIDTH);
+        proposalList->setColumnWidth(ProposalTableModel::TotalPaymentCount, TOTAL_PAYMENT_COLUMN_WIDTH);
+        proposalList->setColumnWidth(ProposalTableModel::RemainingPaymentCount, REMAINING_PAYMENT_COLUMN_WIDTH);
+        proposalList->setColumnWidth(ProposalTableModel::YesVotes, YES_VOTES_COLUMN_WIDTH);
+        proposalList->setColumnWidth(ProposalTableModel::NoVotes, NO_VOTES_COLUMN_WIDTH);
+        proposalList->setColumnWidth(ProposalTableModel::AbstainVotes, ABSTAIN_COLUMN_WIDTH);
+        proposalList->setColumnWidth(ProposalTableModel::VotesNeeded, VOTES_NEEDED_COLUMN_WIDTH);
+
+        columnResizingFixer = new GUIUtil::TableViewLastColumnResizingFixer(proposalList, VOTES_NEEDED_COLUMN_WIDTH, MINIMUM_COLUMN_WIDTH);
+    }
 }
 
 void ProposalList::createProposal()
 {
+
+    WalletModel::EncryptionStatus encStatus = model->getEncryptionStatus();
+
+    if (encStatus == model->Locked || encStatus == model->UnlockedForAnonymizationOnly) {
+        WalletModel::UnlockContext ctx(model->requestUnlock());
+
+        if (!ctx.isValid()) return; // Unlock wallet was cancelled
+
+        ProposalDialog dlg(ProposalDialog::PrepareProposal, this);
+        if (QDialog::Accepted == dlg.exec())
+        {
+            refreshProposals(true);
+        }
+        return;
+    }
+
     ProposalDialog dlg(ProposalDialog::PrepareProposal, this);
     if (QDialog::Accepted == dlg.exec())
     {

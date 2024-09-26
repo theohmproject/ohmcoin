@@ -141,6 +141,9 @@ UniValue setgenerate(const UniValue& params, bool fHelp)
     if (params.size() > 0)
         fGenerate = params[0].get_bool();
 
+    if (fGenerate && (chainActive.Height() >= Params().LAST_POW_BLOCK()))
+        throw JSONRPCError(RPC_INVALID_REQUEST, "Proof of Work phase has already ended");
+
     int nGenProcLimit = -1;
     if (params.size() > 1) {
         nGenProcLimit = params[1].get_int();
@@ -166,7 +169,7 @@ UniValue setgenerate(const UniValue& params, bool fHelp)
         UniValue blockHashes(UniValue::VARR);
         while (nHeight < nHeightEnd) {
             CPubKey pubkey;
-            if (!reservekey.GetReservedKey(pubkey))
+            if (!reservekey.GetReservedKey(pubkey, false))
                 throw JSONRPCError(RPC_INTERNAL_ERROR, "Wallet keypool empty");
 
             CScript scriptPubKey = CScript() << ToByteVector(pubkey) << OP_CHECKSIG;
